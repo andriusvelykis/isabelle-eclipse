@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Isabelle Core
+Bundle-SymbolicName: isabelle.eclipse.core;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: isabelle.eclipse.core.IsabelleCorePlugin
+Require-Bundle: org.eclipse.core.runtime,
+ isabelle.scala;bundle-version="1.0.0",
+ isabelle.pure;bundle-version="2011.0.0"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: isabelle.eclipse.core,
+ isabelle.eclipse.core.app
