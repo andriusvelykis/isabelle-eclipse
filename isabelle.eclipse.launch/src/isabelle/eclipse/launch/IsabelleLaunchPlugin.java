@@ -54,9 +54,9 @@ public class IsabelleLaunchPlugin extends AbstractUIPlugin {
 	 * 
 	 * @param message the text to write to the log
 	 */
-	public void log(String message, Throwable exception) {
+	public static void log(String message, Throwable exception) {
 		IStatus status = newErrorStatus(message, exception);
-		getLog().log(status);
+		getDefault().getLog().log(status);
 	}
 	
 	/**

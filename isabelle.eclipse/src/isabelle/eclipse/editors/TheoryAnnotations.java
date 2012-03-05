@@ -163,7 +163,7 @@ public class TheoryAnnotations {
 			createMarkupMarkers(snapshot, markerResource);
 		
 		} catch (CoreException e) {
-			IsabelleEclipsePlugin.getDefault().log(e.getLocalizedMessage(), e);
+			IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
 		}
 		
 	}
@@ -173,8 +173,8 @@ public class TheoryAnnotations {
 		try {
 			markerResource.deleteMarkers(MARKER_PROBLEM, false, IResource.DEPTH_ZERO);
 			markerResource.deleteMarkers(MARKER_INFO, false, IResource.DEPTH_ZERO);
-		} catch (CoreException e1) {
-			IsabelleEclipsePlugin.getDefault().log(e1.getLocalizedMessage(), e1);
+		} catch (CoreException e) {
+			IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
 		}
 	}
 	

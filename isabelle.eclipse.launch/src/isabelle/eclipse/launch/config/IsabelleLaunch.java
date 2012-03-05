@@ -66,7 +66,7 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 		try {
 			logic = configuration.getAttribute(IsabelleLaunchConstants.ATTR_LOGIC, ""); //$NON-NLS-1$
 		} catch (CoreException ce) {
-			IsabelleLaunchPlugin.getDefault().log("Error reading configuration", ce);
+			IsabelleLaunchPlugin.log("Error reading configuration", ce);
 		}
 		return logic;
 	}
@@ -95,8 +95,8 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
     		IsabelleSystemFacade isabelle = new IsabelleSystemFacade(path);
     		return isabelle.findLogics();
     	} catch (Exception ex) {
-    		IsabelleLaunchPlugin.getDefault().log("Unable to launch Eclipse at path: " + path, ex);
     		return new String[0];
+    		IsabelleLaunchPlugin.log("Unable to launch Isabelle at path: " + path, ex);
     	}
     	
     }

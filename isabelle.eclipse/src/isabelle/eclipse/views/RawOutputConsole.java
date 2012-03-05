@@ -122,7 +122,7 @@ public class RawOutputConsole extends MessageConsole {
 			try {
 				consoleStream.close();
 			} catch (IOException e) {
-				IsabelleEclipsePlugin.getDefault().log("Unable to close raw output console", e);
+				IsabelleEclipsePlugin.log("Unable to close raw output console", e);
 			} finally {
 				consoleStream = null;
 			}
@@ -155,7 +155,7 @@ public class RawOutputConsole extends MessageConsole {
 			consoleStream.write("B:" + result.body());
 			consoleStream.write("\n");
 		} catch (IOException e) {
-			IsabelleEclipsePlugin.getDefault().log("Problems writing to raw output console", e);
+			IsabelleEclipsePlugin.log("Problems writing to raw output console", e);
 		}
 		
 	}

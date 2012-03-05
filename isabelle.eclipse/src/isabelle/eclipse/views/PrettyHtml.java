@@ -76,7 +76,7 @@ public class PrettyHtml {
 			
 			return output;
 		} catch (TransformerException ex) {
-			IsabelleEclipsePlugin.getDefault().log("Problems printing HTML document", ex);
+			IsabelleEclipsePlugin.log("Problems printing HTML document", ex);
 			return "";
 		}
 	}

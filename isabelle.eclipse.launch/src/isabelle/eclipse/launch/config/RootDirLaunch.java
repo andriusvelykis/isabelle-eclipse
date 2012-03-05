@@ -53,7 +53,7 @@ public class RootDirLaunch extends IsabelleLaunch {
 		try {
 			location= configuration.getAttribute(IsabelleLaunchConstants.ATTR_LOCATION, ""); //$NON-NLS-1$
 		} catch (CoreException ce) {
-			IsabelleLaunchPlugin.getDefault().log("Error reading configuration", ce);
+			IsabelleLaunchPlugin.log("Error reading configuration", ce);
 		}
 		return location;
 	}

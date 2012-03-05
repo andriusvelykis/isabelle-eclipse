@@ -123,7 +123,7 @@ class ExternalResourcesProject {
 				((IFolder)r).createLink(path, IResource.REPLACE, null);
 			}
 		} catch (CoreException e) {
-			IsabelleEclipsePlugin.getDefault().log(e.getLocalizedMessage(), e);
+			IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
 			MessageDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
 							"Error",
 							e.getLocalizedMessage());

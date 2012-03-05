@@ -402,7 +402,7 @@ public class TheoryEditor extends TextEditor {
 			System.out.println("Done editing");
 			
 		} catch (BadLocationException ex) {
-			IsabelleEclipsePlugin.getDefault().log("Bad location in the document", ex);
+			IsabelleEclipsePlugin.log("Bad location in the document", ex);
 		}
 	}
 	
