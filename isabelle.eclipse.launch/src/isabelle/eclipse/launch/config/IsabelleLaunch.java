@@ -79,24 +79,23 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 			abort("Isabelle logic not specified");
 		}
 		
-		List<String> logics = Arrays.asList(loadLogics(path));
+		List<String> logics = loadLogics(path);
 		if (!logics.contains(logic)) {
 			abort("Invalid Isabelle logic specified");
 		}
 		
 	}
 	
-    public static String[] loadLogics(String path) {
+    public static List<String> loadLogics(String path) {
     	if (path == null || path.isEmpty()) {
-    		return new String[0];
+    		return Collections.emptyList();
     	}
     	
     	try {
-    		IsabelleSystemFacade isabelle = new IsabelleSystemFacade(path);
-    		return isabelle.findLogics();
+    		return SystemUtil.getLogics(path);
     	} catch (Exception ex) {
-    		return new String[0];
     		IsabelleLaunchPlugin.log("Unable to launch Isabelle at path: " + path, ex);
+    		return Collections.emptyList();
     	}
     	
     }

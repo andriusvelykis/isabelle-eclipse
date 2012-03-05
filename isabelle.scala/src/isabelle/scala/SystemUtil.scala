@@ -13,7 +13,7 @@ object SystemUtil extends isabelle.Basic_Library {
   /*
    * Copied from Isabelle_System.init()
    */
-  def getTheories(path : String) : java.util.List[String] = {
+  def getLogics(path : String) : java.util.List[String] = {
     
     val standard_system = new Standard_System
     val settings =

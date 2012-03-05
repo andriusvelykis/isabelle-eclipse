@@ -1,5 +1,7 @@
 package isabelle.eclipse.launch.tabs;
 
+import java.util.List;
+
 import isabelle.eclipse.launch.IsabelleLaunchConstants;
 import isabelle.eclipse.launch.IsabelleLaunchImages;
 import isabelle.eclipse.launch.config.IsabelleLaunch;
@@ -278,13 +280,13 @@ public abstract class IsabelleMainTab extends AbstractLaunchConfigurationTab {
     private void reloadLogics() {
     	
     	String installationPath = getInstallationPath();
-    	String[] logics = IsabelleLaunch.loadLogics(installationPath);
+    	List<String> logics = IsabelleLaunch.loadLogics(installationPath);
 
 		logicsViewer.setInput(logics);
         
         // set explicitly if nothing was set before
-        if (logics.length == 1) {
-        	setSelectedLogic(logics[0]);
+        if (logics.size() == 1) {
+        	setSelectedLogic(logics.get(0));
         }
         
     }
