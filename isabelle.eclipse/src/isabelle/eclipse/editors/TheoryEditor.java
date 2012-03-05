@@ -199,6 +199,8 @@ public class TheoryEditor extends TextEditor {
 		// connect to the new document
 		initIsabelleModel();
 		
+		markers.updateAllMarkers();
+		
 		// TODO need to reload?
 		reloadOutline();
 	}

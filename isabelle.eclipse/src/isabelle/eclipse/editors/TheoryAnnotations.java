@@ -110,7 +110,7 @@ public class TheoryAnnotations {
 		sessionEvents.dispose();
 	}
 	
-	private void updateAllMarkers() {
+	public void updateAllMarkers() {
 		
 		DocumentModel isabelleModel = editor.getIsabelleModel();
 		Set<Command> snapshotCommands;
@@ -148,7 +148,6 @@ public class TheoryAnnotations {
 		// copy commands set
 		commands = new LinkedHashSet<Command>(commands);
 		// only use commands that are in the snapshot
-		// TODO this will become empty for #updateAllMarkers
 		commands.retainAll(setAsJavaSet(snapshot.node().commands()));
 
 		if (commands.isEmpty()) {
