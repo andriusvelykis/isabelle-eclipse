@@ -43,12 +43,16 @@ import scala.collection.Iterator;
 
 public class TheoryAnnotations {
 	
+	private static final Isar_Document$ ISAR_DOCUMENT = Isar_Document$.MODULE$;
+	private static final Isar_Document$Unprocessed$ UNPROCESSED = Isar_Document$Unprocessed$.MODULE$;
+	
 	private final TheoryEditor editor;
 
 	public static final String MARKER_PROBLEM = "isabelle.eclipse.markerProblem";
 	public static final String MARKER_INFO = "isabelle.eclipse.markerInfo";
-	
+	// TODO foreground colours, Isabelle_Markup.foreground? Or actually syntax colours?
 	public static final String ANNOTATION_BAD = "isabelle.eclipse.editor.markup.bad";
+	public static final String ANNOTATION_HILITE = "isabelle.eclipse.editor.markup.hilite";
 	public static final String ANNOTATION_TOKEN = "isabelle.eclipse.editor.markup.token";
 	
 	public static final String ANNOTATION_OUTDATED = "isabelle.eclipse.editor.commandStatus.outdated";
@@ -367,7 +371,8 @@ public class TheoryAnnotations {
 		Map<Annotation, Position> annotations = new HashMap<Annotation, Position>();
 		
 		// get annotations for command status
-		Iterator<Info<String>> markupRanges = snapshot.selectMarkupNames(new String[] { Markup.BAD(), Markup.TOKEN_RANGE() }, lineRange);
+		Iterator<Info<String>> markupRanges = SnapshotUtil.selectMarkupNames(snapshot, 
+				new String[] { Markup.BAD(), Markup.HILITE(), Markup.TOKEN_RANGE() }, lineRange);
 		while (markupRanges.hasNext()) {
 			Info<String> info = markupRanges.next();
 			Range range = info.range();
