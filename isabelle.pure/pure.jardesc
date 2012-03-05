@@ -11,6 +11,6 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="false" exportJavaFiles="false" exportOutputFolder="true">
-        <javaElement handleIdentifier="=isabelle.pure/src"/>
+        <javaElement handleIdentifier="=isabelle.pure/src&lt;isabelle"/>
     </selectedElements>
 </jardesc>
