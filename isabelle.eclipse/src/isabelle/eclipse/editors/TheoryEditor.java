@@ -431,7 +431,7 @@ public class TheoryEditor extends TextEditor {
 	}
 
 	@Override
-	public Object getAdapter(Class adapter) {
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
 		if (IContentOutlinePage.class.equals(adapter)) {
 			if (outlinePage == null) {
 				outlinePage = new TheoryOutlinePage(this);

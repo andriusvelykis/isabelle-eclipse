@@ -10,7 +10,7 @@ import org.eclipse.ui.part.IPageBookViewPage;
 public class RawOutputConsoleParticipant implements IConsolePageParticipant {
 
 	@Override
-	public Object getAdapter(Class adapter) {
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
 		System.out.println("Requesting adapter: " + adapter);
 		return null;
 	}
