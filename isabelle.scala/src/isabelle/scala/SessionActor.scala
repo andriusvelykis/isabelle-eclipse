@@ -45,7 +45,7 @@ class SessionActor() {
             }
         }
 
-        case Session.Commands_Changed(changed) => {
+        case changed: Session.Commands_Changed => {
             commandsListener match {
               case Some(listener) => listener.commandsChanged(changed);
               case None =>
@@ -76,6 +76,6 @@ trait ISessionRawMessageListener {
 
 trait ISessionCommandsListener {
 
-  def commandsChanged(commands : java.util.Set[Command])
+  def commandsChanged(changed : Session.Commands_Changed)
 
 }
