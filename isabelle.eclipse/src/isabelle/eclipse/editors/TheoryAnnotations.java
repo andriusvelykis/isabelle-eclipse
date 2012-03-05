@@ -1,20 +1,23 @@
 package isabelle.eclipse.editors;
 
 import isabelle.Command;
+import isabelle.Isar_Document$;
+import isabelle.Isar_Document$Unprocessed$;
+import isabelle.Document.Snapshot;
+import isabelle.Isar_Document.Forked;
+import isabelle.Isar_Document;
 import isabelle.Markup;
 import isabelle.Command.State;
+import isabelle.Session;
 import isabelle.Text.Info;
 import isabelle.Text.Range;
 import isabelle.eclipse.IsabelleEclipsePlugin;
-import isabelle.scala.DocumentStatusFacade;
 import isabelle.scala.ISessionCommandsListener;
 import isabelle.scala.ISessionRawMessageListener;
 import isabelle.scala.ResultFacade;
 import isabelle.scala.SessionActor;
-import isabelle.scala.SessionFacade;
-import isabelle.scala.SnapshotFacade;
-import isabelle.scala.SnapshotFacade.CommandInfo;
-import isabelle.scala.SnapshotFacade.MarkupMessage;
+import isabelle.scala.SnapshotUtil;
+import isabelle.scala.SnapshotUtil.MarkupMessage;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,6 +38,8 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.MarkerUtilities;
+import scala.Tuple2;
+import scala.collection.Iterator;
 
 public class TheoryAnnotations {
 	
@@ -190,15 +195,7 @@ public class TheoryAnnotations {
 	private void createMarkupMarkers(SnapshotFacade snapshot, IResource markerResource) throws CoreException {
 		String[] messageMarkups = new String[] { Markup.WRITELN(), Markup.WARNING(), Markup.ERROR() };
 		Iterator<Info<MarkupMessage>> messageRanges = 
-			snapshot.selectMarkupMessages(messageMarkups, new Range(0, getDocumentLength()));
-		
-//		Iterator<Info<String>> badRanges = snapshot.selectMarkupNames(new String[] { Markup.BAD() }, new Range(0, getDocumentLength()));
-//		StringBuilder out = new StringBuilder();
-//		while (badRanges.hasNext()) {
-//			Info<String> range = badRanges.next();
-//			out.append(range.info());
-//			out.append(";");
-//		}
+			SnapshotUtil.selectMarkupMessages(snapshot, messageMarkups, new Range(0, getDocumentLength()));
 		
 		while (messageRanges.hasNext()) {
 			Info<MarkupMessage> info = messageRanges.next();
@@ -316,11 +313,12 @@ public class TheoryAnnotations {
 		Map<Annotation, Position> annotations = new HashMap<Annotation, Position>();
 		
 		// get annotations for command status
-		Iterator<CommandInfo> cmds = snapshot.commandRange(snapshot.revert(lineRange));
-		while (cmds.hasNext()) {
-			CommandInfo commandTuple = cmds.next();
-			Command command = commandTuple.getCommand();
-			int commandStart = commandTuple.getCommandStart();
+		Iterator<Tuple2<Command, Object>> it = snapshot.node().command_range(snapshot.revert(lineRange));
+		while (it.hasNext()) {
+			
+			Tuple2<Command, Object> commandTuple = it.next();
+			Command command = commandTuple._1();
+			int commandStart = (Integer) commandTuple._2();
 			
 			if (command.is_ignored()) {
 				continue;
@@ -343,31 +341,21 @@ public class TheoryAnnotations {
 	private String getStatusAnnotationType(SessionFacade session, SnapshotFacade snapshot, Command command) {
 		State state = snapshot.state(command);
 		
-		if (snapshot.getSnapshot().is_outdated()) {
+		if (snapshot.is_outdated()) {
 //			System.out.println("Command " + command.toString() + " is outdated");
 			return ANNOTATION_OUTDATED;
 		}
 		
-		DocumentStatusFacade status = session.commandStatus(state);
-		if (status.isForked()) {
-			if (status.getForked() > 0) {
-//				System.out.println("Command " + command.toString() + " is unfinished");
-				return ANNOTATION_UNFINISHED;
-			}
-		}
+		State commandState = snapshot.command_state(command);
+		Isar_Document.Status commandStatus = ISAR_DOCUMENT.command_status(commandState.status());
 		
-		if (status.isUnprocessed()) {
-//			System.out.println("Command " + command.toString() + " is unprocessed");
+		if (commandStatus == UNPROCESSED) {
+			// TODO use Isabelle's colors? At least as preference defaults?
 			return ANNOTATION_UNPROCESSED;
 		}
 		
-		if (status.isFailed()) {
-//			System.out.println("Command " + command.toString() + " is failed");
-			return ANNOTATION_FAILED;
-		}
-		
-		if (status.isFinished()) {
-			return ANNOTATION_FINISHED;
+		if (commandStatus instanceof Forked && ((Forked) commandStatus).forks() > 0) {
+			return ANNOTATION_UNFINISHED;
 		}
 		
 		return null;
