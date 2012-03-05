@@ -1,17 +1,24 @@
 package isabelle.eclipse.launch.config;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import isabelle.Session;
+import isabelle.Session.Phase;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.launch.IsabelleLaunchConstants;
 import isabelle.eclipse.launch.IsabelleLaunchPlugin;
-import isabelle.scala.IsabelleSystemFacade;
+import isabelle.scala.ISessionPhaseListener;
+import isabelle.scala.SessionActor;
+import isabelle.scala.SessionEventType;
+import isabelle.scala.SessionUtil;
+import isabelle.scala.SystemUtil;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -55,10 +62,71 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 
 		monitor.beginTask("Launching " + configuration.getName() + "...", IProgressMonitor.UNKNOWN);
 		
-		isabelle.start(path, logic);
+		Session session = isabelle.start(path, logic);
+		
+		// the session is started asynchronously, so we need to listen for it to finish.
+		Phase phase = waitForPhaseResult(session);
+		if (phase == Isabelle.SESSION_FAILED) {
+			String syslog = session.syslog();
+			abort("Isabelle failed to initialise the session.", syslog);
+		}
 		
 		System.out.println("Done launching");
+	}
+	
+	/**
+	 * Suspends the thread execution until a desired phase is received from the
+	 * session. The method expects READY or FAILED phases, indicating either a
+	 * successful launch, or failure. The session loading is done
+	 * asynchronously, so we need to suspend execution until the result is
+	 * received.
+	 * 
+	 * @param session
+	 * @return One of interesting phases
+	 */
+	private Phase waitForPhaseResult(final Session session) {
 		
+		final Object waitForPhase = new Object();
+		final Phase[] phaseRes = new Phase[1];
+		
+		SessionActor sessionListener = new SessionActor().phaseChanged(new ISessionPhaseListener() {
+			
+			@Override
+			public void phaseChanged(Phase phase) {
+				// mark the phase and notify the waiter
+				synchronized(waitForPhase) {
+					phaseRes[0] = phase;
+					waitForPhase.notify();
+				}
+			}
+		});
+		
+		// start listening on the session phase change
+		SessionUtil.addSessionEventActor(session, SessionEventType.PHASE, sessionListener);
+		
+		// also check current phase - maybe it has already finished
+		phaseRes[0] = session.phase();
+		
+		Phase phase;
+		// do a loop - and wait for correct phase to appear
+		synchronized(waitForPhase) {
+			while (!canHandlePhase(phase = phaseRes[0])) {
+				try {
+					waitForPhase.wait();
+				} catch (InterruptedException e) {
+					// ignore
+				}
+			}
+		}
+		
+		// got a phase we can handle - remove the phase listener
+		SessionUtil.addSessionEventActor(session, SessionEventType.PHASE, sessionListener);
+		
+		return phase;
+	}
+	
+	private boolean canHandlePhase(Phase phase) {
+		return phase == Isabelle.SESSION_READY || phase == Isabelle.SESSION_FAILED;
 	}
 	
 	public static String getLogicConfig(ILaunchConfiguration configuration) {

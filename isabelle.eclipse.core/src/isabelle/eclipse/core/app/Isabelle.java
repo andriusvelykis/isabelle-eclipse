@@ -61,7 +61,7 @@ public class Isabelle {
 		return session.phase() == SESSION_READY;
 	}
 	
-	public void start(String isabellePath, String logic) {
+	public Session start(String isabellePath, String logic) {
 		
 		// TODO check paths for the same system?
 		if (isInit()) {
@@ -93,6 +93,7 @@ public class Isabelle {
 		// start listening for session phase changes
 		SessionUtil.addSessionEventActor(session, SessionEventType.PHASE, sessionManager);
 		
+		return session;
 	}
 	
 	public void stop() {
