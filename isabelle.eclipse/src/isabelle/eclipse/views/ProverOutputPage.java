@@ -170,11 +170,8 @@ public class ProverOutputPage extends Page {
 
 	private String renderOutput(int offset, Set<Command> restriction, IProgressMonitor monitor) {
 		long start = System.currentTimeMillis();
-		System.out.println("Starting update");
 		// TODO: do not redo the same command?
 		updateCommand(offset);
-		
-		System.out.println("Finished update: " + (System.currentTimeMillis() - start));
 		
 		if (currentCommand == null) {
 			System.out.println("No command");
