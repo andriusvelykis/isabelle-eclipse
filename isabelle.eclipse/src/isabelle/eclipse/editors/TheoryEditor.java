@@ -2,39 +2,58 @@ package isabelle.eclipse.editors;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import isabelle.Document.Snapshot;
+import isabelle.Exn.Result;
 import isabelle.Session;
 import isabelle.Thy_Header;
+import isabelle.Thy_Info;
 import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.IIsabelleSessionListener;
 import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.views.TheoryOutlinePage;
 import isabelle.scala.DocumentRef;
+import isabelle.scala.TheoryInfoUtil;
+
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.editors.text.ILocationProviderExtension;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import scala.Option;
+import scala.Tuple2;
 
 
 public class TheoryEditor extends TextEditor {
@@ -210,7 +229,90 @@ public class TheoryEditor extends TextEditor {
 		if (document != null && documentRef != null && isabelleSession != null) {
 			isabelleModel = DocumentModel.create(isabelleSession, document, documentRef);
 			isabelleModel.setSubmitOffset(submittedOffset);
+			
+			loadTheoryImports();
 		}
+	}
+	
+	private void loadTheoryImports() {
+		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
+		Thy_Info theoryInfo = isabelle.getTheoryInfo();
+		List<Tuple2<DocumentRef, Result<Thy_Header>>> deps = TheoryInfoUtil.getDependencies(
+				theoryInfo, Collections.singletonList(documentRef));
+		
+		List<DocumentRef> depRefs = new ArrayList<DocumentRef>();
+		for (Tuple2<DocumentRef, Result<Thy_Header>> dep : deps) {
+			depRefs.add(dep._1());
+		}
+		
+		// remove this editor
+		depRefs.remove(documentRef);
+		
+		// check open editors which have been loaded
+		for (IEditorPart editor : getOpenEditors()) {
+			if (editor instanceof TheoryEditor) {
+				// TODO more generic instead of TheoryEditor, e.g. via IAdaptable?
+				TheoryEditor theoryEditor = (TheoryEditor) editor;
+//				if (theoryEditor.isabelleModel != null) {
+//					// model is init
+					depRefs.remove(theoryEditor.documentRef);
+//				}
+			}
+		}
+		
+		if (depRefs.isEmpty()) {
+			// no dependencies
+			return;
+		}
+		
+		IsabelleFileDocumentProvider docProvider = new IsabelleFileDocumentProvider();
+		
+		for (DocumentRef ref : depRefs) {
+			
+			String path = ref.getNode();
+			IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+			IFile[] files = workspaceRoot.findFilesForLocationURI(URIUtil.toURI(Path.fromOSString(path)));
+			if (files.length > 0) {
+				System.out.println("Files found for: " + path + " - " + files);
+				// take the first
+				IFile file = files[0];
+				IFileEditorInput input = new FileEditorInput(file);
+				
+				try {
+					docProvider.connect(input);
+					IDocument document = docProvider.getDocument(input);
+					// init document model
+					DocumentModel model = DocumentModel.create(isabelleSession, document, ref);
+					// dispose immediately after initialisation
+					model.dispose();
+				} catch (CoreException e) {
+					IsabelleEclipsePlugin.log(e.getMessage(), e);
+				}
+			} else {
+				// no files in workspace found
+				System.out.println("No files found for: " + path);
+				// TODO open on file store
+			}
+		}
+	}
+	
+	/**
+	 * Retrieves all open editors in the workbench.
+	 * 
+	 * @return
+	 */
+	public static List<IEditorPart> getOpenEditors() {
+		List<IEditorPart> editors = new ArrayList<IEditorPart>();
+		for (IWorkbenchWindow window : PlatformUI.getWorkbench()
+				.getWorkbenchWindows()) {
+			for (IWorkbenchPage page : window.getPages()) {
+				for (IEditorReference editor : page.getEditorReferences()) {
+					editors.add(editor.getEditor(false));
+				}
+			}
+		}
+
+		return editors;
 	}
 	
 	private void disposeIsabelleModel() {
