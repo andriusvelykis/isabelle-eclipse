@@ -11,6 +11,8 @@ import isabelle.Session.Phase;
 import isabelle.Session$Failed$;
 import isabelle.Session$Ready$;
 import isabelle.Session$Shutdown$;
+import isabelle.Thy_Load;
+import isabelle.scala.ScalaCollections;
 
 
 public class Isabelle {
@@ -22,6 +24,11 @@ public class Isabelle {
 	private Session session;
 	
 	private final ListenerList sessionListeners = new ListenerList();
+	
+	private boolean systemInit = false;
+	public boolean isInit() {
+		return systemInit;
+	}
 	
 	public boolean isRunning() {
 		
@@ -35,21 +42,32 @@ public class Isabelle {
 	public void start(String isabellePath, String logic) {
 		
 		// TODO check paths for the same system?
-		if (system != null) {
-			throw new IllegalStateException("Isabelle already exists!");
+		if (isInit()) {
+			throw new IllegalStateException("Isabelle already initialised!");
 		}
 		
-		system = new IsabelleSystemFacade(isabellePath);
-		system.getSystem().install_fonts();
+		Isabelle_System.init(isabellePath);
+//		Isabelle_System.install_fonts();
 		
+		systemInit = true;
 		
-		session = new SessionFacade(system.getSystem());
+//	    Isabelle.setup_tooltips()
+//	    Isabelle_System.init()
+//	    Isabelle_System.install_fonts()
+//	    Isabelle.session = new Session(Isabelle.thy_load)
+//	    SyntaxUtilities.setStyleExtender(new Token_Markup.Style_Extender)
+//	    if (ModeProvider.instance.isInstanceOf[ModeProvider])
+//	      ModeProvider.instance = new Token_Markup.Mode_Provider(ModeProvider.instance)
+//	    Isabelle.session.phase_changed += session_manager
+		
 		fireSystemInit();
 		
+		session = new Session(new Thy_Load());
 		
-		String[] sessionArgs = {"-mxsymbols", /*"-mno_brackets", "-mno_type_brackets",*/ logic }; 
+		List<String> sessionArgs = Arrays.asList("-mxsymbols", /*"-mno_brackets", "-mno_type_brackets",*/ logic ); 
 		
-		session.start(10000, sessionArgs);
+		session.start(ScalaCollections.toScalaList(sessionArgs));
+		
 	}
 	
 	public void stop() {
@@ -60,12 +78,7 @@ public class Isabelle {
 		}
 		
 		session = null;
-		
-		system = null;
-	}
-	
-	public IsabelleSystemFacade getSystem() {
-		return system;
+		systemInit = false;
 	}
 	
 	public Session getSession() {
