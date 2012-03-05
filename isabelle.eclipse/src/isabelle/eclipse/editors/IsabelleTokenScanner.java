@@ -1,23 +1,24 @@
 package isabelle.eclipse.editors;
 
-import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
-import isabelle.Text.Info;
-import isabelle.Text.Range;
-import isabelle.eclipse.editors.IsabelleMarkup.TokenType;
-import isabelle.scala.SessionFacade;
-import isabelle.scala.SnapshotFacade;
-import isabelle.scala.SnapshotFacade.NamedData;
+import isabelle.Outer_Syntax;
 
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 
+import scala.collection.JavaConversions;
+
 
 public class IsabelleTokenScanner extends RuleBasedScanner {
 
 	private final TheoryEditor editor;
+	
+	private final Queue<isabelle.Token> pendingTokens = new LinkedList<isabelle.Token>();
 	
 	public IsabelleTokenScanner(TheoryEditor editor) {
 		this.editor = editor;
@@ -42,113 +43,101 @@ public class IsabelleTokenScanner extends RuleBasedScanner {
 
 		fTokenOffset= fOffset;
 		fColumn= UNDEFINED;
-
+		
+		/*
+		 * We want to reuse Isabelle's tokenizer, so what we do is the following:
+		 * 1. Read everything in the range to a String (#readContent())
+		 * 2. Tokenize that in Isabelle, via #syntax.scan_context()
+		 * 3. Unread everything, coming back to the original state
+		 * 3. Collect all tokens as "pending", and read one by one, pushing the 
+		 *    Eclipse tokenizer forward accordingly
+		 */
+		
+		// check if there are pending tokens already, then just update the tokenizer accordingly
+		IToken pendingToken = readPendingToken();
+		if (pendingToken != null) {
+			return pendingToken;
+		}
+		
 		if (read() == EOF) {
 			return Token.EOF;
 		}
-		
 		unread();
 		
-		if (editor != null) {
-			
-			SnapshotFacade snapshot = editor.getSnapshot();
-			SessionFacade session = editor.getIsabelleSession();
-			
-			// TODO check the markup
-			if (session != null && snapshot != null) {
-				
-//				System.out.println("Isabelle tokens");
-				Iterator<Info<NamedData<TokenType>>> tokenTypes = snapshot.selectTokens(
-						session.getSession().current_syntax(), 
-						IsabelleMarkup.COMMAND_STYLES, 
-						IsabelleMarkup.TOKEN_STYLES,
-						new Range(fTokenOffset, fRangeEnd));
-				
-				Info<NamedData<TokenType>> nextToken = getNextToken(tokenTypes);
-				
-				if (nextToken != null) {
-//					System.out.println("Next token found at range " + nextToken.range() + ": " + nextToken.info().getName() + ": " + nextToken.info().getData());
-					read(fTokenOffset, nextToken.range().stop());
-					return createToken(nextToken);
-				} else {
-					// read to the end
-					read(fTokenOffset, fRangeEnd);
-//					System.out.println("No tokens found starting from " + fTokenOffset + " to " + fRangeEnd);
-					return Token.UNDEFINED;
-				}
-			}
+		// read everything until the end of the range
+		StringBuilder remainingText = readContent(fRangeEnd - fTokenOffset);
+		if (remainingText.length() == 0) {
+			return fDefaultReturnToken;
 		}
 		
-		if (read() == EOF) {
-			return Token.EOF;
-		}		
-		
-		return fDefaultReturnToken;
-	}
-	
-	protected IToken createToken(Info<NamedData<TokenType>> tokenInfo) {
-		return new Token(tokenInfo.info().getData().name());
-	}
-	
-	private <A> Info<A> getNextToken(Iterator<Info<A>> tokenTypes) {
-		
-		if (!tokenTypes.hasNext()) {
-			return null;
+		// only use Isabelle's tokenizer if session is setup
+		DocumentModel isabelleModel = editor.getIsabelleModel();
+		if (isabelleModel == null || !isabelleModel.getSession().is_ready()) {
+			return Token.UNDEFINED;
 		}
 		
-		Info<A> tokenStartInfo = tokenTypes.next();
-		A tokenId = tokenStartInfo.info();
+		// now unread all that has been read
+		unread(remainingText.length());
 		
-		Info<A> tokenEndInfo = tokenStartInfo;
+		// Ask Isabelle to tokenize the text
+		// TODO review (token_markup.scala)
+		Outer_Syntax syntax = isabelleModel.getSession().current_syntax();
+		List<isabelle.Token> tokens = JavaConversions.seqAsJavaList(
+				syntax.scan_context(remainingText, isabelle.Scan$Finished$.MODULE$)._1());
+		pendingTokens.addAll(tokens);
 		
-		while (tokenTypes.hasNext()) {
-			Info<A> nextTokenInfo = tokenTypes.next();
-			if (!nextTokenInfo.info().equals(tokenId)) {
-				// different token ID - stop
+		// check if anything has been read
+		pendingToken = readPendingToken();
+		if (pendingToken != null) {
+			return pendingToken;
+		} else {
+			// nothing added to the pending list - return default
+			return fDefaultReturnToken;
+		}
+	}
+	
+	private IToken readPendingToken() {
+		isabelle.Token pendingToken = pendingTokens.poll();
+		if (pendingToken != null) {
+			// read the token
+			String sourceStr = pendingToken.source();
+			read(sourceStr.length());
+			return createToken(pendingToken);
+		}
+		
+		return null;
+	}
+	
+	private StringBuilder readContent(int length) {
+		StringBuilder out = new StringBuilder();
+
+		for (int i = 0; i < length; i++) {
+			int c = read();
+			if (c == EOF) {
+				unread();
 				break;
+			} else {
+				out.append((char) c);
 			}
-			
-			// still the same token ID - continue
-			tokenEndInfo = nextTokenInfo;
 		}
 		
-		return new Info<A>(new Range(tokenStartInfo.range().start(), tokenEndInfo.range().stop()), tokenId);
+		return out;
 	}
 	
-	private void read(int start, int end) {
-		for (int i = start; i < end; i++) {
+	protected IToken createToken(isabelle.Token tokenInfo) {
+		return new Token(tokenInfo);
+	}
+	
+	private void read(int length) {
+		for (int i = 0; i < length; i++) {
 			read();
 		}
 	}
 	
-	
-//    val start = buffer.getLineStartOffset(line)
-//    val stop = start + line_segment.count
-//
-//    /* FIXME
-//    for (text_area <- Isabelle.jedit_text_areas(buffer)
-//          if Document_View(text_area).isDefined)
-//      Document_View(text_area).get.set_styles()
-//    */
-//
-//    def handle_token(style: Byte, offset: Text.Offset, length: Int) =
-//      handler.handleToken(line_segment, style, offset, length, context)
-//
-//    val syntax = session.current_syntax()
-//    val tokens = snapshot.select_markup(Text.Range(start, stop))(Isabelle_Markup.tokens(syntax))
-//
-//    var last = start
-//    for (token <- tokens.iterator) {
-//      val Text.Range(token_start, token_stop) = token.range
-//      if (last < token_start)
-//        handle_token(Token.COMMENT1, last - start, token_start - last)
-//      handle_token(token.info getOrElse Token.NULL,
-//        token_start - start, token_stop - token_start)
-//      last = token_stop
-//    }
-//    if (last < stop) handle_token(Token.COMMENT1, last - start, stop - last)
-//
-//    handle_token(Token.END, line_segment.count, 0)
-//    handler.setLineContext(context)
+	private void unread(int length) {
+		for (int i = 0; i < length; i++) {
+			unread();
+		}
+	}
 
 }

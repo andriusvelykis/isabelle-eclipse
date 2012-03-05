@@ -1,8 +1,8 @@
 package isabelle.eclipse.editors;
 
-import isabelle.Text.Info;
-import isabelle.eclipse.editors.IsabelleMarkup.TokenType;
-import isabelle.scala.SnapshotFacade.NamedData;
+import java.util.Arrays;
+
+import isabelle.Token$Kind$;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
@@ -19,8 +19,12 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
+import scala.Enumeration.Value;
+
 public class IsabelleTheoryConfiguration extends TextSourceViewerConfiguration {
 
+	private static final Token$Kind$ TOKEN_KIND = isabelle.Token$Kind$.MODULE$;
+	
 	private final TheoryEditor editor;
 	private final IsabelleTokenScanner isabelleScanner;
 
@@ -31,11 +35,10 @@ public class IsabelleTheoryConfiguration extends TextSourceViewerConfiguration {
 		this.isabelleScanner = new IsabelleTokenScanner(editor) {
 
 			@Override
-			protected IToken createToken(Info<NamedData<TokenType>> tokenInfo) {
+			protected IToken createToken(isabelle.Token tokenInfo) {
 				return new Token(new TextAttribute(colorManager.getColor(
-						getTokenColor(tokenInfo.info().getData()))));
+						getTokenColor(tokenInfo.kind()))));
 			}
-			
 		};
 		
 	}
@@ -62,25 +65,42 @@ public class IsabelleTheoryConfiguration extends TextSourceViewerConfiguration {
 //		return addedStrats;
 //	}
 
-	private RGB getTokenColor(TokenType tokenType) {
+	private RGB getTokenColor(Value tokenType) {
 		
-		switch(tokenType) {
-		case COMMENT1:
-		case COMMENT3:
-		case COMMENT4:
-			return IXMLColorConstants.XML_COMMENT;
-		case KEYWORD1:
-		case KEYWORD2:
-		case KEYWORD3:
+		if (tokenType == TOKEN_KIND.COMMENT()) {
+			return IXMLColorConstants.XML_COMMENT; 
+		}
+		
+		if (Arrays.asList(TOKEN_KIND.COMMAND(), TOKEN_KIND.KEYWORD()).contains(tokenType)) {
 			return IXMLColorConstants.TAG;
-		case LITERAL1:
-		case LITERAL3:
-		case LITERAL4:
+		}
+		
+		if (Arrays.asList(TOKEN_KIND.ALT_STRING(), TOKEN_KIND.FLOAT(),
+				TOKEN_KIND.NAT(), TOKEN_KIND.STRING()).contains(tokenType)) {
 			return IXMLColorConstants.STRING;
 		}
 		
+		// TODO add all token types and proper colour options
+		
 		return IXMLColorConstants.DEFAULT;
 	}
+	
+//    val COMMAND = Value("command")
+//    val KEYWORD = Value("keyword")
+//    val IDENT = Value("identifier")
+//    val LONG_IDENT = Value("long identifier")
+//    val SYM_IDENT = Value("symbolic identifier")
+//    val VAR = Value("schematic variable")
+//    val TYPE_IDENT = Value("type variable")
+//    val TYPE_VAR = Value("schematic type variable")
+//    val NAT = Value("natural number")
+//    val FLOAT = Value("floating-point number")
+//    val STRING = Value("string")
+//    val ALT_STRING = Value("back-quoted string")
+//    val VERBATIM = Value("verbatim text")
+//    val SPACE = Value("white space")
+//    val COMMENT = Value("comment text")
+//    val UNPARSED = Value("unparsed input")
 	
 //	@Override
 //	public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
