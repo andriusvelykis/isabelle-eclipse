@@ -12,7 +12,11 @@ import isabelle.Session$Failed$;
 import isabelle.Session$Ready$;
 import isabelle.Session$Shutdown$;
 import isabelle.Thy_Load;
+import isabelle.scala.ISessionPhaseListener;
 import isabelle.scala.ScalaCollections;
+import isabelle.scala.SessionActor;
+import isabelle.scala.SessionEventType;
+import isabelle.scala.SessionUtil;
 
 
 public class Isabelle {
@@ -25,7 +29,25 @@ public class Isabelle {
 	
 	private final ListenerList sessionListeners = new ListenerList();
 	
+	private final SessionActor sessionManager;
+	
 	private boolean systemInit = false;
+	
+	public Isabelle() {
+		this.sessionManager = new SessionActor().phaseChanged(new ISessionPhaseListener() {
+			
+			@Override
+			public void phaseChanged(Phase phase) {
+				
+				if (phase == SESSION_READY) {
+					fireSessionInitialised(session);
+				} else if (phase == SESSION_SHUTDOWN) {
+					fireSessionRemoved(session);
+				}
+			}
+		});
+	}
+	
 	public boolean isInit() {
 		return systemInit;
 	}
@@ -68,11 +90,17 @@ public class Isabelle {
 		
 		session.start(ScalaCollections.toScalaList(sessionArgs));
 		
+		// start listening for session phase changes
+		SessionUtil.addSessionEventActor(session, SessionEventType.PHASE, sessionManager);
+		
 	}
 	
 	public void stop() {
 		
 		if (session != null) {
+			
+			SessionUtil.removeSessionEventActor(session, SessionEventType.PHASE, sessionManager);
+			
 			session.stop();
 			fireSessionRemoved(session);
 		}
