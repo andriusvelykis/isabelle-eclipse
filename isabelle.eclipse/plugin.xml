@@ -60,13 +60,6 @@
       </fontDefinition>
    </extension>
    <extension
-         point="org.eclipse.ui.elementFactories">
-      <factory
-            class="isabelle.eclipse.editors.IsabelleEditorInputFactory"
-            id="isabelle.eclipse.IsabelleEditorInputFactory">
-      </factory>
-   </extension>
-   <extension
          id="markerProblem"
          name="Isabelle Proof Problem"
          point="org.eclipse.core.resources.markers">
