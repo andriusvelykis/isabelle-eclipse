@@ -1,9 +1,8 @@
 package isabelle.eclipse.editors;
 
-import isabelle.Isabelle_System;
+import isabelle.Symbol;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.Isabelle;
-import isabelle.scala.IsabelleSystemFacade;
 
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
@@ -69,10 +68,10 @@ public class IsabelleDocument extends Document {
 		System.out.println("Sync from base");
 		String text = baseDocument.get();
 		
-		Isabelle_System isabelleSystem = getIsabelleSystem();
-		if (isabelleSystem != null) {
+		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
+		if (isabelle.isInit()) {
 			System.out.println("Sync from base Isabelle");
-			text = isabelleSystem.symbols().decode(text);
+			text = Symbol.decode(text);
 		}
 		
 		syncingFromBase = true;
@@ -85,10 +84,10 @@ public class IsabelleDocument extends Document {
 		
 		String text = get();
 		
-		Isabelle_System isabelleSystem = getIsabelleSystem();
-		if (isabelleSystem != null) {
+		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
+		if (isabelle.isInit()) {
 			System.out.println("Sync to base Isabelle");
-			text = isabelleSystem.symbols().encode(text);
+			text = Symbol.encode(text);
 		}
 		
 		syncingToBase = true;
@@ -96,15 +95,4 @@ public class IsabelleDocument extends Document {
 		syncingToBase = false;
 	}
 	
-	private Isabelle_System getIsabelleSystem() {
-		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
-		IsabelleSystemFacade system = isabelle.getSystem();
-		
-		if (system != null) {
-			return system.getSystem();
-		}
-		
-		return null;
-	}
-
 }
