@@ -113,6 +113,24 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
+            annotationType="isabelle.eclipse.editor.markup.hilite"
+            colorPreferenceKey="markupHiliteColor"
+            colorPreferenceValue="255,235,194"
+            highlightPreferenceKey="markupHiliteHighlighting"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Isabelle Highlight Markup"
+            overviewRulerPreferenceKey="markupHiliteInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="2"
+            textPreferenceKey="markupHiliteIndication"
+            textPreferenceValue="false"
+            textStylePreferenceKey="markupHiliteTextStyle"
+            textStylePreferenceValue="NONE"
+            verticalRulerPreferenceKey="markupHiliteInVerticalRuler"
+            verticalRulerPreferenceValue="false">
+      </specification>
+      <specification
             annotationType="isabelle.eclipse.editor.markup.token"
             colorPreferenceKey="markupTokenColor"
             colorPreferenceValue="240,240,240"
@@ -225,6 +243,9 @@
          point="org.eclipse.ui.editors.annotationTypes">
       <type
             name="isabelle.eclipse.editor.markup.bad">
+      </type>
+      <type
+            name="isabelle.eclipse.editor.markup.hilite">
       </type>
       <type
             name="isabelle.eclipse.editor.markup.token">
