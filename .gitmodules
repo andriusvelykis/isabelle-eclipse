@@ -1,0 +1,3 @@
+[submodule "isabelle-scala"]
+	path = isabelle-scala
+	url = git://github.com/andriusvelykis/isabelle-scala.git
