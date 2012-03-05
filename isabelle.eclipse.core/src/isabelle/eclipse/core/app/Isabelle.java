@@ -3,14 +3,20 @@ package isabelle.eclipse.core.app;
 import org.eclipse.core.runtime.ListenerList;
 
 import isabelle.scala.IsabelleSystemFacade;
-import isabelle.scala.PhaseFacade;
 import isabelle.scala.SessionFacade;
+import isabelle.Session.Phase;
+import isabelle.Session$Failed$;
+import isabelle.Session$Ready$;
+import isabelle.Session$Shutdown$;
 
 
 public class Isabelle {
 
 	private IsabelleSystemFacade system;
 	private String path;
+	public static final Session$Failed$ SESSION_FAILED = Session$Failed$.MODULE$;
+	public static final Session$Ready$ SESSION_READY = Session$Ready$.MODULE$;
+	public static final Session$Shutdown$ SESSION_SHUTDOWN = Session$Shutdown$.MODULE$;
 	
 	private SessionFacade session;
 	
@@ -23,7 +29,7 @@ public class Isabelle {
 			return false;
 		}
 		
-		return new PhaseFacade(session.getSession().phase()).isReady();
+		return session.phase() == SESSION_READY;
 	}
 	
 	public void start(String isabellePath, String logic) {

@@ -33,7 +33,7 @@ class SessionActor() {
       react {
         case phase: Session.Phase => {
             phaseListener match {
-              case Some(listener) => listener.phaseChanged(new PhaseFacade(phase));
+              case Some(listener) => listener.phaseChanged(phase);
               case None =>
             }
         }
@@ -64,7 +64,7 @@ class SessionActor() {
 
 trait ISessionPhaseListener {
 
-  def phaseChanged(phase : PhaseFacade)
+  def phaseChanged(phase : Session.Phase)
 
 }
 
