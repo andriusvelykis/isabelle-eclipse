@@ -110,11 +110,26 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 	 *  error, or <code>null</code> if none
 	 * @param code error code
 	 */
-	protected static void abort(String message, Throwable exception, int code) throws CoreException {
-		throw new CoreException(new Status(IStatus.ERROR, IsabelleLaunchPlugin.PLUGIN_ID, code, message, exception));
+	protected static void abort(String message, Throwable exception, int code, String details) throws CoreException {
+		int severity = IStatus.ERROR;
+		String pluginId = IsabelleLaunchPlugin.PLUGIN_ID;
+		
+		IStatus status;
+		if (details != null) {
+			MultiStatus multiStatus = new MultiStatus(pluginId, code, message, exception);
+			multiStatus.add(new Status(severity, pluginId, code, details, null));
+			status = multiStatus;
+		} else {
+			status = new Status(severity, pluginId, code, message, exception);
+		}
+		throw new CoreException(status);
 	}
 	
 	protected static void abort(String message) throws CoreException {
-		abort(message, null, 0);
+		abort(message, null);
+	}
+	
+	protected static void abort(String message, String details) throws CoreException {
+		abort(message, null, 0, details);
 	}
 }
