@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import isabelle.Isabelle_Process.Result;
+import isabelle.Session;
+import isabelle.XML;
 import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.IIsabelleSessionListener;
@@ -13,7 +16,6 @@ import isabelle.eclipse.core.app.IIsabelleSystemListener;
 import isabelle.eclipse.core.app.Isabelle;
 import isabelle.scala.ISessionRawMessageListener;
 import isabelle.scala.IsabelleSystemFacade;
-import isabelle.scala.ResultFacade;
 import isabelle.scala.SessionActor;
 import isabelle.scala.SessionFacade;
 
@@ -132,28 +134,20 @@ public class RawOutputConsole extends MessageConsole {
 		super.dispose();
 	}
 	
-	private void outputMessage(ResultFacade result) {
+	private void outputMessage(Result result) {
 
 		if (consoleStream == null) {
 			return;
 		}
 		
-//		if (!result.getResult().is_stdout()) {
-//			return;
-//		}
+		if (!result.is_stdout()) {
+			return;
+		}
 		
-//		if (!result.getResult().is_status()) {
-//			return;
-//		}
+		String output = XML.content(result.message()).mkString();
 		
 		try {
-			consoleStream.write("---\n");
-			consoleStream.write("P:" + result.propertiesString());
-			consoleStream.write("\n");
-			consoleStream.write("M:" + result.getMessageString());
-			consoleStream.write("\n");
-			consoleStream.write("B:" + result.body());
-			consoleStream.write("\n");
+			consoleStream.write(output);
 		} catch (IOException e) {
 			IsabelleEclipsePlugin.log("Problems writing to raw output console", e);
 		}

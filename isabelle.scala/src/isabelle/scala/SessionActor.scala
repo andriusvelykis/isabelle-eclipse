@@ -40,7 +40,7 @@ class SessionActor() {
 
         case result: Isabelle_Process.Result => {
             rawMessageListener match {
-              case Some(listener) => listener.handleMessage(new ResultFacade(result));
+              case Some(listener) => listener.handleMessage(result);
               case None =>
             }
         }
@@ -70,7 +70,7 @@ trait ISessionPhaseListener {
 
 trait ISessionRawMessageListener {
 
-  def handleMessage(result : ResultFacade)
+  def handleMessage(result : Isabelle_Process.Result)
 
 }
 
