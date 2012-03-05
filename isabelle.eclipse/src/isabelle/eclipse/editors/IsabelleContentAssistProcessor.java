@@ -1,12 +1,12 @@
 package isabelle.eclipse.editors;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import isabelle.Completion;
+import isabelle.Symbol;
 import isabelle.eclipse.IsabelleEclipseImages;
-import isabelle.scala.SessionFacade;
-import isabelle.scala.SessionFacade.CompletionInfo;
-import isabelle.scala.SessionFacade.DecodedCompletion;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -17,6 +17,10 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
+
+import scala.Option;
+import scala.Tuple2;
+import scala.collection.JavaConversions;
 
 public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 
@@ -37,8 +41,8 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 		
 		System.out.println("Requesting completion");
 		
-		SessionFacade session = editor.getIsabelleSession();
-		if (session == null) {
+		DocumentModel isabelleModel = editor.getIsabelleModel();
+		if (isabelleModel == null) {
 			lastError = "No Isabelle session is running";
 			return null;
 		}
@@ -50,85 +54,69 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 			int line = document.getLineOfOffset(offset);
 			int start = document.getLineOffset(line);
 			String text = document.get(start, offset - start);
-
-			CompletionInfo completion = session.getCompletion(text, true);
-			ICompletionProposal[] proposals = null;
-			if (completion != null) {
-
-				String word = completion.getWord();
-				List<DecodedCompletion> completions = completion.getCompletions();
-				
-				proposals = buildProposals(word, completions, offset);
+			
+			List<CompletionProposalInfo> proposalInfos = getCompletions(isabelleModel, text);
+			if (proposalInfos.isEmpty()) {
+				return null;
 			}
+			
+			Image image = IsabelleEclipseImages.getImage(IsabelleEclipseImages.IMG_CONTENT_ASSIST);
+			
+			List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 
+			for (CompletionProposalInfo info : proposalInfos) {
+				
+				String word = info.getWord();
+				String replaceStr = info.getReplaceText();
+				String fullStr = info.getFullText();
+				
+				int replaceOffset = offset - word.length();
+				
+				String displayStr = getCompletionDisplayString(fullStr, replaceStr);
+				proposals.add(new CompletionProposal(replaceStr, replaceOffset, word.length(), replaceStr.length(), 
+						image, displayStr, null, null));
+			}
+			
 			lastError = null;
-
-			return proposals;
+			
+			// TODO sort?
+			return proposals.toArray(new ICompletionProposal[proposals.size()]);
+			
 		} catch (BadLocationException e) {
 			lastError = e.getMessage();
 			return null;
 		}
 	}
+	
+	public static List<CompletionProposalInfo> getCompletions(DocumentModel isabelleModel, String text){
 
-	public static CompletionInfo getCompletion(SessionFacade session, IDocument document, int offset)
-			throws BadLocationException {
-		
-		int line = document.getLineOfOffset(offset);
-		int start = document.getLineOffset(line);
-		String text = document.get(start, offset - start);
-		
-//		if (isTagEnd(text)) {
-//			// Problem with Isabelle parser - if tag is at the end, remove last '>' symbol
-//			text = text.substring(0, text.length() - 1);
-//		}
-		
-		CompletionInfo completion = session.getCompletion(text, true);
-		return completion;
-	}
-	
-//	private static boolean isTagEnd(String text) {
-//		
-//		if (text.endsWith(">")) {
-//			Matcher matcher = OPERATOR_TAG_REGEX.matcher(text);
-//			int lastMatched = -1;
-//			while (matcher.find()) {
-//				lastMatched = matcher.end();
-//			}
-//			
-//			if (lastMatched >= 0 && lastMatched == text.length()) {
-//				return true;
-//			}
-//		}
-//		
-//		return false;
-//	}
-	
-	private ICompletionProposal[] buildProposals(String word, List<DecodedCompletion> completions, int offset) {
-		
-		int replaceOffset = offset - word.length();
-		
-		List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-		
-		for (DecodedCompletion completion : completions) {
-			
-			String replaceStr = completion.getDecoded();
-			
-//			if (word.equals(replaceStr)) {
-//				// skip?
-//				continue;
-//			}
-			
-			String displayStr = getCompletionDisplayString(completion, replaceStr);
-			Image image = IsabelleEclipseImages.getImage(IsabelleEclipseImages.IMG_CONTENT_ASSIST);
-	    	proposals.add(new CompletionProposal(replaceStr, replaceOffset, word.length(), replaceStr.length(), image, displayStr, null, null));
-	    }
-		
-		return proposals.toArray(new ICompletionProposal[proposals.size()]);
+		Completion completion = isabelleModel.getSession().current_syntax().completion();
+		Option<Tuple2<String, scala.collection.immutable.List<String>>> rawProposalsOpt = 
+				completion.complete(text);
+
+		if (rawProposalsOpt.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		Tuple2<String, scala.collection.immutable.List<String>> rawProposals = rawProposalsOpt.get();
+
+		String foundWord = rawProposals._1();
+
+		List<CompletionProposalInfo> proposals = new ArrayList<CompletionProposalInfo>();
+
+		for (String fullStr : JavaConversions.asJavaIterable(rawProposals._2())) {
+			// decode, e.g. and replace --> with x-symbol
+			String replaceStr = Symbol.decode(fullStr);
+
+			proposals.add(new CompletionProposalInfo(foundWord, replaceStr, fullStr));
+		}
+
+		// TODO sort?
+		return proposals;
 	}
 
-	private String getCompletionDisplayString(DecodedCompletion completion, String replaceStr) {
+	private static String getCompletionDisplayString(String fullStr, String replaceStr) {
 		
-		String fullStr = completion.getCompletion();
 		if (replaceStr.equals(fullStr)) {
 			return replaceStr;
 		}
@@ -159,6 +147,31 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 	@Override
 	public IContextInformationValidator getContextInformationValidator() {
 		return null;
+	}
+	
+	public static class CompletionProposalInfo {
+		private final String word;
+		private final String replaceText;
+		private final String fullText;
+		
+		public CompletionProposalInfo(String word, String replaceText, String fullText) {
+			super();
+			this.word = word;
+			this.replaceText = replaceText;
+			this.fullText = fullText;
+		}
+
+		public String getWord() {
+			return word;
+		}
+
+		public String getReplaceText() {
+			return replaceText;
+		}
+
+		public String getFullText() {
+			return fullText;
+		}
 	}
 
 }
