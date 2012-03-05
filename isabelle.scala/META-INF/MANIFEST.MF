@@ -2,9 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Isabelle Scala-Java Facades
 Bundle-SymbolicName: isabelle.scala
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.1.0.qualifier
 Bundle-Vendor: AI4FM.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.scala-ide.scala.library,
- isabelle.pure;bundle-version="2011.0.0"
+Require-Bundle: org.scala-ide.scala.library;bundle-version="2.9.1",
+ isabelle.pure;bundle-version="[2011.1.1,2011.1.2)"
 Export-Package: isabelle.scala
+Bundle-ClassPath: isabelle.scala.jar,
+ .
