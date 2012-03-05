@@ -2,18 +2,15 @@ package isabelle.eclipse.editors;
 
 import java.io.File;
 import java.net.URI;
-import isabelle.Command;
+import isabelle.Document.Snapshot;
 import isabelle.Session;
+import isabelle.Thy_Header;
 import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.IIsabelleSessionListener;
-import isabelle.eclipse.core.app.IIsabelleSystemListener;
 import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.views.TheoryOutlinePage;
-import isabelle.scala.DocumentModel;
-import isabelle.scala.IsabelleSystemFacade;
-import isabelle.scala.SessionFacade;
-import isabelle.scala.SnapshotFacade;
+import isabelle.scala.DocumentRef;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
@@ -24,11 +21,8 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -40,6 +34,8 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import scala.Option;
+
 
 public class TheoryEditor extends TextEditor {
 
@@ -48,15 +44,12 @@ public class TheoryEditor extends TextEditor {
 	
 	private ColorManager colorManager;
 	
-	private final IIsabelleSystemListener systemListener;
-	private IsabelleSystemFacade isabelleSystem;
-	
 	private final IIsabelleSessionListener sessionListener;
-//	private SessionFacade isabelleSession;
 	
+	private Session isabelleSession;
+	
+	private DocumentRef documentRef;
 	private DocumentModel isabelleModel;
-	private final DocumentModelManager isabelleModelManager = new DocumentModelManager();
-	private final FlushJob flushJob = new FlushJob();
 	
 	private TheoryOutlinePage outlinePage = null;
 	
@@ -155,9 +148,16 @@ public class TheoryEditor extends TextEditor {
 
 	@Override
 	public void dispose() {
+		
+		if (isabelleSession != null) {
+			shutdownSession(isabelleSession, true);
+		}
+		
 		// TODO review what happens if a second editor is opened for the same input
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
 		isabelle.removeSessionListener(sessionListener);
+		
+		markers.dispose();
 		
 		colorManager.dispose();
 		super.dispose();
@@ -165,107 +165,70 @@ public class TheoryEditor extends TextEditor {
 	
 	private void initSession(Session session, IEditorInput input) {
 		
-		Assert.isTrue(this.isabelleSystem != null 
-				&& this.isabelleModel == null || this.isabelleModel.getSession() == session);
-
-		if (this.isabelleModel != null && this.isabelleModel.getSession() == session) {
-			// already init
-			return;
-		}
+		Assert.isTrue(this.isabelleSession == null);
 		
-		this.isabelleModel = new DocumentModel(session, getTheoryName(isabelleSystem, input));
-//		this.isabelleModel.init(getInitText());
-		
-		markers.connect(session);
+		this.isabelleSession = session;
+		initIsabelleModel();
 		
 		reloadOutline();
 	}
 
-	private String getInitText() {
-		try {
-			IDocument document = getDocument();
-			if (document != null) {
-				return getDocument().get(0, submittedOffset);
-			}
-		} catch (BadLocationException ex) {
-			// ignore?
-		}
-		
-		return "";
-	}
-	
 	private void shutdownSession(Session session, boolean dispose) {
 		
-		Assert.isTrue(this.isabelleModel == null || this.isabelleModel.getSession() == session);
+		Assert.isTrue(this.isabelleSession == session);
 		
-		markers.disconnect(session);
+		disposeIsabelleModel();
+		this.isabelleSession = null;
 		
-		this.isabelleModel = null;
-		
-		reloadOutline();
+		if (!dispose) {
+			// not disposing, just shutting down the session
+			reloadOutline();
+		}
 	}
 	
 	@Override
 	protected void doSetInput(IEditorInput input) throws CoreException {
 		
-		// disconnect from old document
-		IDocument oldDocument = getDocument();
-		if (oldDocument != null) {
-			getDocument().removeDocumentListener(isabelleModelManager);
-			// flush if there is something
-			flushJob.schedule();
-		}
+		// disconnect old model
+		disposeIsabelleModel();
 		
 		super.doSetInput(input);
 		
-		// connect to the new document
-		IDocument document = getDocument();
-		if (document != null) {
-			document.addDocumentListener(isabelleModelManager);
-			if (isabelleModel != null) {
-				String initText = getInitText();
-				if (initText.length() > 0) {
-					isabelleModel.insertText(0, " ");
-					flushJob.schedule();
-				}
-//				
-//				
-//				UIJob initJob = new UIJob("Sending Initial Document to Prover") {
-//					
-//					@Override
-//					public IStatus runInUIThread(IProgressMonitor monitor) {
-//						isabelleModel.init(getInitText());
-//						return Status.OK_STATUS;
-//					}
-//				};
-//				initJob.schedule();
-			}
-			
-			reloadOutline();
-		}
+		this.documentRef = createDocumentRef(input);
 		
+		// connect to the new document
+		initIsabelleModel();
+		
+		// TODO need to reload?
+		reloadOutline();
+	}
+	
+	private void initIsabelleModel() {
+		IDocument document = getDocument();
+		if (document != null && documentRef != null && isabelleSession != null) {
+			isabelleModel = DocumentModel.create(isabelleSession, document, documentRef);
+			isabelleModel.setSubmitOffset(submittedOffset);
+		}
+	}
+	
+	private void disposeIsabelleModel() {
+		if (isabelleModel != null) {
+			isabelleModel.dispose();
+		}
+		isabelleModel = null;
 	}
 
 	public int getCaretPosition() {
 		return getSourceViewer().getTextWidget().getCaretOffset();
 	}
 	
-	public Command getSelectedCommand() {
-		SnapshotFacade snapshot = getSnapshot();
-		if (snapshot == null) {
-			return null;
-		}
-		
-		return snapshot.properCommandAt(getCaretPosition());
-	}
-	
-	public SnapshotFacade getSnapshot() {
+	public Snapshot getSnapshot() {
 		
 		if (isabelleModel == null) {
 			return null;
 		}
 		
-		return new SnapshotFacade(isabelleModel.snapshot());
+		return isabelleModel.getSnapshot();
 	}
 	
 	private static String getPath(IEditorInput input) {
@@ -305,21 +268,7 @@ public class TheoryEditor extends TextEditor {
 		return null;
 	}
 	
-	public IsabelleSystemFacade getIsabelle() {
-		return isabelleSystem;
-	}
-	
-	public SessionFacade getIsabelleSession() {
-		if (isabelleModel == null) {
-			return null;
-		}
-		
-		return isabelleModel.getSession();
-	}
-	
-	private static String getTheoryName(IsabelleSystemFacade isabelleSystem, IEditorInput input) {
-		
-		Assert.isNotNull(isabelleSystem);
+	private static DocumentRef createDocumentRef(IEditorInput input) {
 		Assert.isNotNull(input);
 		
 		String path = getPath(input);
@@ -327,10 +276,32 @@ public class TheoryEditor extends TextEditor {
 			return null;
 		}
 		
-		return isabelleSystem.getThyName(path);
+		Option<String> theoryNameOpt = Thy_Header.thy_name(path);
+		if (theoryNameOpt.isEmpty()) {
+			// TODO some warning that the input is not a theory file?
+			return null;
+		}
+		
+		String theoryName = theoryNameOpt.get();
+		
+		return DocumentRef.create(path, new File(path).getParent(), theoryName);
+	}
+	
+	public Session getIsabelleSession() {
+		return isabelleSession;
+	}
+	
+	public DocumentModel getIsabelleModel() {
+		return isabelleModel;
 	}
 	
 	public void submitToCaret() {
+		
+		if (isabelleModel == null) {
+			// TODO show a message that model is not available?
+			System.out.println("Isabelle model is not available for " + getPath(getEditorInput()));
+			return;
+		}
 		
 		int caretOffset = getCaretPosition();
 		
@@ -342,32 +313,14 @@ public class TheoryEditor extends TextEditor {
 			int caretLineEnd = getLineEndOffset(document, caretLine);
 			
 			System.out.println("Go to Command: " + getTitle() + ":[" + caretLine + "," + caretLineEnd + "]");
-
-			if (isabelleModel != null) {
-				
-				if (caretLineEnd > submittedOffset) {
-					String insertText = document.get(submittedOffset, caretLineEnd - submittedOffset);
-					isabelleModel.insertText(submittedOffset, insertText);
-//					System.out.println("Inserting text:\n" + insertText);
-				} else if (submittedOffset > caretLineEnd) {
-					String removeText = document.get(caretLineEnd, submittedOffset - caretLineEnd);
-					isabelleModel.removeText(caretLineEnd, removeText);
-//					System.out.println("Removing text:\n" + removeText);
-				}
-				
-				flushJob.schedule();
-//				isabelleModel.flush();
-			}
+			
+			isabelleModel.setSubmitOffset(caretLineEnd);
+			isabelleModel.updatePerspective();
 			
 			this.submittedOffset = caretLineEnd;
 			
-//			isabelleSession.edit(theoryName, textToLineEnd);
-//			reload();
-			
 			// TODO review
 			reloadOutline();
-			
-			System.out.println("Done editing");
 			
 		} catch (BadLocationException ex) {
 			IsabelleEclipsePlugin.log("Bad location in the document", ex);
@@ -386,17 +339,6 @@ public class TheoryEditor extends TextEditor {
 		
 		return provider.getDocument(getEditorInput());
 	}
-	
-	private void flushDelayed() {
-		flushJob.cancel();
-		
-		long delay = 300;
-		if (isabelleModel != null) {
-			delay = isabelleModel.getSession().getInputDelay();
-		}
-		
-		flushJob.schedule(delay);
-	}
 
 	@Override
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
@@ -407,98 +349,6 @@ public class TheoryEditor extends TextEditor {
 			return outlinePage;
 		}
 		return super.getAdapter(adapter);
-	}
-
-	private class DocumentModelManager implements IDocumentListener {
-		
-		@Override
-		public void documentChanged(DocumentEvent event) {
-			
-			if (isabelleModel == null) {
-				// isabelle model not yet initialised - do not listen to changes
-				return;
-			}
-			
-			String text = event.getText();
-			if (text != null && text.length() > 0) {
-				// inserted
-				
-				if (event.getOffset() > submittedOffset) {
-					// the change is after the submitted offset - ignore this change
-					return;
-				}
-				
-				// update submitted line to incorporate added lines
-				submittedOffset = submittedOffset + text.length();
-				System.out.println("New submitted offset ins: " + submittedOffset);
-				
-				isabelleModel.insertText(event.getOffset(), text);
-				flushDelayed();
-			}
-		}
-
-		@Override
-		public void documentAboutToBeChanged(DocumentEvent event) {
-			
-			if (isabelleModel == null) {
-				// isabelle model not yet initialised - do not listen to changes
-				return;
-			}
-
-			if (event.getLength() > 0) {
-				// removed
-				IDocument document = event.getDocument();
-				try {
-					
-					if (event.getOffset() > submittedOffset) {
-						// the change is after the submitted offset - ignore this change
-						return;
-					}
-
-					// update submitted line to incorporate removed lines
-					
-					int eventLength = event.getLength();
-					if (event.getOffset() + eventLength > submittedOffset) {
-						// deleting after submitted offset as well - only remove up to submitted offset from the document
-						eventLength = submittedOffset - event.getOffset();
-					}
-					
-					String text = document.get(event.getOffset(), eventLength);
-					
-					// deleted before offset - move by the removed amount
-					submittedOffset = submittedOffset - text.length();
-
-					System.out.println("New submitted offset rem: " + submittedOffset);
-					
-					isabelleModel.removeText(event.getOffset(), text);
-					flushDelayed();
-				} catch (BadLocationException ex) {
-					// ignore
-				}
-			}
-		}
-
-	}
-	
-	private class FlushJob extends Job {
-//	private class FlushJob extends UIJob {
-
-		public FlushJob() {
-			super("Sending Changes to Prover");
-		}
-
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-//		@Override
-//		public IStatus runInUIThread(IProgressMonitor monitor) {
-			if (isabelleModel != null) {
-				System.out.println("Flushing");
-				isabelleModel.flush();
-			}
-			
-			return Status.OK_STATUS;
-		}
-		
 	}
 	
 }
