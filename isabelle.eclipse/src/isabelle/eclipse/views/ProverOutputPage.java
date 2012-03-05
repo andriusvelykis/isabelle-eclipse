@@ -1,14 +1,22 @@
 package isabelle.eclipse.views;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import isabelle.Command;
 import isabelle.Markup;
 import isabelle.XML.Tree;
 import isabelle.eclipse.editors.TheoryEditor;
-import isabelle.scala.IsabelleSystemFacade;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -23,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.part.Page;
+import org.osgi.framework.Bundle;
 
 
 public class ProverOutputPage extends Page {
@@ -50,7 +59,6 @@ public class ProverOutputPage extends Page {
         mainComposite.setLayout(new FillLayout());
         
         outputArea = new Browser(mainComposite, SWT.NONE);
-//        outputArea.setText("<html><title>Snippet</title><body><p id='myid'>Best Friends</p><p id='myid2'>Cat and Dog</p></body></html>");
         outputArea.setText("Initialised output view");
 	}
 
@@ -109,15 +117,6 @@ public class ProverOutputPage extends Page {
 			return;
 		}
 		
-		IsabelleSystemFacade system = editor.getIsabelle();
-		String css = system.tryRead(new String[] {
-			"/Applications/Work/Isabelle2011.app/Contents/Resources/Isabelle2011/lib/html/isabelle.css",
-			"/Applications/Work/Isabelle2011.app/Contents/Resources/Isabelle2011/contrib/jedit-4.3.2_Isabelle-6d736d983d5c/etc/isabelle-jedit.css"
-		});
-		
-		System.out.println("Finished reading CSS: " + (System.currentTimeMillis() - start));
-		
-//		System.out.println("Command: " + currentCommand.toString());
 		
 		// TODO do not output when invisible?
 		
@@ -127,25 +126,34 @@ public class ProverOutputPage extends Page {
 
 		System.out.println("Got command results: " + (System.currentTimeMillis() - start));
 		
-//		System.out.println("Before rendering");
-
-		String htmlPage = PrettyHtml.renderHtmlPage(system.getSystem(), commandResults, css, "IsabelleText", 12);
+		String htmlPage = PrettyHtml.renderHtmlPage(commandResults, getCssPaths(), "", "IsabelleText", 12);
 
 		System.out.println("Done rendering: " + (System.currentTimeMillis() - start));
 		
-//		Node bodyNode = PrettyUtils.renderHtmlBody(commandResults, null);
-//		org.w3c.dom.Document htmlDoc = PrettyUtils.renderHtml(commandResults, "", null, "", 12);
+	}
+	
+	private List<String> getCssPaths() {
+		List<String> cssPaths = new ArrayList<String>();
+		Bundle bundle = Platform.getBundle(IsabelleEclipsePlugin.PLUGIN_ID);
+		addResourcePath(cssPaths, bundle, "etc/isabelle.css");
+		addResourcePath(cssPaths, bundle, "etc/isabelle-jedit.css");
+		return cssPaths;
+	}
+	
+	private void addResourcePath(List<String> paths, Bundle bundle, String pathInBundle) {
+		URL fileURL = bundle.getEntry(pathInBundle);
+		if (fileURL == null) {
+			IsabelleEclipsePlugin.log("Unable to locate resource " + pathInBundle, null);
+			return;
+		}
 		
-//		System.out.println("After rendering");
-		
-		// print body to String
-//		String xmlString = printNode(bodyNode);
-		
-//		System.out.println("After printing:\n" + htmlPage);
-		
-		outputArea.setText(htmlPage);
-		
-//		System.out.println("Update output");
+		try {
+			URL fullURL = FileLocator.resolve(fileURL);
+			String path = fullURL.toString();
+			paths.add(path);
+		} catch (IOException e) {
+			IsabelleEclipsePlugin.log("Unable to locate resource " + pathInBundle, e);
+		}
 	}
 	
 	@Override

@@ -1,6 +1,5 @@
 package isabelle.eclipse.views;
 
-import isabelle.Isabelle_System;
 import isabelle.XML.Tree;
 import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.scala.PrettyUtil;
@@ -26,12 +25,13 @@ public class PrettyHtml {
 		"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 	  + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
 	  + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-	  + "	<head>\n" 
+	  + "	<head>\n"
+	  + "%1$s" 
 	  + "		<style media=\"all\" type=\"text/css\">\n"
-	  + "			%1$s\n"
+	  + "			%2$s\n"
 	  + "		</style>\n"
 	  + "	</head>\n"
-	  + "	%2$s\n"
+	  + "	%3$s\n"
 	  + "</html>";
 	
 	private static final String CSS_TEMPLATE =
@@ -39,29 +39,37 @@ public class PrettyHtml {
 		"pre { white-space: pre-wrap; }\n" +
 	    "* { font-family: %2$s; font-size: %3$dpx; }";
 	
-	public static String getHtmlPage(String css, String body) {
+	private static final String CSS_LINK_TEMPLATE =
+		"		<link rel=\"stylesheet\" type=\"text/css\" href=\"%1$s\" />\n";
+	
+	public static String getHtmlPage(String cssPaths, String inlineCss, String body) {
 		
 		if (body == null || body.isEmpty()) {
 			body = "<body/>";
 		}
 		
-		return String.format(HTML_TEMPLATE, css, body);
+		return String.format(HTML_TEMPLATE, cssPaths, inlineCss, body);
 	}
 	
-	public static String renderHtmlPage(Isabelle_System system, List<Tree> commandResults, 
-			String css, String fontFamily, int fontSize) {
+	public static String renderHtmlPage(List<Tree> commandResults, 
+			List<String> cssPaths, String inlineCss, String fontFamily, int fontSize) {
 		
 		Node bodyNode = PrettyUtil.renderHtmlBody(commandResults, 120, null);
 		
 		// print body to String
-		String bodyHtml = printNode(system, bodyNode);
+		String bodyHtml = printNode(bodyNode);
 		
-		String cssFull = String.format(CSS_TEMPLATE, css, fontFamily, fontSize);
+		String cssFull = String.format(CSS_TEMPLATE, inlineCss, fontFamily, fontSize);
 		
-		return getHtmlPage(cssFull, bodyHtml);
+		StringBuilder cssPathsStr = new StringBuilder();
+		for (String cssPath : cssPaths) {
+			cssPathsStr.append(String.format(CSS_LINK_TEMPLATE, cssPath));
+		}
+		
+		return getHtmlPage(cssPathsStr.toString(), cssFull, bodyHtml);
 	}
 	
-	private static String printNode(Isabelle_System system, Node node) {
+	private static String printNode(Node node) {
 		try {
 		
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
