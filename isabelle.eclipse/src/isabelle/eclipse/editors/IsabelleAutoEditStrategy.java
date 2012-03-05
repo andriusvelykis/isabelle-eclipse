@@ -1,8 +1,6 @@
 package isabelle.eclipse.editors;
 
-import isabelle.scala.SessionFacade;
-import isabelle.scala.SessionFacade.CompletionInfo;
-import isabelle.scala.SessionFacade.DecodedCompletion;
+import isabelle.eclipse.editors.IsabelleContentAssistProcessor.CompletionProposalInfo;
 
 import java.util.List;
 
@@ -22,8 +20,8 @@ public class IsabelleAutoEditStrategy implements IAutoEditStrategy {
 	@Override
 	public void customizeDocumentCommand(IDocument document, DocumentCommand command) {
 		
-		SessionFacade session = editor.getIsabelleSession();
-		if (session == null) {
+		DocumentModel isabelleModel = editor.getIsabelleModel();
+		if (isabelleModel == null) {
 			return;
 		}
 		
@@ -39,18 +37,17 @@ public class IsabelleAutoEditStrategy implements IAutoEditStrategy {
 			// add the command changes
 			text = text + command.text;
 			
-			CompletionInfo completionResult = session.getCompletion(text, true);
-			if (completionResult == null) {
-				return;
-			}
-				
-			List<DecodedCompletion> completions = completionResult.getCompletions();
+			List<CompletionProposalInfo> completions = 
+					IsabelleContentAssistProcessor.getCompletions(isabelleModel, text);
+			
 			if (completions.size() != 1) {
 				// more than one completion or none - cannot replace automatically
 				return;
 			}
+			
+			CompletionProposalInfo info = completions.get(0);
 
-			String word = completionResult.getWord();
+			String word = info.getWord();
 			if (!text.endsWith(word)) {
 				// the completion does not correspond to the typed thing
 				return;
@@ -64,8 +61,7 @@ public class IsabelleAutoEditStrategy implements IAutoEditStrategy {
 			}
 			
 			// the word has been written - replace with appropriate construct
-			DecodedCompletion completion = completions.get(0);
-			String replaceStr = completion.getDecoded();
+			String replaceStr = info.getReplaceText();
 			command.offset = offset + command.text.length() - word.length();
 			command.length = word.length() - command.text.length();
 			command.text = replaceStr;
