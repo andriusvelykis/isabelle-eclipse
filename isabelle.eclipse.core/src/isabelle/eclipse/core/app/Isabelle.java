@@ -11,6 +11,7 @@ import isabelle.Session.Phase;
 import isabelle.Session$Failed$;
 import isabelle.Session$Ready$;
 import isabelle.Session$Shutdown$;
+import isabelle.Thy_Info;
 import isabelle.Thy_Load;
 import isabelle.scala.ISessionPhaseListener;
 import isabelle.scala.ScalaCollections;
@@ -26,6 +27,7 @@ public class Isabelle {
 	public static final Session$Shutdown$ SESSION_SHUTDOWN = Session$Shutdown$.MODULE$;
 	
 	private Session session;
+	private Thy_Info thyInfo;
 	
 	private final ListenerList sessionListeners = new ListenerList();
 	
@@ -84,7 +86,9 @@ public class Isabelle {
 		
 		fireSystemInit();
 		
-		session = new Session(new Thy_Load());
+		Thy_Load thyLoad = new Thy_Load();
+		session = new Session(thyLoad);
+		thyInfo = new Thy_Info(thyLoad);
 		
 		List<String> sessionArgs = Arrays.asList("-mxsymbols", /*"-mno_brackets", "-mno_type_brackets",*/ logic ); 
 		
@@ -112,6 +116,10 @@ public class Isabelle {
 	
 	public Session getSession() {
 		return session;
+	}
+	
+	public Thy_Info getTheoryInfo() {
+		return thyInfo;
 	}
 	
 	public void addSessionListener(IIsabelleSessionListener listener) {
