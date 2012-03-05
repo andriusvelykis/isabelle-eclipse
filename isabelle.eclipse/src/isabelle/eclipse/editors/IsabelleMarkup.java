@@ -9,6 +9,11 @@ import isabelle.Markup;
 
 import static isabelle.eclipse.editors.IsabelleMarkup.TokenType.*;
 
+/**
+ * @author Andrius Velykis
+ * @deprecated not used at the moment? Using a new isabelle token scanner?
+ */
+@Deprecated
 public class IsabelleMarkup {
 
 	public enum TokenType {
@@ -58,17 +63,18 @@ public class IsabelleMarkup {
 	
 	private static Map<String, TokenType> createTokenStyles() {
 		Map<String, TokenType> tokenStyles = new HashMap<String, TokenType>();
-		tokenStyles.put(Markup.TCLASS(), null);
-		tokenStyles.put(Markup.TYCON(), null);
-		tokenStyles.put(Markup.FIXED_DECL(), FUNCTION);
-		tokenStyles.put(Markup.FIXED(), null);
-		tokenStyles.put(Markup.CONST_DECL(), FUNCTION);
-		tokenStyles.put(Markup.CONST(), null);
-		tokenStyles.put(Markup.FACT_DECL(), FUNCTION);
-		tokenStyles.put(Markup.FACT(), null);
-		tokenStyles.put(Markup.DYNAMIC_FACT(), LABEL);
-		tokenStyles.put(Markup.LOCAL_FACT_DECL(), FUNCTION);
-		tokenStyles.put(Markup.LOCAL_FACT(), null);
+		// FIXME restore
+//		tokenStyles.put(Markup.TCLASS(), null);
+//		tokenStyles.put(Markup.TYCON(), null);
+//		tokenStyles.put(Markup.FIXED_DECL(), FUNCTION);
+//		tokenStyles.put(Markup.FIXED(), null);
+//		tokenStyles.put(Markup.CONST_DECL(), FUNCTION);
+//		tokenStyles.put(Markup.CONST(), null);
+//		tokenStyles.put(Markup.FACT_DECL(), FUNCTION);
+//		tokenStyles.put(Markup.FACT(), null);
+//		tokenStyles.put(Markup.DYNAMIC_FACT(), LABEL);
+//		tokenStyles.put(Markup.LOCAL_FACT_DECL(), FUNCTION);
+//		tokenStyles.put(Markup.LOCAL_FACT(), null);
 	      // inner syntax
 		tokenStyles.put(Markup.TFREE(), null);
 		tokenStyles.put(Markup.FREE(), null);
@@ -91,7 +97,7 @@ public class IsabelleMarkup {
 	      // ML syntax
 		tokenStyles.put(Markup.ML_KEYWORD(), KEYWORD1);
 		tokenStyles.put(Markup.ML_DELIMITER(), OPERATOR);
-		tokenStyles.put(Markup.ML_IDENT(), null);
+//		tokenStyles.put(Markup.ML_IDENT(), null);
 		tokenStyles.put(Markup.ML_TVAR(), null);
 		tokenStyles.put(Markup.ML_NUMERAL(), DIGIT);
 		tokenStyles.put(Markup.ML_CHAR(), LITERAL1);
@@ -102,13 +108,13 @@ public class IsabelleMarkup {
 		tokenStyles.put(Markup.ML_SOURCE(), COMMENT3);
 		tokenStyles.put(Markup.DOC_SOURCE(), COMMENT3);
 		tokenStyles.put(Markup.ANTIQ(), COMMENT4);
-		tokenStyles.put(Markup.ML_ANTIQ(), COMMENT4);
-		tokenStyles.put(Markup.DOC_ANTIQ(), COMMENT4);
+//		tokenStyles.put(Markup.ML_ANTIQ(), COMMENT4);
+//		tokenStyles.put(Markup.DOC_ANTIQ(), COMMENT4);
 	      // outer syntax
 		tokenStyles.put(Markup.KEYWORD(), KEYWORD2);
 		tokenStyles.put(Markup.OPERATOR(), OPERATOR);
 		tokenStyles.put(Markup.COMMAND(), KEYWORD1);
-		tokenStyles.put(Markup.IDENT(), null);
+//		tokenStyles.put(Markup.IDENT(), null);
 		tokenStyles.put(Markup.VERBATIM(), COMMENT3);
 		tokenStyles.put(Markup.COMMENT(), COMMENT1);
 		tokenStyles.put(Markup.CONTROL(), COMMENT3);
