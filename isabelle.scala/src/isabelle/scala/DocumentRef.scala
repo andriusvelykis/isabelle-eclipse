@@ -24,5 +24,15 @@ sealed class DocumentRef(ref: Document.Node.Name) {
   def getDir() = ref.dir;
   
   def getTheory() = ref.theory;
+
+  override def hashCode: Int = ref.hashCode
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case other: DocumentRef => ref == other.getRef
+      case _ => false
+    }
+  
+  override def toString: String = ref.toString()
   
 }
