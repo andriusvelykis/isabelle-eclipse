@@ -1,7 +1,8 @@
 package isabelle.eclipse.editors;
 
-import isabelle.Isabelle_System;
 import isabelle.Standard_System;
+import isabelle.Symbol;
+import isabelle.eclipse.core.IsabelleCorePlugin;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -15,38 +16,39 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 
+@Deprecated
 public class IsabelleEncoding {
 
 	private static final int BUFSIZE = 32768;
-	private static final String CHARSET_NAME = Standard_System.charset();
-	private static final Charset CHARSET = Charset.forName(CHARSET_NAME);
+	private static final String CHARSET_NAME = Standard_System.charset_name();
+	private static final Charset CHARSET = Standard_System.charset();
 	
-	private static InputStream openIsabelleInputStream(Isabelle_System isabelleSystem, InputStream in, 
+	private static InputStream openIsabelleInputStream(InputStream in, 
 			CharsetDecoder decoder) throws IOException {
 		
 		String sourceText = readAll(new BufferedInputStream(in), decoder);
-		String decodedText = isabelleSystem.symbols().decode(sourceText);
+		String decodedText = Symbol.decode(sourceText);
 	    return new ByteArrayInputStream(decodedText.getBytes(CHARSET));
 	}
 	
-	public static InputStream openIsabelleInputStream(Isabelle_System isabelleSystem, InputStream in)
+	public static InputStream openIsabelleInputStream(InputStream in)
 			throws IOException {
-		return openIsabelleInputStream(isabelleSystem, in, CHARSET.newDecoder());
+		return openIsabelleInputStream(in, CHARSET.newDecoder());
 	}
 	
-	public static InputStream openPermissiveIsabelleInputStream(Isabelle_System isabelleSystem, InputStream in)
+	public static InputStream openPermissiveIsabelleInputStream(InputStream in)
 			throws IOException {
 		
 		CharsetDecoder decoder = CHARSET.newDecoder();
 		decoder.onMalformedInput(CodingErrorAction.REPLACE);
 	    decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
 		
-		return openIsabelleInputStream(isabelleSystem, in, decoder);
+		return openIsabelleInputStream(in, decoder);
 	}
 	
-	public static OutputStream openIsabelleOutputStream(final Isabelle_System isabelleSystem, final OutputStream out) {
+	public static OutputStream openIsabelleOutputStream(final OutputStream out) {
 		
-		if (isabelleSystem == null) {
+		if (!IsabelleCorePlugin.getIsabelle().isInit()) {
 			// no Isabelle running, cannot convert to isabelle encoding - TODO do not save?
 			return out;
 		}
@@ -55,7 +57,7 @@ public class IsabelleEncoding {
 			
 			@Override
 			public void flush() throws IOException {
-		        String encodedContents = isabelleSystem.symbols().encode(toString(CHARSET_NAME));
+		        String encodedContents = Symbol.encode(toString(CHARSET_NAME));
 		        out.write(encodedContents.getBytes(CHARSET));
 		        out.flush();
 		        super.flush();
