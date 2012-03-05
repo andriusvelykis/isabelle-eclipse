@@ -9,19 +9,24 @@ import isabelle.Isar_Document;
 import isabelle.Markup;
 import isabelle.Command.State;
 import isabelle.Session;
+import isabelle.Session.Commands_Changed;
 import isabelle.Text.Info;
 import isabelle.Text.Range;
 import isabelle.eclipse.IsabelleEclipsePlugin;
+import isabelle.eclipse.util.SessionEventSupport;
 import isabelle.scala.ISessionCommandsListener;
-import isabelle.scala.ISessionRawMessageListener;
-import isabelle.scala.ResultFacade;
 import isabelle.scala.SessionActor;
+import isabelle.scala.SessionEventType;
 import isabelle.scala.SnapshotUtil;
 import isabelle.scala.SnapshotUtil.MarkupMessage;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,8 +43,11 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.MarkerUtilities;
+
 import scala.Tuple2;
 import scala.collection.Iterator;
+
+import static scala.collection.JavaConversions.setAsJavaSet;
 
 public class TheoryAnnotations {
 	
@@ -63,80 +71,45 @@ public class TheoryAnnotations {
 	
 	private static final Object THEORY_ANNOTATIONS = new Object();
 	
-	private SessionFacade session = null;
-	private final SessionActor sessionActor = new SessionActor().commandsChanged(new ISessionCommandsListener() {
-		
-		@Override
-		public void commandsChanged(final Set<Command> commands) {
-//			System.out.println("Commands changed: " + commands);
-			
-			// notify to the UI thread
-			Display display = getDisplay();
-	        if (!display.isDisposed()) {
-	           display.asyncExec(new Runnable() {
-	              public void run() {
-	            	  updateCommandMarkers(commands);
-	              }
-	           });
-	        }
-		}
-	}).rawMessages(new ISessionRawMessageListener() {
-		
-		@Override
-		public void handleMessage(ResultFacade result) {
-//			System.out.println("Message changed: " + result.getMessageString());
-//			
-//			// notify to the UI thread
-//			Display display = getDisplay();
-//	        if (!display.isDisposed()) {
-//	           display.asyncExec(new Runnable() {
-//	              public void run() {
-//	            	  updateAllMarkers();
-//	              }
-//	           });
-//	        }
-		}
-	});
+	private final SessionEventSupport sessionEvents;
 	
 	public TheoryAnnotations(TheoryEditor editor) {
 		super();
 		this.editor = editor;
-		System.out.println("Create markers support");
+		
+		sessionEvents = new SessionEventSupport(EnumSet.of(SessionEventType.COMMAND)) {
+			
+			@Override
+			protected SessionActor createSessionActor(Session session) {
+				return new SessionActor().commandsChanged(new ISessionCommandsListener() {
+					
+					@Override
+					public void commandsChanged(Commands_Changed changed) {
+						// TODO add checks on current node
+						updateMarkers(setAsJavaSet(changed.commands()));
+					}
+				});
+			}
+
+			@Override
+			protected void sessionInit(Session session) {
+				updateAllMarkers();
+			}
+		};
 	}
 	
-	private Display getDisplay() {
-		return editor.getSite().getWorkbenchWindow().getWorkbench().getDisplay();
-	}
-	
-	public void connect(SessionFacade session) {
-		System.out.println("Connecting annotation session");
-		Assert.isTrue(this.session == null || this.session == session);
-		
-		if (this.session == session) {
-			// nothing to do here
-			return;
-		}
-		
-		this.session = session;
-		this.session.addCommandsChangedActor(sessionActor);
-		
-		updateAllMarkers();
-	}
-	
-	public void disconnect(SessionFacade session) {
-		
-		Assert.isTrue(this.session == session);
-		
-		this.session.removeCommandsChangedActor(sessionActor);
-		this.session = null;
+	public void dispose() {
+		sessionEvents.dispose();
 	}
 	
 	private void updateAllMarkers() {
-		SnapshotFacade snapshot = editor.getSnapshot();
 		
-		Set<Command> snapshotCommands = new LinkedHashSet<Command>();
-		if (snapshot != null) {
-			snapshotCommands.addAll(snapshot.getCommands());
+		DocumentModel isabelleModel = editor.getIsabelleModel();
+		Set<Command> snapshotCommands;
+		if (isabelleModel != null) {
+			snapshotCommands = setAsJavaSet(isabelleModel.getSnapshot().node().commands());
+		} else {
+			snapshotCommands = Collections.emptySet();
 		}
 		
 		updateCommandMarkers(snapshotCommands);
@@ -148,17 +121,20 @@ public class TheoryAnnotations {
 		
 		IResource markerResource = getMarkerResource();
 		
-		SnapshotFacade snapshot = editor.getSnapshot();
-		if (snapshot == null) {
-//			// no snapshot - delete previous markers?
+		DocumentModel isabelleModel = editor.getIsabelleModel();
+		if (isabelleModel == null) {
+//			// no model - delete previous markers?
 //			deleteMarkers(markerResource);
 			return;
 		}
 		
+		Snapshot snapshot = isabelleModel.getSnapshot();
+		
 		// copy commands set
 		commands = new LinkedHashSet<Command>(commands);
 		// only use commands that are in the snapshot
-		commands.retainAll(snapshot.getCommands());
+		// TODO this will become empty for #updateAllMarkers
+		commands.retainAll(setAsJavaSet(snapshot.node().commands()));
 
 		if (commands.isEmpty()) {
 			return;
