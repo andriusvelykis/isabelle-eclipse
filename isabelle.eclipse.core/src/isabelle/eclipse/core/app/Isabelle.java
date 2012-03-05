@@ -15,7 +15,6 @@ import isabelle.Session$Shutdown$;
 
 public class Isabelle {
 
-	private String path;
 	public static final Session$Failed$ SESSION_FAILED = Session$Failed$.MODULE$;
 	public static final Session$Ready$ SESSION_READY = Session$Ready$.MODULE$;
 	public static final Session$Shutdown$ SESSION_SHUTDOWN = Session$Shutdown$.MODULE$;
@@ -43,7 +42,6 @@ public class Isabelle {
 		system = new IsabelleSystemFacade(isabellePath);
 		system.getSystem().install_fonts();
 		
-		this.path = isabellePath;
 		
 		session = new SessionFacade(system.getSystem());
 		fireSystemInit();
@@ -63,7 +61,6 @@ public class Isabelle {
 		
 		session = null;
 		
-		path = null;
 		system = null;
 	}
 	
