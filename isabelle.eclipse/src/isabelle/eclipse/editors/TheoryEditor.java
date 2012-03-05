@@ -3,6 +3,7 @@ package isabelle.eclipse.editors;
 import java.io.File;
 import java.net.URI;
 import isabelle.Command;
+import isabelle.Session;
 import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.IIsabelleSessionListener;
@@ -71,29 +72,22 @@ public class TheoryEditor extends TextEditor {
 		setDocumentProvider(new IsabelleFileDocumentProvider());
 		
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
-		isabelle.addSystemListener(systemListener = new IIsabelleSystemListener() {
-
-			@Override
-			public void systemInit(IsabelleSystemFacade system) {
-				initIsabelleSystem(system);
-			}
-			
-			@Override
-			public void systemShutdown(IsabelleSystemFacade system) {
-				shutdownIsabelle(system);
-			}
-		});
 		
 		isabelle.addSessionListener(sessionListener = new IIsabelleSessionListener() {
+			
+			@Override
+			public void systemInit() {
+				initIsabelleSystem();
+			}
 
 			@Override
-			public void sessionInit(SessionFacade session) {
+			public void sessionInit(Session session) {
 				initSession(session, getEditorInput());
 			}
 			
 			@Override
-			public void sessionShutdown(SessionFacade session) {
-				shutdownSession(session);
+			public void sessionShutdown(Session session) {
+				shutdownSession(session, false);
 			}
 		});
 	}
@@ -103,9 +97,9 @@ public class TheoryEditor extends TextEditor {
 		
 		// init Isabelle from core plugin
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
-		initIsabelleSystem(isabelle.getSystem());
-		if (isabelleSystem != null) {
-			initSession(isabelle.getSession(), input);
+		Session session = isabelle.getSession();
+		if (session != null) {
+			initSession(session, input);
 		}
 		
 		super.init(site, input);
@@ -122,38 +116,13 @@ public class TheoryEditor extends TextEditor {
 		service.activateContext(EDITOR_SCOPE);
 	}
 
-	private void initIsabelleSystem(IsabelleSystemFacade system) {
-		
-		Assert.isTrue(this.isabelleSystem == null || this.isabelleSystem == system);
-		
-		if (this.isabelleSystem == system) {
-			// already init
-			return;
-		}
-		
-		this.isabelleSystem = system;
+	private void initIsabelleSystem() {
 		
 		if (getEditorInput() != null) {
 			// reload editor
 			// TODO ask for save?
 			reload();
 		}
-	}
-
-	private void shutdownIsabelle(IsabelleSystemFacade system) {
-		
-		Assert.isTrue(this.isabelleSystem == system);
-		
-		// also shutdown the session - cannot have a session running without the system
-		if (isabelleModel != null) {
-			shutdownSession(isabelleModel.getSession());
-		}
-
-		isabelleSystem = null;
-		
-		// reload editor
-		// TODO ask for save?
-		reload();
 	}
 
 	private void reload() {
@@ -189,13 +158,12 @@ public class TheoryEditor extends TextEditor {
 		// TODO review what happens if a second editor is opened for the same input
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
 		isabelle.removeSessionListener(sessionListener);
-		isabelle.removeSystemListener(systemListener);
 		
 		colorManager.dispose();
 		super.dispose();
 	}
 	
-	private void initSession(SessionFacade session, IEditorInput input) {
+	private void initSession(Session session, IEditorInput input) {
 		
 		Assert.isTrue(this.isabelleSystem != null 
 				&& this.isabelleModel == null || this.isabelleModel.getSession() == session);
@@ -226,7 +194,7 @@ public class TheoryEditor extends TextEditor {
 		return "";
 	}
 	
-	private void shutdownSession(SessionFacade session) {
+	private void shutdownSession(Session session, boolean dispose) {
 		
 		Assert.isTrue(this.isabelleModel == null || this.isabelleModel.getSession() == session);
 		

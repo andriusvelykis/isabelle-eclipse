@@ -1,11 +1,13 @@
 package isabelle.eclipse.core.app;
 
-import isabelle.scala.SessionFacade;
+import isabelle.Session;
 
 public interface IIsabelleSessionListener {
 
-	public void sessionInit(SessionFacade session);
+	public void systemInit();
 	
-	public void sessionShutdown(SessionFacade session);
+	public void sessionInit(Session session);
+	
+	public void sessionShutdown(Session session);
 	
 }
