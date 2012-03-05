@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,10 +13,15 @@ import isabelle.Command;
 import isabelle.Document.Snapshot;
 import isabelle.Markup;
 import isabelle.Session;
+import isabelle.Session.Commands_Changed;
 import isabelle.XML.Tree;
 import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.eclipse.editors.DocumentModel;
 import isabelle.eclipse.editors.TheoryEditor;
+import isabelle.eclipse.util.SessionEventSupport;
+import isabelle.scala.ISessionCommandsListener;
+import isabelle.scala.SessionActor;
+import isabelle.scala.SessionEventType;
 import isabelle.scala.SnapshotUtil;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -39,6 +45,8 @@ import org.eclipse.ui.part.Page;
 import org.osgi.framework.Bundle;
 
 import scala.Option;
+import scala.collection.JavaConversions;
+
 
 public class ProverOutputPage extends Page {
 
@@ -60,8 +68,23 @@ public class ProverOutputPage extends Page {
 	private int lastEditorCaretOffset = 0;
 	
 	private Job updateJob = new UpdateOutputJob(0, Collections.<Command>emptySet());
+	private SessionEventSupport sessionEvents;
+	
 	public ProverOutputPage(TheoryEditor editor) {
 		this.editor = editor;
+		
+		this.sessionEvents = new SessionEventSupport(EnumSet.of(SessionEventType.COMMAND)) {
+			
+			@Override
+			protected SessionActor createSessionActor(Session session) {
+				return new SessionActor().commandsChanged(new ISessionCommandsListener() {
+					@Override
+					public void commandsChanged(Commands_Changed changed) {
+						updateOutput(0L, lastEditorCaretOffset, JavaConversions.setAsJavaSet(changed.commands()));
+					}
+				});
+			}
+		};
 	}
 
 	@Override
@@ -237,6 +260,8 @@ public class ProverOutputPage extends Page {
 			
 			selectionProvider.removeSelectionChangedListener(editorListener);
 		}
+		
+		sessionEvents.dispose();
 		
 		outputArea = null;
 		
