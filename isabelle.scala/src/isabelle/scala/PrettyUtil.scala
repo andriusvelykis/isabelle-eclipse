@@ -10,7 +10,7 @@ import scala.collection.JavaConversions._
 
 import isabelle._
 
-object PrettyUtils {
+object PrettyUtil {
 
 //    private val current_font_metrics: FontMetrics = null
 //    private val current_font_family = ""

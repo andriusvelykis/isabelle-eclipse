@@ -3,7 +3,7 @@ package isabelle.eclipse.views;
 import isabelle.Isabelle_System;
 import isabelle.XML.Tree;
 import isabelle.eclipse.IsabelleEclipsePlugin;
-import isabelle.scala.PrettyUtils;
+import isabelle.scala.PrettyUtil;
 
 import java.io.StringWriter;
 import java.util.List;
@@ -51,7 +51,7 @@ public class PrettyHtml {
 	public static String renderHtmlPage(Isabelle_System system, List<Tree> commandResults, 
 			String css, String fontFamily, int fontSize) {
 		
-		Node bodyNode = PrettyUtils.renderHtmlBody(commandResults, 120, null);
+		Node bodyNode = PrettyUtil.renderHtmlBody(commandResults, 120, null);
 		
 		// print body to String
 		String bodyHtml = printNode(system, bodyNode);
