@@ -70,7 +70,7 @@
             type="org.eclipse.core.resources.textmarker">
       </super>
       <persistent
-            value="true">
+            value="false">
       </persistent>
    </extension>
    <extension
@@ -81,7 +81,7 @@
             type="org.eclipse.core.resources.textmarker">
       </super>
       <persistent
-            value="true">
+            value="false">
       </persistent>
    </extension>
    <extension
