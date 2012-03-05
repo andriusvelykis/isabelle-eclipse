@@ -11,7 +11,7 @@ import Thy_Syntax.Structure
 
 object TheoryNode {
 
-  def getTree(session : Session, thy_name : String, text : String, offset : Text.Offset) : java.util.List[TheoryNode] = {
+  def getTree(session: Session, thy_name: Document.Node.Name, text: String): java.util.List[TheoryNode] = {
     val syntax = session.current_syntax()
 
     def make_tree(offset: Text.Offset, entry: Structure.Entry): List[TheoryNode] =
@@ -30,18 +30,18 @@ object TheoryNode {
           List(node)
         case _ => Nil
       }
+    
+    val structure = Structure.parse(syntax, thy_name, text)
 
-    val structure = Structure.parse(syntax, "theory " + thy_name, text)
-
-    make_tree(offset, structure)
+    make_tree(0, structure)
   }
 
-  def getRawTree(snapshot : Document.Snapshot, offset : Text.Offset) : TheoryNode = {
+  def getRawTree(snapshot : Document.Snapshot) : TheoryNode = {
 
     val root = new TheoryNode("root",0,0)
     
     for ((command, command_start) <- snapshot.node.command_range()) {
-      node_tree(snapshot.state(command).root_markup, root)((info: Text.Info[Any]) =>
+      node_tree(snapshot.command_state(command).root_markup, root)((info: Text.Info[Any]) =>
         {
           val range = info.range + command_start
           val content = command.source(info.range).replace('\n', ' ')
