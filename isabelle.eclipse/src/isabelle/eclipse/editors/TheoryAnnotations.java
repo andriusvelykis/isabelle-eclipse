@@ -49,6 +49,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
+import org.eclipse.ui.progress.UIJob;
 
 import scala.Tuple2;
 import scala.collection.Iterator;
@@ -449,7 +450,7 @@ public class TheoryAnnotations {
 		}
 	}
 	
-	private class AnnotationUpdateJob extends Job {
+	private class AnnotationUpdateJob extends UIJob {
 
 		private final Set<Command> commands;
 		
@@ -459,7 +460,7 @@ public class TheoryAnnotations {
 		}
 		
 		@Override
-		protected IStatus run(IProgressMonitor monitor) {
+		public IStatus runInUIThread(IProgressMonitor monitor) {
 			
 			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
