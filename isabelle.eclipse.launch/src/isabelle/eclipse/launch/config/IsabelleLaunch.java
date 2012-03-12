@@ -7,6 +7,7 @@ import isabelle.Session;
 import isabelle.Session.Phase;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.Isabelle;
+import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.launch.IsabelleLaunchConstants;
 import isabelle.eclipse.launch.IsabelleLaunchPlugin;
 import isabelle.scala.ISessionPhaseListener;
@@ -89,7 +90,7 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 		final Object waitForPhase = new Object();
 		final Phase[] phaseRes = new Phase[1];
 		
-		SessionActor sessionListener = new SessionActor().phaseChanged(new ISessionPhaseListener() {
+		SessionActor sessionListener = new SafeSessionActor().phaseChanged(new ISessionPhaseListener() {
 			
 			@Override
 			public void phaseChanged(Phase phase) {

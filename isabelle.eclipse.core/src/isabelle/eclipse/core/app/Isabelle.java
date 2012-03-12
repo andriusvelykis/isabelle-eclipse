@@ -13,6 +13,7 @@ import isabelle.Session$Ready$;
 import isabelle.Session$Shutdown$;
 import isabelle.Thy_Info;
 import isabelle.Thy_Load;
+import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.scala.ISessionPhaseListener;
 import isabelle.scala.ScalaCollections;
 import isabelle.scala.SessionActor;
@@ -36,7 +37,7 @@ public class Isabelle {
 	private boolean systemInit = false;
 	
 	public Isabelle() {
-		this.sessionManager = new SessionActor().phaseChanged(new ISessionPhaseListener() {
+		this.sessionManager = new SafeSessionActor().phaseChanged(new ISessionPhaseListener() {
 			
 			@Override
 			public void phaseChanged(Phase phase) {

@@ -16,6 +16,7 @@ import isabelle.Session;
 import isabelle.Session.Commands_Changed;
 import isabelle.XML.Tree;
 import isabelle.eclipse.IsabelleEclipsePlugin;
+import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.editors.DocumentModel;
 import isabelle.eclipse.editors.TheoryEditor;
 import isabelle.eclipse.util.SessionEventSupport;
@@ -77,7 +78,7 @@ public class ProverOutputPage extends Page {
 			
 			@Override
 			protected SessionActor createSessionActor(Session session) {
-				return new SessionActor().commandsChanged(new ISessionCommandsListener() {
+				return new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
 					@Override
 					public void commandsChanged(Commands_Changed changed) {
 						updateOutput(0L, lastEditorCaretOffset, JavaConversions.setAsJavaSet(changed.commands()));

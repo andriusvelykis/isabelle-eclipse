@@ -13,6 +13,7 @@ import isabelle.Session.Commands_Changed;
 import isabelle.Text.Info;
 import isabelle.Text.Range;
 import isabelle.eclipse.IsabelleEclipsePlugin;
+import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.util.SessionEventSupport;
 import isabelle.scala.ISessionCommandsListener;
 import isabelle.scala.SessionActor;
@@ -90,7 +91,7 @@ public class TheoryAnnotations {
 			
 			@Override
 			protected SessionActor createSessionActor(Session session) {
-				return new SessionActor().commandsChanged(new ISessionCommandsListener() {
+				return new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
 					
 					@Override
 					public void commandsChanged(Commands_Changed changed) {

@@ -6,6 +6,7 @@ import isabelle.Isabelle_Process.Result;
 import isabelle.Session;
 import isabelle.XML;
 import isabelle.eclipse.IsabelleEclipsePlugin;
+import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.util.SessionEventSupport;
 import isabelle.scala.ISessionRawMessageListener;
 import isabelle.scala.SessionActor;
@@ -27,7 +28,7 @@ public class RawOutputConsole extends MessageConsole {
 			
 			@Override
 			protected SessionActor createSessionActor(Session session) {
-				return new SessionActor().rawMessages(new ISessionRawMessageListener() {
+				return new SafeSessionActor().rawMessages(new ISessionRawMessageListener() {
 					
 					@Override
 					public void handleMessage(Result result) {
