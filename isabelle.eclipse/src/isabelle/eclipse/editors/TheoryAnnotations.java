@@ -193,8 +193,10 @@ public class TheoryAnnotations {
 				(IAnnotationModelExtension) baseAnnotationModel,
 				THEORY_ANNOTATIONS);
 
-		annotationModel.removeAllAnnotations();
-		annotationModel.replaceAnnotations(new Annotation[0], anns.annotations);
+		List<Annotation> existingAnns = iteratorToList(
+				(java.util.Iterator<Annotation>) annotationModel.getAnnotationIterator());
+		Annotation[] existingAnnsArray = existingAnns.toArray(new Annotation[existingAnns.size()]);
+		annotationModel.replaceAnnotations(existingAnnsArray, anns.annotations);
 		
 		// add new markers
 		IWorkspaceRunnable r = new IWorkspaceRunnable() {
@@ -213,6 +215,16 @@ public class TheoryAnnotations {
 		} catch (CoreException ce) {
 			IsabelleEclipsePlugin.log(ce.getMessage(), ce);
 		}
+	}
+	
+	private <T> List<T> iteratorToList(java.util.Iterator<T> it) {
+		List<T> list = new ArrayList<T>();
+		
+		while (it.hasNext()) {
+			list.add(it.next());
+		}
+		
+		return list;
 	}
 	
 	private void deleteMarkers(IResource markerResource) {
