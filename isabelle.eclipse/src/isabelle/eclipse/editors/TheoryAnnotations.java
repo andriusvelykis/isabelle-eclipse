@@ -1,6 +1,7 @@
 package isabelle.eclipse.editors;
 
 import isabelle.Command;
+import isabelle.Document.Node;
 import isabelle.Isar_Document$;
 import isabelle.Isar_Document$Unprocessed$;
 import isabelle.Document.Snapshot;
@@ -12,7 +13,6 @@ import isabelle.Session;
 import isabelle.Session.Commands_Changed;
 import isabelle.Text.Info;
 import isabelle.Text.Range;
-import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.util.SessionEventSupport;
 import isabelle.scala.ISessionCommandsListener;
@@ -21,39 +21,32 @@ import isabelle.scala.SessionEventType;
 import isabelle.scala.SnapshotUtil;
 import isabelle.scala.SnapshotUtil.MarkupMessage;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.jface.text.source.AnnotationModel;
-import org.eclipse.jface.text.source.IAnnotationModel;
-import org.eclipse.jface.text.source.IAnnotationModelExtension;
-import org.eclipse.ui.progress.UIJob;
+import org.eclipse.ui.texteditor.MarkerUtilities;
 
+import scala.Option;
 import scala.Tuple2;
-import scala.collection.Iterator;
 
 import static scala.collection.JavaConversions.setAsJavaSet;
 
@@ -77,16 +70,31 @@ public class TheoryAnnotations {
 	public static final String ANNOTATION_FAILED = "isabelle.eclipse.editor.commandStatus.failed";
 	public static final String ANNOTATION_FINISHED = "isabelle.eclipse.editor.commandStatus.finished";
 	
-	private static final Object THEORY_ANNOTATIONS = new Object();
+	/**
+	 * A rule to ensure that annotation update jobs are synchronized and not
+	 * overlapping
+	 */
+	private final ISchedulingRule syncUpdateJobRule = new ISchedulingRule() {
+		
+		@Override
+		public boolean isConflicting(ISchedulingRule rule) {
+			return rule == this;
+		}
+		
+		@Override
+		public boolean contains(ISchedulingRule rule) {
+			return rule == this;
+		}
+	};
 	
 	private final SessionEventSupport sessionEvents;
-	
-	private Job updateJob = new AnnotationUpdateJob(Collections.<Command>emptySet());
 	
 	public TheoryAnnotations(TheoryEditor editor) {
 		super();
 		this.editor = editor;
 		
+		// When commands change (e.g. results from the prover), update the
+		// annotations accordingly.
 		sessionEvents = new SessionEventSupport(EnumSet.of(SessionEventType.COMMAND)) {
 			
 			@Override
@@ -95,15 +103,25 @@ public class TheoryAnnotations {
 					
 					@Override
 					public void commandsChanged(Commands_Changed changed) {
-						// TODO add checks on current node
-						updateMarkers(setAsJavaSet(changed.commands()));
+						
+						DocumentModel isabelleModel = TheoryAnnotations.this.editor.getIsabelleModel();
+						if (isabelleModel == null) {
+							// no model available, so cannot get a snapshot and annotations
+							return;
+						}
+						
+						// avoid updating annotations if commands are from a different document
+						if (changed.nodes().contains(isabelleModel.getName().getRef())) {
+							updateAnnotations(setAsJavaSet(changed.commands()));
+						}
 					}
 				});
 			}
 
 			@Override
 			protected void sessionInit(Session session) {
-				updateAllMarkers();
+				// when the session is initialised, update all annotations from scratch
+				updateAllAnnotations();
 			}
 		};
 	}
@@ -112,36 +130,37 @@ public class TheoryAnnotations {
 		sessionEvents.dispose();
 	}
 	
-	public void updateAllMarkers() {
-		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		Set<Command> snapshotCommands;
-		if (isabelleModel != null) {
-			snapshotCommands = setAsJavaSet(isabelleModel.getSnapshot().node().commands());
-		} else {
-			snapshotCommands = Collections.emptySet();
-		}
-		
-		updateMarkers(snapshotCommands);
-	}
-	
-	private void updateMarkers(Set<Command> commands) {
-		// TODO add checks on current node
-		Job updateJob = new AnnotationUpdateJob(commands);
-		
-		// cancel the previous job
-		this.updateJob.cancel();
-		this.updateJob = updateJob;
-		
-		this.updateJob.schedule();
-	}
-	
-	private AnnotationConfig createMarkers(Set<Command> commands) {
+	public void updateAllAnnotations() {
 		
 		DocumentModel isabelleModel = editor.getIsabelleModel();
 		if (isabelleModel == null) {
-//			// no model - delete previous markers?
-//			deleteMarkers(markerResource);
+			return;
+		}
+		
+		Set<Command> snapshotCommands = setAsJavaSet(isabelleModel.getSnapshot().node().commands());
+		updateAnnotations(snapshotCommands);
+	}
+	
+	private void updateAnnotations(Set<Command> commands) {
+		
+		Job updateJob = new AnnotationUpdateJob(commands);
+		// synchronise the jobs - only a single update can be running
+		updateJob.setRule(syncUpdateJobRule);
+		// top priority to give quick feedback to the user
+		updateJob.setPriority(Job.INTERACTIVE);
+//		updateJob.setPriority(Job.DECORATE);
+		// system job - do not display progress in the UI
+		updateJob.setSystem(true);
+		
+		updateJob.schedule();
+	}
+	
+	private AnnotationConfig createAnnotations(Set<Command> commands) {
+		
+		DocumentModel isabelleModel = editor.getIsabelleModel();
+		if (isabelleModel == null) {
+			// no model available, so cannot create new markers
+			// do not delete old persistent markers if present
 			return null;
 		}
 		
@@ -153,207 +172,209 @@ public class TheoryAnnotations {
 		commands.retainAll(setAsJavaSet(snapshot.node().commands()));
 
 		if (commands.isEmpty()) {
+			// no/outdated? commands
 			return null;
 		}
 		
-		AnnotationConfig anns = new AnnotationConfig();
+		/*
+		 * Mark snapshot version - it is necessary since actual setting of
+		 * annotations is done asynchronously, and the annotation positions may
+		 * no longer apply (causes BadLocationException when setting).
+		 */
+		long snapshotVersion = snapshot.version().id();
 		
-		try {
-
-			updateAnnotations(anns, isabelleModel.getSession(), snapshot);
-			createMarkupMarkers(anns, snapshot);
+		// get the ranges occupied by the changed commands
+		// and recalculate annotations for them afterwards
+		List<Range> mergeRanges = getChangedRanges(snapshot, commands);
 		
-		} catch (CoreException e) {
-			IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
-		}
+		AnnotationConfig anns = new AnnotationConfig(editor, snapshotVersion, mergeRanges);
+		
+		// restrict the ranges to document length
+		Range maxRange = isabelleModel.getDocumentRange();
+		
+		// create annotations (status/markup) and markers (errors/warnings)
+		createAnnotations(anns, isabelleModel.getSession(), snapshot, maxRange, mergeRanges);
+		createMarkers(anns, snapshot, maxRange, mergeRanges);
 		
 		return anns;
 	}
+
+	/**
+	 * Calculate document ranges for the changed commands.
+	 * 
+	 * @param snapshot
+	 * @param commands
+	 * @return
+	 */
+	private List<Range> getChangedRanges(Snapshot snapshot, Set<Command> commands) {
+		
+		List<Range> commandRanges = new ArrayList<Range>(); 
+		
+		// take all commands and get the ranges for the given ones
+		for (CommandRangeIterator it = new CommandRangeIterator(
+				snapshot.node().command_range(0)); it.hasNext(); ) {
+			
+			Tuple2<Command, Range> commandTuple = it.next();
+			Command command = commandTuple._1();
+			
+			if (!commands.contains(command)) {
+				// not in the set
+				continue;
+			}
+			
+			Range cmdRange = commandTuple._2();
+			commandRanges.add(cmdRange);
+		}
+		
+		// merge overlapping/adjoining ranges
+		return mergeRanges(commandRanges);
+	}
 	
-	private void setMarkers(final AnnotationConfig anns) {
+	/**
+	 * Merges overlapping/adjoined ranges
+	 * 
+	 * @param ranges
+	 * @return
+	 */
+	private static List<Range> mergeRanges(Collection<Range> ranges) {
 		
-		if (anns == null) {
-			// nothing to update
-			return;
-		}
-		
-		final IResource markerResource = getMarkerResource();
-		// delete old markers
-		deleteMarkers(markerResource);
-		
-		// replace annotations
-		IAnnotationModel baseAnnotationModel = 
-				editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput());
-		if (baseAnnotationModel == null) {
-			return;
-		}
-
-		// use modern models
-		Assert.isTrue(baseAnnotationModel instanceof IAnnotationModelExtension);
-
-		AnnotationModel annotationModel = getAnnotationModel(
-				(IAnnotationModelExtension) baseAnnotationModel,
-				THEORY_ANNOTATIONS);
-
-		List<Annotation> existingAnns = iteratorToList(
-				(java.util.Iterator<Annotation>) annotationModel.getAnnotationIterator());
-		Annotation[] existingAnnsArray = existingAnns.toArray(new Annotation[existingAnns.size()]);
-		annotationModel.replaceAnnotations(existingAnnsArray, anns.annotations);
-		
-		// add new markers
-		IWorkspaceRunnable r = new IWorkspaceRunnable() {
+		List<Range> sorted = new ArrayList<Range>(ranges);
+		Collections.sort(sorted, new Comparator<Range>() {
 			@Override
-			public void run(IProgressMonitor monitor) throws CoreException {
-				
-				for (Entry<String, Map<String, Object>> markerInfo : anns.markers) {
-					IMarker marker = markerResource.createMarker(markerInfo.getKey());
-					marker.setAttributes(markerInfo.getValue());
+			public int compare(Range o1, Range o2) {
+				return o1.compare(o2);
+			}
+		});
+		
+		List<Range> mergedRanges = new ArrayList<Range>();
+		
+		Range prev = null;
+		for (Range range : ranges) {
+			
+			if (prev == null) {
+				// first encountered - just mark the range
+				prev = range;
+			} else {
+				// either the ranges overlap, or the gap between them is too small
+				if (range.start() - prev.stop() <= 1) {
+					// merge
+					Range newRange = new Range(
+							Math.min(prev.start(), range.start()), 
+							Math.max(prev.stop(), range.stop()));
+					prev = newRange;
+				} else {
+					// not overlapping ranges - store the last one and mark the new
+					mergedRanges.add(prev);
+					prev = range;
 				}
 			}
-		};
-
-		try {
-			markerResource.getWorkspace().run(r, null, IWorkspace.AVOID_UPDATE, null);
-		} catch (CoreException ce) {
-			IsabelleEclipsePlugin.log(ce.getMessage(), ce);
-		}
-	}
-	
-	private <T> List<T> iteratorToList(java.util.Iterator<T> it) {
-		List<T> list = new ArrayList<T>();
-		
-		while (it.hasNext()) {
-			list.add(it.next());
 		}
 		
-		return list;
-	}
-	
-	private void deleteMarkers(IResource markerResource) {
-		// remove all current markers
-		try {
-			markerResource.deleteMarkers(MARKER_PROBLEM, false, IResource.DEPTH_ZERO);
-			markerResource.deleteMarkers(MARKER_INFO, false, IResource.DEPTH_ZERO);
-		} catch (CoreException e) {
-			IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
-		}
-	}
-	
-	private int getDocumentLength() {
-		
-		if (editor.getDocument() == null) {
-			return 0;
+		if (prev != null) {
+			mergedRanges.add(prev);
 		}
 		
-		return editor.getDocument().getLength();
+		return mergedRanges;
 	}
 	
-	private void createMarkupMarkers(AnnotationConfig anns, Snapshot snapshot) throws CoreException {
+	/**
+	 * Creates the markers (error/warning). Only marker information is created
+	 * and stored in {@link AnnotationConfig}, which later instantiates them.
+	 * 
+	 * @param anns
+	 * @param snapshot
+	 * @param maxRange
+	 * @param ranges
+	 */
+	private void createMarkers(AnnotationConfig anns, Snapshot snapshot,
+			Range maxRange, List<Range> ranges) {
 		
 		String[] messageMarkups = new String[] { Markup.WRITELN(), Markup.WARNING(), Markup.ERROR() };
-		Iterator<Info<MarkupMessage>> messageRanges = 
-			SnapshotUtil.selectMarkupMessages(snapshot, messageMarkups, new Range(0, getDocumentLength()));
 		
-		while (messageRanges.hasNext()) {
-			Info<MarkupMessage> info = messageRanges.next();
-			Range range = info.range();
-			String markup = info.info().getName();
-			String message = info.info().getText();
+		for (Range range : ranges) {
 			
-			if (Markup.WRITELN().equals(markup)) {
-				createMarkupMessageMarker(anns, MARKER_INFO, IMarker.SEVERITY_INFO, range, message);
-			} else if (Markup.WARNING().equals(markup)) {
-				if (info.info().isLegacy()) {
-					// TODO special legacy icon?
-					createMarkupMessageMarker(anns, MARKER_PROBLEM, IMarker.SEVERITY_WARNING, range, message);
-				} else {
-					createMarkupMessageMarker(anns, MARKER_PROBLEM, IMarker.SEVERITY_WARNING, range, message);
+			// get markup messages in every range and populate marker information
+			scala.collection.Iterator<Info<MarkupMessage>> messageRanges = 
+				SnapshotUtil.selectMarkupMessages(snapshot, messageMarkups, range);
+			
+			while (messageRanges.hasNext()) {
+				Info<MarkupMessage> info = messageRanges.next();
+				Range markupRange = info.range();
+				String markup = info.info().getName();
+				String message = info.info().getText();
+				
+				if (Markup.WRITELN().equals(markup)) {
+					createMarkupMessageMarker(anns, MARKER_INFO, IMarker.SEVERITY_INFO, markupRange, message, maxRange);
+				} else if (Markup.WARNING().equals(markup)) {
+					if (info.info().isLegacy()) {
+						// TODO special legacy icon?
+						createMarkupMessageMarker(anns, MARKER_PROBLEM, IMarker.SEVERITY_WARNING, markupRange, message, maxRange);
+					} else {
+						createMarkupMessageMarker(anns, MARKER_PROBLEM, IMarker.SEVERITY_WARNING, markupRange, message, maxRange);
+					}
+				} else if (Markup.ERROR().equals(markup)) {
+					createMarkupMessageMarker(anns, MARKER_PROBLEM, IMarker.SEVERITY_ERROR, markupRange, message, maxRange);
 				}
-			} else if (Markup.ERROR().equals(markup)) {
-				createMarkupMessageMarker(anns, MARKER_PROBLEM, IMarker.SEVERITY_ERROR, range, message);
 			}
+		
 		}
 	}
 	
 	private void createMarkupMessageMarker(AnnotationConfig anns, String type, 
-			int severity, Range range, String message) throws CoreException {
+			int severity, Range range, String message, Range maxRange) {
+		
+		// restrict the range to avoid exceeding the document range
+		Option<Range> fixedRangeOpt = maxRange.try_restrict(range);
+		Range fixedRange;
+		if (fixedRangeOpt.isEmpty()) {
+			// invalid range (e.g. outside the max range)
+			// do not ignore, but better display it at (0, 0)
+			fixedRange = new Range(0, 0);
+		} else {
+			fixedRange = fixedRangeOpt.get();
+		}
 		
 		Map<String, Object> markerAttrs = new HashMap<String, Object>();
 		
 		markerAttrs.put(IMarker.SEVERITY, severity);
-		markerAttrs.put(IMarker.CHAR_START, range.start());
-		markerAttrs.put(IMarker.CHAR_END, range.stop());
+		MarkerUtilities.setCharStart(markerAttrs, fixedRange.start());
+		MarkerUtilities.setCharEnd(markerAttrs, fixedRange.stop());
 		try {
 			if (editor.getDocument() != null) {
-				int line = editor.getDocument().getLineOfOffset(range.start()) + 1;
-				markerAttrs.put(IMarker.LOCATION, "line " + line);	
+				int line = editor.getDocument().getLineOfOffset(fixedRange.start()) + 1;
+				markerAttrs.put(IMarker.LOCATION, "line " + line);
+				MarkerUtilities.setLineNumber(markerAttrs, line);
 			}
 		} catch (BadLocationException ex) {
 			// ignore
 		}
-		markerAttrs.put(IMarker.MESSAGE, message);
+		MarkerUtilities.setMessage(markerAttrs, message);
 		
 		anns.addMarker(type, markerAttrs);
 	}
 	
-	
-	private void updateAnnotations(AnnotationConfig anns, Session session, Snapshot snapshot) throws CoreException {
+	private void createAnnotations(AnnotationConfig anns, Session session, Snapshot snapshot,
+			Range maxRange, List<Range> ranges) {
 		
-		IDocument document = editor.getDocument();
-		if (document == null) {
-			return;
-		}
-		
-		int editorLineCount = document.getNumberOfLines();
-		
-		for (int line = 0; line < editorLineCount; line++) {
-			
-			try {
-				
-				int lineStart = document.getLineOffset(line);
-				int lineLength = document.getLineLength(line);
-				
-				Range lineRange = properLineRange(document, lineStart, lineStart + lineLength);
-				
-				createCommandStatusAnnotations(anns, session, snapshot, lineRange);
-				createMarkupAnnotations(anns, session, snapshot, lineRange);
-			
-			} catch (BadLocationException ex) {
-				// ignore bad location
-			}
+		for (Range range : ranges) {
+			createStatusAnnotations(anns, session, snapshot, maxRange, range);
+			createMarkupAnnotations(anns, session, snapshot, maxRange, range);
 		}
 	}
-
-	private IResource getMarkerResource() {
-		return IsabelleFileDocumentProvider.getMarkerResource(editor.getEditorInput());
-	}
 	
-	private AnnotationModel getAnnotationModel(IAnnotationModelExtension baseModel, Object key) {
+	/*
+	 * Creates command status annotations (e.g. unprocessed/outdated, etc.)
+	 */
+	private void createStatusAnnotations(AnnotationConfig anns,
+			Session session, Snapshot snapshot, Range maxRange, Range range) {
 		
-		AnnotationModel model = (AnnotationModel) baseModel.getAnnotationModel(key);
-		if (model == null) {
-			model = new AnnotationModel();
-			baseModel.addAnnotationModel(key, model);
-		}
-		
-		return model;
-	}
-
-	private Range properLineRange(IDocument document, int start, int end) {
-		int stop = start < end ? end - 1 : Math.min(end, document.getLength());
-		return new Range(start, stop);
-	}
-	
-	private void createCommandStatusAnnotations(AnnotationConfig anns,
-			Session session, Snapshot snapshot, Range lineRange) {
-		
-		// get annotations for command status
-		Iterator<Tuple2<Command, Object>> it = snapshot.node().command_range(snapshot.revert(lineRange));
-		while (it.hasNext()) {
+		// get annotations for command status in the given range
+		for (CommandRangeIterator it = new CommandRangeIterator(
+				snapshot.node().command_range(range)); it.hasNext(); ) {
 			
-			Tuple2<Command, Object> commandTuple = it.next();
+			Tuple2<Command, Range> commandTuple = it.next();
 			Command command = commandTuple._1();
-			int commandStart = (Integer) commandTuple._2();
+			Range commandRange = commandTuple._2();
 			
 			if (command.is_ignored()) {
 				continue;
@@ -365,16 +386,14 @@ public class TheoryAnnotations {
 				continue;
 			}
 			
-			Range range = lineRange.restrict(snapshot.convert(command.range().$plus(commandStart)));
-			
-			addAnnotation(anns, annotationType, range);
+			Range actualRange = snapshot.convert(commandRange);
+			addAnnotation(anns, annotationType, actualRange, maxRange);
 		}
 	}
 
 	private String getStatusAnnotationType(Session session, Snapshot snapshot, Command command) {
 		
 		if (snapshot.is_outdated()) {
-//			System.out.println("Command " + command.toString() + " is outdated");
 			return ANNOTATION_OUTDATED;
 		}
 		
@@ -394,14 +413,14 @@ public class TheoryAnnotations {
 	}
 
 	private void createMarkupAnnotations(AnnotationConfig anns,
-			Session session, Snapshot snapshot, Range lineRange) {
+			Session session, Snapshot snapshot, Range maxRange, Range range) {
 		
 		// get annotations for command status
-		Iterator<Info<String>> markupRanges = SnapshotUtil.selectMarkupNames(snapshot, 
-				new String[] { Markup.BAD(), Markup.HILITE(), Markup.TOKEN_RANGE() }, lineRange);
+		scala.collection.Iterator<Info<String>> markupRanges = SnapshotUtil.selectMarkupNames(snapshot, 
+				new String[] { Markup.BAD(), Markup.HILITE(), Markup.TOKEN_RANGE() }, range);
 		while (markupRanges.hasNext()) {
 			Info<String> info = markupRanges.next();
-			Range range = info.range();
+			Range markupRange = info.range();
 			String markup = info.info();
 			
 			String annotationType = getMarkupAnnotationType(markup);
@@ -410,7 +429,7 @@ public class TheoryAnnotations {
 				continue;
 			}
 			
-			addAnnotation(anns, annotationType, range);
+			addAnnotation(anns, annotationType, markupRange, maxRange);
 		}
 	}
 	
@@ -424,34 +443,40 @@ public class TheoryAnnotations {
 			return ANNOTATION_BAD;
 		}
 		
+		// TODO HILITE
+		
 		return null;
 	}
 	
-	private void addAnnotation(AnnotationConfig anns, String annotationType, Range range) {
+	private void addAnnotation(AnnotationConfig anns, String annotationType, Range range, Range maxRange) {
 		Annotation annotation = new Annotation(false);
 		annotation.setType(annotationType);
 		
-		Position position = new Position(range.start(), range.stop() - range.start());
+		// try to restrict the range to document limits
+		Option<Range> fixedRangeOpt = maxRange.try_restrict(range);
+		if (fixedRangeOpt.isEmpty()) {
+			// invalid range (e.g. outside the max range)
+			// so ignore the annotation altogether
+			return;
+		}
+		
+		Range fixedRange = fixedRangeOpt.get();
+		Position position = new Position(fixedRange.start(), getLength(fixedRange));
+		
 		anns.addAnnotation(annotation, position);
 	}
 	
-	private static class AnnotationConfig {
-		private final Map<Annotation, Position> annotations = 
-				new HashMap<Annotation, Position>();
-		
-		private final List<Entry<String, Map<String, Object>>> markers = 
-				new ArrayList<Entry<String, Map<String, Object>>>();
-		
-		public void addAnnotation(Annotation ann, Position pos) {
-			annotations.put(ann, pos);
-		}
-		
-		public void addMarker(String type, Map<String, Object> attrs) {
-			markers.add(new SimpleEntry<String, Map<String, Object>>(type, attrs));
-		}
+	static int getLength(Range range) {
+		return range.stop() - range.start();
 	}
 	
-	private class AnnotationUpdateJob extends UIJob {
+	/**
+	 * A private job to update annotations in a separate thread. First
+	 * calculates the annotations, then sets them in the UI thread.
+	 * 
+	 * @author Andrius Velykis
+	 */
+	private class AnnotationUpdateJob extends Job {
 
 		private final Set<Command> commands;
 		
@@ -461,22 +486,62 @@ public class TheoryAnnotations {
 		}
 		
 		@Override
-		public IStatus runInUIThread(IProgressMonitor monitor) {
+		public IStatus run(IProgressMonitor monitor) {
 			
-			if (monitor.isCanceled()) {
-				return Status.CANCEL_STATUS;
+			final AnnotationConfig anns = createAnnotations(commands);
+			if (anns != null) {
+				/*
+				 * Set the annotations/markers in UI thread, otherwise getting
+				 * ConcurrentModificationException on the document positions
+				 * (e.g. when setting the annotations and repainting them at the
+				 * same time)
+				 */
+				editor.getSite().getShell().getDisplay().asyncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						anns.setAnnotations();
+					}
+				});
 			}
-			
-			AnnotationConfig anns = createMarkers(commands);
-			
-			// check if cancelled - then do not set the outline
-			if (monitor.isCanceled()) {
-				return Status.CANCEL_STATUS;
-			}
-			
-			setMarkers(anns);
 			
 			return Status.OK_STATUS;
+		}
+	}
+	
+	/**
+	 * A convenience iterator to calculate command and its full range. The
+	 * {@link Node} command iterator gives command and its start only.
+	 * 
+	 * @author Andrius Velykis
+	 */
+	private static class CommandRangeIterator implements Iterator<Tuple2<Command, Range>> {
+
+		private final scala.collection.Iterator<? extends Tuple2<Command, ?>> commandStartIterator;
+		
+		public CommandRangeIterator(
+				scala.collection.Iterator<? extends Tuple2<Command, ?>> commandStartIterator) {
+			super();
+			this.commandStartIterator = commandStartIterator;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return commandStartIterator.hasNext();
+		}
+
+		@Override
+		public Tuple2<Command, Range> next() {
+			Tuple2<Command, ?> commandTuple = commandStartIterator.next();
+			Command command = commandTuple._1();
+			int commandStart = (Integer) commandTuple._2();
+			Range cmdRange = command.range().$plus(commandStart);
+			return new Tuple2<Command, Range>(command, cmdRange);
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
 		}
 	}
 }
