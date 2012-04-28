@@ -181,7 +181,6 @@ public class ProverOutputPage extends Page {
 		
 		boolean updateCommand = restriction.isEmpty() || restriction.contains(currentCommand);
 		if (!updateCommand) {
-			System.out.println("Ignored command " + currentCommand.name());
 			return null;
 		}
 		
