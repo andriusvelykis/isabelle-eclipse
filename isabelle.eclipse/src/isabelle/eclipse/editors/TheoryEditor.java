@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -94,7 +95,7 @@ public class TheoryEditor extends TextEditor {
 	
 	private final TheoryAnnotations markers = new TheoryAnnotations(this);
 	
-	private int submittedOffset = 0;
+//	private int submittedOffset = 0;
 	
 	public TheoryEditor() {
 		super();
@@ -483,33 +484,37 @@ public class TheoryEditor extends TextEditor {
 			return;
 		}
 		
-		int caretOffset = getCaretPosition();
+		MessageDialog.openInformation(getSite().getShell(), "Functionality Disabled", 
+				"Submitting to selection is currently disabled in favour of submitting active view.");
+		// TODO remove altogether?
 		
-		IDocument document = getDocument();
-		
-		try {
-			
-			int caretLine = document.getLineOfOffset(caretOffset);
-			int caretLineEnd = getLineEndOffset(document, caretLine);
-			
-			System.out.println("Go to Command: " + getTitle() + ":[" + caretLine + "," + caretLineEnd + "]");
-			
-			isabelleModel.setSubmitOffset(caretLineEnd);
-			isabelleModel.updatePerspective();
-			
-			this.submittedOffset = caretLineEnd;
-			
-			// TODO review
-			reloadOutline();
-			
-		} catch (BadLocationException ex) {
-			IsabelleEclipsePlugin.log("Bad location in the document", ex);
-		}
+//		int caretOffset = getCaretPosition();
+//		
+//		IDocument document = getDocument();
+//		
+//		try {
+//			
+//			int caretLine = document.getLineOfOffset(caretOffset);
+//			int caretLineEnd = getLineEndOffset(document, caretLine);
+//			
+//			System.out.println("Go to Command: " + getTitle() + ":[" + caretLine + "," + caretLineEnd + "]");
+//			
+//			isabelleModel.setSubmitOffset(caretLineEnd);
+//			isabelleModel.updatePerspective();
+//			
+//			this.submittedOffset = caretLineEnd;
+//			
+//			// TODO review
+//			reloadOutline();
+//			
+//		} catch (BadLocationException ex) {
+//			IsabelleEclipsePlugin.log("Bad location in the document", ex);
+//		}
 	}
 	
-	private static int getLineEndOffset(IDocument document, int line) throws BadLocationException {
-		return document.getLineOffset(line) + document.getLineLength(line);
-	}
+//	private static int getLineEndOffset(IDocument document, int line) throws BadLocationException {
+//		return document.getLineOffset(line) + document.getLineLength(line);
+//	}
 	
 	/**
 	 * Updated the active perspective in the model. Finds the region currently
