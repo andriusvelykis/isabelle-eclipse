@@ -34,6 +34,14 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.IViewportListener;
+import org.eclipse.jface.text.JFaceTextUtil;
+import org.eclipse.jface.text.source.ILineRange;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -70,6 +78,18 @@ public class TheoryEditor extends TextEditor {
 	private DocumentRef documentRef;
 	private DocumentModel isabelleModel;
 	
+	/**
+	 * A listener for scrolling events in the editor. Updates the active
+	 * perspective upon scrolling.
+	 */
+	private final IViewportListener viewerViewportListener;
+	
+	/**
+	 * A listener for resize events in the editor. Updates the active
+	 * perspective upon editor resize.
+	 */
+	private final ControlListener viewerControlListener;
+	
 	private TheoryOutlinePage outlinePage = null;
 	
 	private final TheoryAnnotations markers = new TheoryAnnotations(this);
@@ -84,6 +104,23 @@ public class TheoryEditor extends TextEditor {
 		setDocumentProvider(new IsabelleFileDocumentProvider());
 		
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
+		
+		// create listeners for perspective change (scrolling & resize)
+		this.viewerViewportListener = new IViewportListener() {
+			
+			@Override
+			public void viewportChanged(int verticalOffset) {
+				updateActivePerspective();
+			}
+		};
+		
+		this.viewerControlListener = new ControlAdapter() {
+
+			@Override
+			public void controlResized(ControlEvent e) {
+				updateActivePerspective();
+			}
+		};
 		
 		isabelle.addSessionListener(sessionListener = new IIsabelleSessionListener() {
 			
@@ -126,6 +163,15 @@ public class TheoryEditor extends TextEditor {
 	private void activateContext() {
 		IContextService service = (IContextService) getSite().getService(IContextService.class);
 		service.activateContext(EDITOR_SCOPE);
+	}
+
+	@Override
+	public void createPartControl(Composite parent) {
+		super.createPartControl(parent);
+		
+		// initialise perspective listeners after creating the control
+		initPerspectiveListeners();
+		updateActivePerspective();
 	}
 
 	private void initIsabelleSystem() {
@@ -172,6 +218,8 @@ public class TheoryEditor extends TextEditor {
 			shutdownSession(isabelleSession, true);
 		}
 		
+		disposePerspectiveListeners();
+		
 		// TODO review what happens if a second editor is opened for the same input
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
 		isabelle.removeSessionListener(sessionListener);
@@ -193,6 +241,10 @@ public class TheoryEditor extends TextEditor {
 	}
 
 	private void shutdownSession(Session session, boolean dispose) {
+		
+		if (this.isabelleSession == null) {
+			return;
+		}
 		
 		Assert.isTrue(this.isabelleSession == session);
 		
@@ -228,9 +280,33 @@ public class TheoryEditor extends TextEditor {
 		IDocument document = getDocument();
 		if (document != null && documentRef != null && isabelleSession != null) {
 			isabelleModel = DocumentModel.create(isabelleSession, document, documentRef);
-			isabelleModel.setSubmitOffset(submittedOffset);
+			
+			// update active perspective in the UI thread
+			getSite().getWorkbenchWindow().getWorkbench().getDisplay()
+					.asyncExec(new Runnable() {
+
+						@Override
+						public void run() {
+							updateActivePerspective();
+						}
+					});
+//			isabelleModel.setSubmitOffset(submittedOffset);
 			
 			loadTheoryImports();
+		}
+	}
+	
+	private void initPerspectiveListeners() {
+		// listen to scroll and resize events
+		getSourceViewer().addViewportListener(viewerViewportListener);
+		getSourceViewer().getTextWidget().addControlListener(viewerControlListener);
+	}
+	
+	private void disposePerspectiveListeners() {
+		ITextViewer viewer = getSourceViewer();
+		if (viewer != null && viewer.getTextWidget() != null) {
+			viewer.removeViewportListener(viewerViewportListener);
+			viewer.getTextWidget().removeControlListener(viewerControlListener);
 		}
 	}
 	
@@ -433,6 +509,52 @@ public class TheoryEditor extends TextEditor {
 	
 	private static int getLineEndOffset(IDocument document, int line) throws BadLocationException {
 		return document.getLineOffset(line) + document.getLineLength(line);
+	}
+	
+	/**
+	 * Updated the active perspective in the model. Finds the region currently
+	 * visible in the editor and marks that in the model as its perspective -
+	 * the area that should be submitted to the prover.
+	 */
+	private void updateActivePerspective() {
+		
+		if (getSourceViewer() == null) {
+			return;
+		}
+		
+		if (isabelleModel == null) {
+			return;
+		}
+		
+		IDocument document = getDocument();
+		if (document == null) {
+			return;
+		}
+		
+		ILineRange visibleLines = JFaceTextUtil.getVisibleModelLines(getSourceViewer());
+		
+		int start = 0;
+		int end = 0;
+		if (visibleLines.getNumberOfLines() > 0 && visibleLines.getStartLine() >= 0) {
+			// something is visible
+			try {
+				start = document.getLineOffset(visibleLines.getStartLine());
+				int endLine = visibleLines.getStartLine() + visibleLines.getNumberOfLines();
+				if (endLine >= document.getNumberOfLines() - 1) {
+					end = document.getLength();
+				} else {
+					end = document.getLineOffset(endLine) + document.getLineLength(endLine);
+				}
+			} catch (BadLocationException e) {
+				IsabelleEclipsePlugin.log(e.getMessage(), e);
+			}
+		}
+		
+		if (end < start) {
+			end = start;
+		}
+		
+		isabelleModel.setActivePerspective(start, end - start);
 	}
 	
 	public IDocument getDocument() {

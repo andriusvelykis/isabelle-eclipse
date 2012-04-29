@@ -17,6 +17,8 @@ import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 
+import scala.Option;
+
 import isabelle.Document.Snapshot;
 import isabelle.Exn;
 import isabelle.Exn.Res;
@@ -47,6 +49,7 @@ public class DocumentModel {
 	private Perspective lastPerspective = Text$Perspective$.MODULE$.empty();
 	
 	private int submitOffset = 0;
+	private Range activePerspectiveRange = new Range(0, 0);
 	
 	private ReadWriteLock pendingEditsLock = new ReentrantReadWriteLock();
 	
@@ -138,24 +141,30 @@ public class DocumentModel {
 		this.flushJob.schedule(delay);
 	}
 	
-	public Perspective getCurrentPerspective() {
+	public void setActivePerspective(int offset, int length) {
+		Range docRange = new Range(0, document.getLength());
+		Range newRange = new Range(offset, offset + length);
+		
+		Option<Range> fixedRangeOpt = docRange.try_restrict(newRange);
+		if (fixedRangeOpt.isEmpty()) {
+			// bad range (outside the document?)
+			return;
+		}
+		
+		Range fixedRange = fixedRangeOpt.get();
+		
+		Range previousRange = activePerspectiveRange;
+		activePerspectiveRange = fixedRange;
+		
+		if (!activePerspectiveRange.equals(previousRange)) {
+			updatePerspective();
+		}
+	}
 	
-		Range range = new Range(0, Math.max(0, Math.min(submitOffset - 1, document.getLength() - 1)));
-		return new Perspective(ScalaCollections.singletonList(range));
-		
-		// get visible lines from the open editors (see JFaceTextUtil) and calculate the ranges
-		// TODO also allow explicitly saying how much to calculate?
-		
-		
-//	  def perspective(): Text.Perspective =
-//		  {
-//		    Swing_Thread.require()
-//		    Text.Perspective(
-//		      for {
-//		        doc_view <- Isabelle.document_views(buffer)
-//		        range <- doc_view.perspective().ranges
-//		      } yield range)
-//		  }
+	private Perspective getCurrentPerspective() {
+	
+		// TODO also allow explicitly saying how much to calculate - e.g. with a submitOffset?
+		return new Perspective(ScalaCollections.singletonList(activePerspectiveRange));
 	}
 	
 	public void setSubmitOffset(int offset) {
