@@ -239,6 +239,11 @@ public class ProverOutputPage extends Page {
 			outputArea.getDisplay().asyncExec(new Runnable() {
 				@Override
 				public void run() {
+					
+					if (outputArea.isDisposed()) {
+						return;
+					}
+					
 					outputArea.setText(htmlPage);
 				}
 			});
@@ -259,8 +264,6 @@ public class ProverOutputPage extends Page {
 		}
 		
 		sessionEvents.dispose();
-		
-		outputArea = null;
 		
 		super.dispose();
 	}
