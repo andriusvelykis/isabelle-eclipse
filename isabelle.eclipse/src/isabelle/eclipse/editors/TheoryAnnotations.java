@@ -176,18 +176,11 @@ public class TheoryAnnotations {
 			return null;
 		}
 		
-		/*
-		 * Mark snapshot version - it is necessary since actual setting of
-		 * annotations is done asynchronously, and the annotation positions may
-		 * no longer apply (causes BadLocationException when setting).
-		 */
-		long snapshotVersion = snapshot.version().id();
-		
 		// get the ranges occupied by the changed commands
 		// and recalculate annotations for them afterwards
 		List<Range> mergeRanges = getChangedRanges(snapshot, commands);
 		
-		AnnotationConfig anns = new AnnotationConfig(editor, snapshotVersion, mergeRanges);
+		AnnotationConfig anns = new AnnotationConfig(editor, mergeRanges);
 		
 		// restrict the ranges to document length
 		Range maxRange = isabelleModel.getDocumentRange();

@@ -1,6 +1,5 @@
 package isabelle.eclipse.editors;
 
-import isabelle.Document.Snapshot;
 import isabelle.Text.Range;
 import isabelle.eclipse.IsabelleEclipsePlugin;
 
@@ -55,13 +54,10 @@ class AnnotationConfig {
 	
 	private final List<Range> changedRanges;
 	
-	private long snapshotVersion = -1;
-	
 	private final TheoryEditor editor;
 	
-	public AnnotationConfig(TheoryEditor editor, long snapshotVersion, List<Range> changedRanges) {
+	public AnnotationConfig(TheoryEditor editor, List<Range> changedRanges) {
 		this.editor = editor;
-		this.snapshotVersion = snapshotVersion;
 		this.changedRanges = new ArrayList<Range>(changedRanges);
 	}
 	
@@ -81,12 +77,6 @@ class AnnotationConfig {
 		
 		DocumentModel isabelleModel = editor.getIsabelleModel();
 		if (isabelleModel == null) {
-			return;
-		}
-		
-		Snapshot snapshot = isabelleModel.getSnapshot();
-		if (snapshot.version().id() != snapshotVersion) {
-			// different version - do not update the markers?
 			return;
 		}
 		
