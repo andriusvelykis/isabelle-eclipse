@@ -489,13 +489,14 @@ public class TheoryAnnotations {
 				 * (e.g. when setting the annotations and repainting them at the
 				 * same time)
 				 */
-				editor.getSite().getShell().getDisplay().asyncExec(new Runnable() {
-					
-					@Override
-					public void run() {
-						anns.setAnnotations();
-					}
-				});
+				editor.getSite().getWorkbenchWindow().getWorkbench()
+						.getDisplay().asyncExec(new Runnable() {
+
+							@Override
+							public void run() {
+								anns.setAnnotations();
+							}
+						});
 			}
 			
 			return Status.OK_STATUS;
