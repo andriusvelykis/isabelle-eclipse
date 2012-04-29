@@ -88,6 +88,8 @@ public class TheoryAnnotations {
 	};
 	
 	private final SessionEventSupport sessionEvents;
+	private int lastCommandCount = 0;
+	private boolean lastSnapshotOutdated = true;
 	
 	public TheoryAnnotations(TheoryEditor editor) {
 		super();
@@ -166,10 +168,29 @@ public class TheoryAnnotations {
 		
 		Snapshot snapshot = isabelleModel.getSnapshot();
 		
-		// copy commands set
-		commands = new LinkedHashSet<Command>(commands);
-		// only use commands that are in the snapshot
-		commands.retainAll(setAsJavaSet(snapshot.node().commands()));
+		Set<Command> snapshotCmds = setAsJavaSet(snapshot.node().commands());
+		if (snapshotCmds.size() > lastCommandCount || lastSnapshotOutdated) {
+			/*
+			 * More commands in the snapshot than was previously - update
+			 * annotations for the whole snapshot. This is necessary because
+			 * parsing can happen slowly and commands appear delayed in the
+			 * snapshot.
+			 * 
+			 * This is a workaround because parsing events are not firing
+			 * notifications, so we manually check if we need updating. We
+			 * update if the last snapshot was outdated, or new commands were
+			 * added (e.g. via parsing).
+			 */
+			commands = snapshotCmds;
+			lastCommandCount = snapshotCmds.size();
+		} else {
+			// copy commands set
+			commands = new LinkedHashSet<Command>(commands);
+			// Only use commands that are in the snapshot.
+			commands.retainAll(snapshotCmds);
+		}
+		
+		lastSnapshotOutdated = snapshot.is_outdated();
 
 		if (commands.isEmpty()) {
 			// no/outdated? commands
