@@ -326,7 +326,7 @@ public class TheoryEditor extends TextEditor {
 		depRefs.remove(documentRef);
 		
 		// check open editors which have been loaded
-		for (IEditorPart editor : getOpenEditors()) {
+		for (IEditorPart editor : EditorUtil.getOpenEditors()) {
 			if (editor instanceof TheoryEditor) {
 				// TODO more generic instead of TheoryEditor, e.g. via IAdaptable?
 				TheoryEditor theoryEditor = (TheoryEditor) editor;
