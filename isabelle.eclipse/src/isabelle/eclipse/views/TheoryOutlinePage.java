@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import isabelle.eclipse.IsabelleEclipseImages;
-import isabelle.eclipse.editors.DocumentModel;
+import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.editors.TheoryEditor;
 import isabelle.scala.TheoryNode;
 

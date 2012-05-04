@@ -2,6 +2,7 @@ package isabelle.eclipse.editors;
 
 import isabelle.Text.Range;
 import isabelle.eclipse.IsabelleEclipsePlugin;
+import isabelle.eclipse.core.text.DocumentModel;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;

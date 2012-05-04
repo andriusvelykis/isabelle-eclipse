@@ -1,5 +1,6 @@
 package isabelle.eclipse.editors;
 
+import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.editors.IsabelleContentAssistProcessor.CompletionProposalInfo;
 
 import java.util.List;

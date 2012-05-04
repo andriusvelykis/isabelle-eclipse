@@ -13,6 +13,7 @@ import isabelle.Session;
 import isabelle.Session.Commands_Changed;
 import isabelle.Text.Info;
 import isabelle.Text.Range;
+import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.util.SessionEventSupport;
 import isabelle.scala.ISessionCommandsListener;

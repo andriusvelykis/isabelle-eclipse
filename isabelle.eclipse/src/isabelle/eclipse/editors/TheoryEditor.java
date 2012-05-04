@@ -17,6 +17,7 @@ import isabelle.eclipse.core.app.IIsabelleSessionListener;
 import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.resource.URIPathEncoder;
+import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.views.TheoryOutlinePage;
 import isabelle.scala.DocumentRef;
 import isabelle.scala.TheoryInfoUtil;

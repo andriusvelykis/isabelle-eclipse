@@ -2,7 +2,6 @@ package isabelle.eclipse;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -17,20 +16,6 @@ public class IsabelleEclipsePlugin extends AbstractUIPlugin {
 
 	// The shared instance
 	private static IsabelleEclipsePlugin plugin;
-	
-	public static final ISchedulingRule ISABELLE_SUBMIT = new ISchedulingRule() {
-		
-		@Override
-		public boolean isConflicting(ISchedulingRule rule) {
-			return rule == ISABELLE_SUBMIT;
-		}
-		
-		@Override
-		public boolean contains(ISchedulingRule rule) {
-			// allow containment, e.g. can start another job with the rule from within a job
-			return rule == ISABELLE_SUBMIT;
-		}
-	};
 	
 	/**
 	 * The constructor

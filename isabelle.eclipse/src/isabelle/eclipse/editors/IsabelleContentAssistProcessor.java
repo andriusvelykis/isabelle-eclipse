@@ -7,6 +7,7 @@ import java.util.List;
 import isabelle.Completion;
 import isabelle.Symbol;
 import isabelle.eclipse.IsabelleEclipseImages;
+import isabelle.eclipse.core.text.DocumentModel;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;

@@ -1,4 +1,4 @@
-package isabelle.eclipse.editors;
+package isabelle.eclipse.core.text;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,9 +29,10 @@ import isabelle.Text.Edit;
 import isabelle.Text.Perspective;
 import isabelle.Text.Range;
 import isabelle.Thy_Header;
-import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.scala.DocumentRef;
 import isabelle.scala.ScalaCollections;
+
+import static isabelle.eclipse.core.IsabelleCorePlugin.ISABELLE_SUBMIT;
 
 public class DocumentModel {
 
@@ -276,11 +277,11 @@ public class DocumentModel {
 	 * be nested, it will be ok if called from a flush job already.
 	 */
 	private void lockSubmit(IProgressMonitor monitor) {
-		Job.getJobManager().beginRule(IsabelleEclipsePlugin.ISABELLE_SUBMIT, monitor);
+		Job.getJobManager().beginRule(ISABELLE_SUBMIT, monitor);
 	}
 	
 	private void unlockSubmit() {
-		Job.getJobManager().endRule(IsabelleEclipsePlugin.ISABELLE_SUBMIT);
+		Job.getJobManager().endRule(ISABELLE_SUBMIT);
 	}
 	
 	public static DocumentModel create(Session session, IDocument document, DocumentRef name) {
@@ -294,7 +295,7 @@ public class DocumentModel {
 		public FlushJob() {
 			super("Sending Changes to Prover");
 			// set Isabelle Submit rule, to enforce sequential submitting to Isabelle
-			setRule(IsabelleEclipsePlugin.ISABELLE_SUBMIT);
+			setRule(ISABELLE_SUBMIT);
 		}
 
 		@Override

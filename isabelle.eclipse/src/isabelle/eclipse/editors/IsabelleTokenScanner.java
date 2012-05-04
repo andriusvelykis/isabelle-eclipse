@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Queue;
 
 import isabelle.Outer_Syntax;
+import isabelle.eclipse.core.text.DocumentModel;
 
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
