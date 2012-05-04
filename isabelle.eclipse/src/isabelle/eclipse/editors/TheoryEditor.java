@@ -1,7 +1,7 @@
 package isabelle.eclipse.editors;
 
-import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +15,8 @@ import isabelle.eclipse.IsabelleEclipsePlugin;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.IIsabelleSessionListener;
 import isabelle.eclipse.core.app.Isabelle;
+import isabelle.eclipse.core.resource.URIThyLoad;
+import isabelle.eclipse.core.resource.URIPathEncoder;
 import isabelle.eclipse.views.TheoryOutlinePage;
 import isabelle.scala.DocumentRef;
 import isabelle.scala.TheoryInfoUtil;
@@ -23,14 +25,13 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
@@ -45,18 +46,13 @@ import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.editors.text.ILocationProviderExtension;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -311,7 +307,14 @@ public class TheoryEditor extends TextEditor {
 		}
 	}
 	
+	/**
+	 * Loads imported theories to Isabelle. Initialises document models for each of the dependency
+	 * but does not open new editors.
+	 * 
+	 * TODO ask to open new editors as in jEdit?
+	 */
 	private void loadTheoryImports() {
+		
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
 		Thy_Info theoryInfo = isabelle.getTheoryInfo();
 		List<Tuple2<DocumentRef, Result<Thy_Header>>> deps = TheoryInfoUtil.getDependencies(
@@ -345,51 +348,34 @@ public class TheoryEditor extends TextEditor {
 		IsabelleFileDocumentProvider docProvider = new IsabelleFileDocumentProvider();
 		
 		for (DocumentRef ref : depRefs) {
-			
-			String path = ref.getNode();
-			IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-			IFile[] files = workspaceRoot.findFilesForLocationURI(URIUtil.toURI(Path.fromOSString(path)));
-			if (files.length > 0) {
-				System.out.println("Files found for: " + path + " - " + files);
-				// take the first
-				IFile file = files[0];
-				IFileEditorInput input = new FileEditorInput(file);
-				
-				try {
-					docProvider.connect(input);
-					IDocument document = docProvider.getDocument(input);
-					// init document model
-					DocumentModel model = DocumentModel.create(isabelleSession, document, ref);
-					// dispose immediately after initialisation
-					model.dispose();
-				} catch (CoreException e) {
-					IsabelleEclipsePlugin.log(e.getMessage(), e);
-				}
-			} else {
-				// no files in workspace found
-				System.out.println("No files found for: " + path);
-				// TODO open on file store
-			}
-		}
-	}
-	
-	/**
-	 * Retrieves all open editors in the workbench.
-	 * 
-	 * @return
-	 */
-	public static List<IEditorPart> getOpenEditors() {
-		List<IEditorPart> editors = new ArrayList<IEditorPart>();
-		for (IWorkbenchWindow window : PlatformUI.getWorkbench()
-				.getWorkbenchWindows()) {
-			for (IWorkbenchPage page : window.getPages()) {
-				for (IEditorReference editor : page.getEditorReferences()) {
-					editors.add(editor.getEditor(false));
-				}
-			}
-		}
 
-		return editors;
+			// resolve document URI to load the file contents
+			URI uri = URIThyLoad.resolveDocumentUri(ref);
+			
+			IFileStore fileStore;
+			try {
+				fileStore = EFS.getStore(uri);
+			} catch (CoreException e) {
+				// cannot load parent - skip
+				IsabelleCorePlugin.log(e);
+				continue;
+			}
+			
+			// create the editor input to feed to document provider
+			IEditorInput input = EditorUtil.getEditorInput(fileStore);
+			
+			try {
+				docProvider.connect(input);
+				IDocument document = docProvider.getDocument(input);
+				// init document model
+				DocumentModel model = DocumentModel.create(isabelleSession, document, ref);
+				// dispose immediately after initialisation
+				model.dispose();
+				docProvider.disconnect(input);
+			} catch (CoreException e) {
+				IsabelleEclipsePlugin.log(e.getMessage(), e);
+			}
+		}
 	}
 	
 	private void disposeIsabelleModel() {
@@ -412,36 +398,51 @@ public class TheoryEditor extends TextEditor {
 		return isabelleModel.getSnapshot();
 	}
 	
-	private static String getPath(IEditorInput input) {
+	/**
+	 * Resolves a URI for the given editor input. For workspace files, the {@code platform:} URI
+	 * scheme is used, for the rest it is resolved through IFileStore. Local filesystem files have
+	 * {@code file:} URIs.
+	 * 
+	 * @param input
+	 * @return the URI corresponding to the given editor input, or {@code null} if one cannot be
+	 *         resolved.
+	 * @throws URISyntaxException
+	 */
+	private static URI getInputURI(IEditorInput input) throws URISyntaxException {
 		
 		if (input == null) {
 			return null;
 		}
 		
-		IFile file= (IFile) input.getAdapter(IFile.class);
+		// first check if the input is on a workspace file
+		IFile file = ResourceUtil.getFile(input);
 		if (file != null) {
-			IPath location= file.getLocation();
-			if (location != null) {
-				return location.toOSString();
+			// encode the path as "platform:" URI
+			return getResourceURI(file);
+		}
+		
+		// otherwise try to resolve the URI or IPath
+		ILocationProvider provider = (ILocationProvider) input.getAdapter(ILocationProvider.class);
+		if (provider instanceof ILocationProviderExtension) {
+			// get the URI, if available, and use it
+			URI uri = ((ILocationProviderExtension) provider).getURI(input);
+			if (uri != null) {
+				return uri;
 			}
-		} else {
-			ILocationProvider provider= (ILocationProvider) input.getAdapter(ILocationProvider.class);
-			if (provider instanceof ILocationProviderExtension) {
-				URI uri= ((ILocationProviderExtension)provider).getURI(input);
-				if (ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri).length == 0) {
-					try {
-						IFileStore fileStore= EFS.getStore(uri);
-						File jfile = fileStore.toLocalFile(EFS.NONE, null);
-						return jfile.getAbsolutePath();
-					} catch (CoreException ex) {
-						// TODO ignore?
-					}
-				}
-			}
-			if (provider != null) {
-				IPath location= provider.getPath(input);
-				if (location != null) {
-					return location.toOSString();
+		}
+		
+		if (provider != null) {
+			IPath path = provider.getPath(input);
+			if (path != null) {
+				// the path can be either workspace, or file system
+				// check if it is in the workspace first
+				IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+				if (resource != null) {
+					// found in workspace - use workspace path
+					return getResourceURI(resource);
+				} else {
+					// absolute file system path
+					return URIUtil.toURI(path);
 				}
 			}
 		}
@@ -449,23 +450,60 @@ public class TheoryEditor extends TextEditor {
 		return null;
 	}
 	
+	/**
+	 * Creates a workspace resource URI using {@code platform:} scheme.
+	 * 
+	 * @param resource
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	private static URI getResourceURI(IResource resource) throws URISyntaxException {
+		IPath path = resource.getFullPath();
+		return URIThyLoad.createPlatformUri(path.toString());
+	}
+	
 	private static DocumentRef createDocumentRef(IEditorInput input) {
 		Assert.isNotNull(input);
 		
-		String path = getPath(input);
-		if (path == null) {
+		URI uri;
+		try {
+			uri = getInputURI(input);
+		} catch (URISyntaxException e) {
+			IsabelleEclipsePlugin.log(e.getMessage(), e);
 			return null;
 		}
 		
-		Option<String> theoryNameOpt = Thy_Header.thy_name(path);
+		if (uri == null) {
+			return null;
+		}
+		
+//		String uriStr = uri.toString();
+		String uriStr = URIPathEncoder.encodeAsPath(uri);
+		
+		Option<String> theoryNameOpt = Thy_Header.thy_name(uriStr);
 		if (theoryNameOpt.isEmpty()) {
-			// TODO some warning that the input is not a theory file?
+			IsabelleEclipsePlugin.log("Invalid theory name for URI: " + uriStr, null);
 			return null;
 		}
 		
 		String theoryName = theoryNameOpt.get();
 		
-		return DocumentRef.create(path, new File(path).getParent(), theoryName);
+		URI parentUri = getParentURI(uri);
+//		String parentStr = parentUri.toString();
+		String parentStr = URIPathEncoder.encodeAsPath(parentUri);
+		
+		return DocumentRef.create(uriStr, parentStr, theoryName);
+	}
+	
+	/**
+	 * Resolves parent URI for the given one. As proposed in
+	 * http://stackoverflow.com/questions/10159186/how-to-get-parent-url-in-java
+	 * 
+	 * @param uri
+	 * @return
+	 */
+	private static URI getParentURI(URI uri) {
+		return uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
 	}
 	
 	public Session getIsabelleSession() {

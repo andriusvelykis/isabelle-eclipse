@@ -13,6 +13,7 @@ import isabelle.Session$Ready$;
 import isabelle.Session$Shutdown$;
 import isabelle.Thy_Info;
 import isabelle.Thy_Load;
+import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.scala.ISessionPhaseListener;
 import isabelle.scala.ScalaCollections;
@@ -87,7 +88,7 @@ public class Isabelle {
 		
 		fireSystemInit();
 		
-		Thy_Load thyLoad = new Thy_Load();
+		Thy_Load thyLoad = new URIThyLoad();
 		session = new Session(thyLoad);
 		thyInfo = new Thy_Info(thyLoad);
 		
