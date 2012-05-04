@@ -1,4 +1,4 @@
-package isabelle.eclipse.editors;
+package isabelle.eclipse.core.text;
 
 import isabelle.Standard_System;
 import isabelle.Symbol;

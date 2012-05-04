@@ -1,5 +1,7 @@
 package isabelle.eclipse.editors;
 
+import isabelle.eclipse.core.text.IsabelleDocument;
+
 import java.util.HashMap;
 import java.util.Map;
 
