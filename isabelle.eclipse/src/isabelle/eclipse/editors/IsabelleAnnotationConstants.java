@@ -1,6 +1,6 @@
 package isabelle.eclipse.editors;
 
-import isabelle.eclipse.core.text.AnnotationFactory.IsabelleAnnotation;
+import isabelle.eclipse.core.text.IsabelleAnnotation;
 
 import java.util.Arrays;
 import java.util.Collections;
