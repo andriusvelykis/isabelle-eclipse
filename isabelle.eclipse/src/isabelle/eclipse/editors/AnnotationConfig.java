@@ -91,23 +91,27 @@ class AnnotationConfig {
 		// use modern models
 		Assert.isTrue(baseAnnotationModel instanceof IAnnotationModelExtension);
 
-		final AnnotationModel annotationModel = getAnnotationModel(
+		AnnotationModel annotationModel = getAnnotationModel(
 				(IAnnotationModelExtension) baseAnnotationModel,
 				ANNOTATION_MODEL_KEY);
 		
 		List<Annotation> changedAnns = getChangedAnnotations(annotationModel, changedRanges);
 		List<Annotation> deleteAnns = filterExistingAnnotations(annotationModel, changedAnns);
 
-		final Annotation[] deleteAnnsArray = deleteAnns.toArray(new Annotation[deleteAnns.size()]);
-		final Map<Annotation, Position> addAnns = getAnnotationMap();
+		Annotation[] deleteAnnsArray = deleteAnns.toArray(new Annotation[deleteAnns.size()]);
+		Map<Annotation, Position> addAnns = getAnnotationMap();
 		
-		final IResource markerResource = getMarkerResource();
-		List<IMarker> changedMarkers = getChangedMarkers(markerResource, changedRanges);
-		final List<IMarker> deleteMarkers = filterExistingMarkers(changedMarkers);
-		final Collection<Entry<String, Map<String, Object>>> addMarkers = markers;
+		IResource markerResource = EditorUtil.getResource(editor.getEditorInput());
+		if (markerResource != null) {
+			// resource is not available to add markers (e.g. the file is not in the workspace)
+			// TODO show annotations instead?
+			List<IMarker> changedMarkers = getChangedMarkers(markerResource, changedRanges);
+			List<IMarker> deleteMarkers = filterExistingMarkers(changedMarkers);
+			Collection<Entry<String, Map<String, Object>>> addMarkers = markers;
+			setMarkers(markerResource, deleteMarkers, addMarkers);
+		}
 		
 		annotationModel.replaceAnnotations(deleteAnnsArray, addAnns);
-		setMarkers(markerResource, deleteMarkers, addMarkers);
 	}
 	
 	private AnnotationModel getAnnotationModel(IAnnotationModelExtension baseModel, Object key) {
@@ -297,10 +301,6 @@ class AnnotationConfig {
 		}
 		
 		return annMap;
-	}
-	
-	private IResource getMarkerResource() {
-		return IsabelleFileDocumentProvider.getMarkerResource(editor.getEditorInput());
 	}
 	
 	private static class TypePos {

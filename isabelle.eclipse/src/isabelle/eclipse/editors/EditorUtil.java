@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.IEditorInput;
@@ -14,6 +15,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 
 public class EditorUtil {
@@ -104,6 +106,24 @@ public class EditorUtil {
 				existentFiles.add(files[i]);
 		}
 		return existentFiles.toArray(new IFile[existentFiles.size()]);
+	}
+	
+	/**
+	 * Finds a corresponding workspace resource for the given element (e.g. editor input).
+	 * 
+	 * @param element
+	 *            The element for which to resolve resource (e.g. an editor input)
+	 * @return A resource corresponding to the given element, or {@code null}
+	 */
+	public static IResource getResource(Object element) {
+		// try resolving as file (a number of options there)
+		IResource resource = ResourceUtil.getFile(element);
+		if (resource == null) {
+			// try at least resource
+			resource = ResourceUtil.getResource(element);
+		}
+
+		return resource;
 	}
 
 }

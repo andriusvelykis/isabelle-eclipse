@@ -5,12 +5,10 @@ import isabelle.eclipse.core.text.IsabelleDocument;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
@@ -34,31 +32,25 @@ public class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
 			IsabelleDocument document = new IsabelleDocument(baseDocument);
 			isabelleDocuments.put(element, document);
 			
-			IResource markerResource = getMarkerResource(element);
-			ResourceMarkerAnnotationModel annotationModel = new ResourceMarkerAnnotationModel(markerResource);
+			IAnnotationModel annotationModel = createAnnotationModel(element);
 			annotationModel.connect(document);
 			annotationModels.put(element, annotationModel);
 		}
 	}
 	
-	public static IResource getMarkerResource(Object element) {
+	private IAnnotationModel createAnnotationModel(Object element) {
 		
-		IFile file = getFile(element);
-		if (file != null) {
-			return file;
+		// TODO use annotation model factories, as in TextFileBufferManager#createAnnotationModel()?
+		
+		// check if we can find a resource for the given element
+		IResource resource = EditorUtil.getResource(element);
+		if (resource != null) {
+			// resource located: use resource marker model
+			return new ResourceMarkerAnnotationModel(resource);
+		} else {
+			// no resource available: use plain model
+			return new AnnotationModel();
 		}
-		
-		// otherwise use workspace root as the marker resource
-		return ResourcesPlugin.getWorkspace().getRoot();
-	}
-	
-	private static IFile getFile(Object element) {
-		
-		if (element instanceof IAdaptable) {
-			return (IFile) ((IAdaptable) element).getAdapter(IFile.class);
-		}
-		
-		return null;
 	}
 
 	@Override
