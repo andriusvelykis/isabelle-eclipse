@@ -480,7 +480,7 @@ public class TheoryEditor extends TextEditor {
 		
 		if (isabelleModel == null) {
 			// TODO show a message that model is not available?
-			System.out.println("Isabelle model is not available for " + getPath(getEditorInput()));
+//			System.out.println("Isabelle model is not available for " + getPathURI(getEditorInput()));
 			return;
 		}
 		

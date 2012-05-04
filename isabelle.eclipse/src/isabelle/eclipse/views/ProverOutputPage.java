@@ -175,7 +175,6 @@ public class ProverOutputPage extends Page {
 		updateCommand(offset);
 		
 		if (currentCommand == null) {
-			System.out.println("No command");
 			return null;
 		}
 		
