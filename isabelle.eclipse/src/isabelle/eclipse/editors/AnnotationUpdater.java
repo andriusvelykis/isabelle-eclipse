@@ -2,8 +2,8 @@ package isabelle.eclipse.editors;
 
 import isabelle.Text.Range;
 import isabelle.eclipse.IsabelleEclipsePlugin;
-import isabelle.eclipse.editors.AnnotationFactory.AnnotationInfo;
-import isabelle.eclipse.editors.AnnotationFactory.IsabelleAnnotation;
+import isabelle.eclipse.core.text.AnnotationFactory.AnnotationInfo;
+import isabelle.eclipse.core.text.AnnotationFactory.IsabelleAnnotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;

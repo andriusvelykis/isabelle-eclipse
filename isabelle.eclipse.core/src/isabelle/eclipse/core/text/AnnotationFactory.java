@@ -1,4 +1,4 @@
-package isabelle.eclipse.editors;
+package isabelle.eclipse.core.text;
 
 import isabelle.Command;
 import isabelle.Isar_Document;
