@@ -19,7 +19,7 @@ import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
 public class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
 
 	private final Map<Object, IsabelleDocument> isabelleDocuments = new HashMap<Object, IsabelleDocument>();
-	private final Map<Object, ResourceMarkerAnnotationModel> annotationModels = new HashMap<Object, ResourceMarkerAnnotationModel>();
+	private final Map<Object, IAnnotationModel> annotationModels = new HashMap<Object, IAnnotationModel>();
 	
 	public IsabelleFileDocumentProvider() {
 		super();
@@ -65,7 +65,7 @@ public class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
 	public void disconnect(Object element) {
 		IsabelleDocument document = isabelleDocuments.remove(element);
 		
-		ResourceMarkerAnnotationModel annotationModel = annotationModels.get(element);
+		IAnnotationModel annotationModel = annotationModels.get(element);
 		if (annotationModel != null) {
 			annotationModel.disconnect(document);
 		}
