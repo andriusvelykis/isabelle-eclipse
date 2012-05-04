@@ -7,18 +7,11 @@
       <editor
             class="isabelle.eclipse.editors.TheoryEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            extensions="thy"
             icon="icons/isabelle.png"
             id="isabelle.eclipse.editors.TheoryEditor"
             name="Isabelle/Isar Theory Editor"
             symbolicFontName="isabelle.eclipse.isabelleFont">
-      </editor>
-      <editor
-            default="true"
-            extensions="thy"
-            icon="icons/isabelle.png"
-            id="isabelle.eclipse.editors.TheoryEditorLauncher"
-            launcher="isabelle.eclipse.editors.TheoryEditorLauncher"
-            name="Isabelle/Isar Theory Editor Launcher">
       </editor>
    </extension>
    <extension
