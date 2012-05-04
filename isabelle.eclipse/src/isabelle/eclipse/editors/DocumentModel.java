@@ -6,7 +6,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -216,7 +215,7 @@ public class DocumentModel {
 			newPerspective = lastPerspective;
 		}
 		
-		if (edits.isEmpty() && ObjectUtils.equals(newPerspective, lastPerspective)) {
+		if (edits.isEmpty() && newPerspective.equals(lastPerspective)) {
 			// no edits and the same perspective - nothing to flush
 			return;
 		}
