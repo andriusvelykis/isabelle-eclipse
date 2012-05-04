@@ -21,13 +21,14 @@ import org.eclipse.core.resources.IMarker;
 public class IsabelleAnnotationConstants {
 
 	private static final String MARKER_PROBLEM = "isabelle.eclipse.markerProblem";
+	private static final String MARKER_LEGACY = "isabelle.eclipse.markerLegacy";
 	private static final String MARKER_INFO = "isabelle.eclipse.markerInfo";
 	
 	// default annotations for the problem/info markers
 	private static final String ANNOTATION_ERROR = "org.eclipse.ui.workbench.texteditor.error";
 	private static final String ANNOTATION_WARNING = "org.eclipse.ui.workbench.texteditor.warning";
 	// TODO add custom legacy annotation
-	private static final String ANNOTATION_LEGACY = ANNOTATION_WARNING;
+	private static final String ANNOTATION_LEGACY = "isabelle.eclipse.editor.legacy";
 	private static final String ANNOTATION_INFO = "org.eclipse.ui.workbench.texteditor.info";
 	
 	// TODO foreground colours, Isabelle_Markup.foreground? Or actually syntax colours?
@@ -100,8 +101,7 @@ public class IsabelleAnnotationConstants {
 		switch (type) {
 		case MESSAGE_ERROR: return new MarkerKey(MARKER_PROBLEM, IMarker.SEVERITY_ERROR);
 		case MESSAGE_WARNING: return new MarkerKey(MARKER_PROBLEM, IMarker.SEVERITY_WARNING);
-		// TODO legacy marker type
-		case MESSAGE_LEGACY: return new MarkerKey(MARKER_PROBLEM, IMarker.SEVERITY_WARNING);
+		case MESSAGE_LEGACY: return new MarkerKey(MARKER_LEGACY, IMarker.SEVERITY_WARNING);
 		case MESSAGE_WRITELN: return new MarkerKey(MARKER_INFO, IMarker.SEVERITY_INFO);
 		default: return null;
 		}

@@ -67,6 +67,14 @@
       </persistent>
    </extension>
    <extension
+         id="markerLegacy"
+         name="Legacy Warning"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="isabelle.eclipse.markerProblem">
+      </super>
+   </extension>
+   <extension
          id="markerInfo"
          name="Isabelle Proof Info"
          point="org.eclipse.core.resources.markers">
@@ -87,6 +95,32 @@
    </extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="isabelle.eclipse.editor.legacy"
+            icon="icons/legacy.gif"
+            textPreferenceKey="legacyIndication"
+            presentationLayer="5"
+            showInNextPrevDropdownToolbarAction="true"
+            textPreferenceValue="true"
+            label="Legacy Warnings"
+            colorPreferenceKey="legacyIndicationColor"
+            showInNextPrevDropdownToolbarActionKey="showLegacyInNextPrevDropdownToolbarAction"
+            quickFixIcon="$nl$/icons/full/obj16/quick_fix_warning_obj.gif"
+            isGoToNextNavigationTargetKey="isLegacyGoToNextNavigationTarget"
+            isGoToNextNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="isLegacyGoToPreviousNavigationTarget"
+            isGoToPreviousNavigationTarget="true"
+            textStylePreferenceKey="legacyTextStyle"
+			textStylePreferenceValue="PROBLEM_UNDERLINE"             
+            overviewRulerPreferenceKey="legacyIndicationInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            verticalRulerPreferenceKey="legacyIndicationInVerticalRuler"
+            verticalRulerPreferenceValue="true"
+            highlightPreferenceKey="legacyIndicationHighlighting"
+            highlightPreferenceValue="false"
+            contributesToHeader="true"
+            colorPreferenceValue="244,200,45">
+      </specification>
       <specification
             annotationType="isabelle.eclipse.editor.markup.bad"
             colorPreferenceKey="markupBadColor"
@@ -234,6 +268,11 @@
    </extension>
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            name="isabelle.eclipse.editor.legacy"
+            markerType="isabelle.eclipse.markerLegacy"
+            markerSeverity="1">
+      </type>
       <type
             name="isabelle.eclipse.editor.markup.bad">
       </type>
