@@ -49,20 +49,20 @@ public class URIThyLoad extends RefThyLoad {
 		
 //		URI dirUri = URI.create(dir);
 		URI dirUri = URIPathEncoder.decodePath(dir);
-		URI resolvedUri = appendUri(dirUri, source_path);
+		URI resolvedUri = resolveURI(dirUri, source_path);
 		
 //		return resolvedUri.toString();
 		return URIPathEncoder.encodeAsPath(resolvedUri);
 	}
 	
 	/**
-	 * Appends (resolves) the source path against the given base directory URI.
+	 * Appends (resolves) the source path against the given base URI.
 	 * 
-	 * @param dir
+	 * @param base
 	 * @param source_path
 	 * @return
 	 */
-	private URI appendUri(URI dir, Path source_path) {
+	public static URI resolveURI(URI base, Path source_path) {
 		Path path = source_path.expand();
 		
 		if (path.is_absolute()) {
@@ -72,16 +72,16 @@ public class URIThyLoad extends RefThyLoad {
 			// encode as file system URI
 			return org.eclipse.core.filesystem.URIUtil.toURI(platformPath);
 		} else {
-			// assume relative URI and resolve it against the dir
+			// assume relative URI and resolve it against the base URI
 			String pathStr = path.implode();
 			
 			try {
 				URI sourceUri = new URI(pathStr);
-				return dir.resolve(sourceUri);
+				return base.resolve(sourceUri);
 			} catch (URISyntaxException e) {
 				IsabelleCorePlugin.log(e);
-				// at the worst case, just append the path to the directory
-				return URIUtil.append(dir, pathStr);
+				// at the worst case, just append the path (expecting a directory here)
+				return URIUtil.append(base, pathStr);
 			}
 		}
 	}
