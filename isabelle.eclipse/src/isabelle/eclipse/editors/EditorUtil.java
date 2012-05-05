@@ -8,6 +8,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextOperationTarget;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -17,6 +20,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 public class EditorUtil {
 
@@ -124,6 +129,40 @@ public class EditorUtil {
 		}
 
 		return resource;
+	}
+	
+	/**
+	 * Retrieves a {@link ITextViewer} for a given editor. Assumes that editor's
+	 * {@link ITextOperationTarget} is the text viewer and resolves it via the adapter.
+	 * 
+	 * @param editor
+	 * @return the text viewer, {@code null} if editor's {@link ITextOperationTarget} is not a text
+	 *         viewer.
+	 * 
+	 * @see <a href="http://stackoverflow.com/questions/923342/get-itextviewer-from-ieditorpart-eclipse">From StackOverflow</a>
+	 */
+	public static ITextViewer getTextViewer(IEditorPart editor) {
+		ITextOperationTarget target = (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+		if (target instanceof ITextViewer) {
+			return (ITextViewer) target;
+		}
+
+		return null;
+	}
+	
+	/**
+	 * Retrieves the text editor's document via its document provider.
+	 * 
+	 * @param editor
+	 * @return the document, or {@code null} if none or provider is unavailable
+	 */
+	public static IDocument getDocument(ITextEditor editor) {
+		IDocumentProvider provider = editor.getDocumentProvider();
+		if (provider != null) {
+			return provider.getDocument(editor.getEditorInput());
+		}
+		
+		return null;
 	}
 
 }
