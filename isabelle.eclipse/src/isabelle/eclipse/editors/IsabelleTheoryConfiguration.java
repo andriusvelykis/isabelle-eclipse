@@ -1,9 +1,11 @@
 package isabelle.eclipse.editors;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import isabelle.Token$Kind$;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -22,6 +24,11 @@ import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import scala.Enumeration.Value;
 
 public class IsabelleTheoryConfiguration extends TextSourceViewerConfiguration {
+
+	/**
+	 * The hyperlink detector target ID, as defined in plugin.xml
+	 */
+	private static final String ISABELLE_THEORY_HYPERLINK_TARGET = "isabelle.eclipse.isabelleTheory";
 
 	private static final Token$Kind$ TOKEN_KIND = isabelle.Token$Kind$.MODULE$;
 	
@@ -187,6 +194,24 @@ public class IsabelleTheoryConfiguration extends TextSourceViewerConfiguration {
 //		reconciler.setRepairer(ndr, XMLPartitionScanner.XML_COMMENT);
 
 		return reconciler;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.eclipse.ui.editors.text.TextSourceViewerConfiguration#getHyperlinkDetectorTargets(
+	 * 			org.eclipse.jface.text.source.ISourceViewer)
+	 */
+	@Override
+	protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
+		
+		@SuppressWarnings("unchecked")
+		Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
+		
+		// mark the editor as valid target for Isabelle Theory hyperlink detectors
+		// (attaches the detector to the editor)
+		targets.put(ISABELLE_THEORY_HYPERLINK_TARGET, editor);
+		
+		return targets;
 	}
 
 }

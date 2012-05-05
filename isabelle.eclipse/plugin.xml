@@ -378,5 +378,25 @@
             parentId="org.eclipse.ui.textEditorScope">
       </context>
    </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
+      <target
+            id="isabelle.eclipse.isabelleTheory"
+            name="Theory Editor">
+         <context
+               type="isabelle.eclipse.editors.TheoryEditor">
+         </context>
+      </target>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector
+            activate="true"
+            class="isabelle.eclipse.editors.IsabelleHyperlinkDetector"
+            id="isabelle.eclipse.editor.IsabelleHyperlinkDetector"
+            name="Isabelle Definition"
+            targetId="isabelle.eclipse.isabelleTheory">
+      </hyperlinkDetector>
+   </extension>
 
 </plugin>

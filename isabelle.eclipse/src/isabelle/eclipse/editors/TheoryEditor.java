@@ -618,6 +618,12 @@ public class TheoryEditor extends TextEditor {
 			}
 			return outlinePage;
 		}
+		
+		// expose the Isabelle model via IAdaptable
+		if (DocumentModel.class.equals(adapter)) {
+			return isabelleModel;
+		}
+		
 		return super.getAdapter(adapter);
 	}
 	
