@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import isabelle.Command;
 import isabelle.Document.Snapshot;
 import isabelle.Exn.Result;
 import isabelle.Session;
@@ -37,9 +38,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.IViewportListener;
 import org.eclipse.jface.text.JFaceTextUtil;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ILineRange;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -625,6 +628,61 @@ public class TheoryEditor extends TextEditor {
 		}
 		
 		return super.getAdapter(adapter);
+	}
+	
+	/**
+	 * Selects and reveals the range in the editor.
+	 * 
+	 * @param selectRange
+	 *            range to be selected
+	 * @param highlightRange
+	 *            range to be highlighted (e.g. with range annotation)
+	 */
+	public void selectInEditor(IRegion selectRange, IRegion highlightRange) {
+		
+		setHighlightRange(highlightRange.getOffset(), highlightRange.getLength(), true);
+		selectAndReveal(selectRange.getOffset(), selectRange.getLength(),
+				highlightRange.getOffset(), highlightRange.getLength());
+		
+		// TODO select in outline as well?
+	}
+	
+	/**
+	 * Selects the command in the editor.
+	 * 
+	 * @param command
+	 *            the command to be selected, must be in the snapshot
+	 * @param regionInCommand
+	 *            region within the command to be selected, or {@code null} if the whole command is
+	 *            to be selected
+	 */
+	public void setSelection(Command command, IRegion regionInCommand) {
+		if (isabelleModel == null || command == null) {
+			return;
+		}
+		
+		// find the command in the snapshot
+		Snapshot snapshot = getSnapshot();
+		Option<Object> startOpt = snapshot.node().command_start(command);
+		if (startOpt.isEmpty()) {
+			// no command in the snapshot
+			return;
+		}
+		
+		// get the full command range
+		int start = (Integer) startOpt.get();
+		int length = command.length();
+		IRegion cmdRange = new Region(start, length);
+		
+		// if available, calculate the region in command
+		IRegion selectRange = cmdRange;
+		if (regionInCommand != null) {
+			selectRange = new Region(start + command.decode(regionInCommand.getOffset()), 
+									 regionInCommand.getLength());
+		}
+		
+		// reveal & select
+		selectInEditor(selectRange, cmdRange);
 	}
 	
 }
