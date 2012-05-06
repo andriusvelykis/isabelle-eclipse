@@ -12,10 +12,10 @@ import isabelle._
  */
 object HyperlinkUtil {
 
-  def getHyperlink(snapshot: Document.Snapshot, offset: Int): HyperlinkInfo =
+  def getHyperlink(snapshot: Document.Snapshot, offset: Int, length: Int = 1): HyperlinkInfo =
   {
       val markup =
-        snapshot.select_markup(Text.Range(offset, offset + 1)) {
+        snapshot.select_markup(Text.Range(offset, offset + length)) {
           // FIXME Isar_Document.Hyperlink extractor
           case Text.Info(info_range,
             XML.Elem(Markup(Markup.ENTITY, props), _)) if (props.find(
@@ -25,48 +25,19 @@ object HyperlinkUtil {
               case _ => false
             }).isEmpty) =>
             
-            (Position.File.unapply(props), Position.Line.unapply(props)) match {
-              case (Some(def_file), Some(def_line)) => {
-                // get start/end offsets if available
-                
-                val def_range = (Position.Offset.unapply(props), Position.End_Offset.unapply(props)) match {
-                  // workaround - the offset is off by 1 somehow
-                  case (Some(def_start), Some(def_end)) => Text.Range(def_start - 1, def_end - 1)
-                  case _ => null
-                }
-                val def_name = Markup.Name.unapply(props) match {
-                  case Some(name) => name
-                  case None => null
-                }
-                
-                // do not have name positions - so just use the whole def_start/end
-                HyperlinkInfo(info_range, null, def_file, def_name, def_range, def_line, def_range)
+            (Position.File.unapply(props), Position.Offset.unapply(props), Position.End_Offset.unapply(props)) match {
+              case (Some(def_file), Some(def_start), Some(def_end)) => {
+                // workaround - the offset is off by 1 somehow
+                val def_range = Text.Range(def_start - 1, def_end - 1)
+                TextHyperlinkInfo(info_range, Markup.Name.unapply(props).orNull, def_file, def_range)
               }
               case _ if !snapshot.is_outdated =>
-                (props, props) match {
-                  case (Position.Id(def_id), Position.Offset(def_offset)) =>
+                (props, props, props) match {
+                  case (Position.Id(def_id), Position.Offset(def_offset), Position.End_Offset(end_offset)) =>
                     snapshot.state.find_command(snapshot.version, def_id) match {
                       case Some((def_node, def_cmd)) =>
-                        def_node.command_start(def_cmd) match {
-                          case Some(def_cmd_start) => {
-                            
-                            val def_range = Text.Range(def_cmd_start, def_cmd_start + def_cmd.length)
-                            
-                            val def_name_range = Position.End_Offset.unapply(props) match {
-                              case Some(end) => Text.Range(def_cmd_start + def_cmd.decode(def_offset),
-                                                           def_cmd_start + def_cmd.decode(end))
-                              case None => null
-                            }
-                        	
-                            val def_name = Markup.Name.unapply(props) match {
-                              case Some(name) => name
-                              case None => null
-                            }
-                            HyperlinkInfo(info_range, new DocumentRef(def_cmd.node_name), 
-                                def_cmd.node_name.node, def_name, def_range, -1, def_name_range)
-                          }
-                          case None => null
-                        }
+                        CommandHyperlinkInfo(info_range, Markup.Name.unapply(props).orNull, def_cmd,
+                            Text.Range(def_offset, end_offset))
                       case None => null
                     }
                   case _ => null
@@ -79,9 +50,16 @@ object HyperlinkUtil {
         case _ => null
       }
   }
+  
+  trait HyperlinkInfo {
+    def linkRange: Text.Range
+    def linkName: String
+  }
 
-  sealed case class HyperlinkInfo(val linkRange: Text.Range, 
-      val targetDocument: DocumentRef, val targetFile: String, val targetName: String,
-      val targetRange: Text.Range, val targetLine: Int, val targetNameRange: Text.Range)
+  sealed case class CommandHyperlinkInfo(val linkRange: Text.Range, val linkName: String, 
+      val targetCommand: Command, val rangeInCommand: Text.Range) extends HyperlinkInfo
+  
+  sealed case class TextHyperlinkInfo(val linkRange: Text.Range, val linkName: String,
+      val targetFile: String, val targetRange: Text.Range) extends HyperlinkInfo
   
 }
