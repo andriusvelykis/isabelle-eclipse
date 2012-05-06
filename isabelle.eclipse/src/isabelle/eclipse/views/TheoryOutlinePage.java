@@ -81,7 +81,7 @@ public class TheoryOutlinePage extends ContentOutlinePage {
 			text = document.get();
 		}
 		
-		return TheoryNode.getTree(isabelleModel.getSession(), isabelleModel.getName().getRef(), text);
+		return TheoryNode.getTree(isabelleModel.getSession(), isabelleModel.getName(), text);
 	}
 	
 	private List<TheoryNode> parseRawOutline(DocumentModel isabelleModel) {

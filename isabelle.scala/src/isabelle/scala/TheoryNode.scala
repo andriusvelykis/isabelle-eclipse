@@ -11,7 +11,7 @@ import Thy_Syntax.Structure
 
 object TheoryNode {
 
-  def getTree(session: Session, thy_name: Document.Node.Name, text: String): java.util.List[TheoryNode] = {
+  def getTree(session: Session, thy_name: DocumentRef, text: String): java.util.List[TheoryNode] = {
     val syntax = session.current_syntax()
 
     def make_tree(offset: Text.Offset, entry: Structure.Entry): List[TheoryNode] =
@@ -31,7 +31,7 @@ object TheoryNode {
         case _ => Nil
       }
     
-    val structure = Structure.parse(syntax, thy_name, text)
+    val structure = Structure.parse(syntax, thy_name.getRef(), text)
 
     make_tree(0, structure)
   }
