@@ -12,6 +12,8 @@ object DocumentRef {
   
   def create(node: String, dir: String, theory: String): DocumentRef = 
     new DocumentRef(Document.Node.Name(node, dir, theory))
+  
+  def create(command: Command) = new DocumentRef(command.node_name)
     
 }
 
