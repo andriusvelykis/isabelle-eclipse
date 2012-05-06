@@ -1,9 +1,11 @@
 package isabelle.eclipse.editors;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -26,9 +28,11 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
@@ -272,4 +276,58 @@ public class EditorUtil {
 		}
 	}
 	
+	/**
+	 * Opens an editor on the given IFileStore object.
+	 * <p>
+	 * This method can be used to open files that reside outside the workspace resource set.
+	 * </p>
+	 * <p>
+	 * If the page already has an editor open on the target object then that editor is brought to
+	 * front; otherwise, a new editor is opened.
+	 * </p>
+	 * 
+	 * @param page
+	 *            the page in which the editor will be opened
+	 * @param uri
+	 *            the URI of the file store representing the file to open
+	 * @return an open editor or {@code null} if an external editor was opened
+	 * @exception PartInitException
+	 *                if the editor could not be initialized
+	 * 
+	 * @see org.eclipse.ui.ide.IDE#openEditorOnFileStore(IWorkbenchPage, IFileStore)
+	 * @see EFS#getStore(URI)
+	 * 
+	 * @since 3.3
+	 */
+	public static IEditorPart openEditor(IWorkbenchPage page, URI uri) throws PartInitException {
+		// sanity checks
+		if (page == null) {
+			throw new IllegalArgumentException();
+		}
+
+		IFileStore fileStore;
+		try {
+			fileStore = EFS.getStore(uri);
+		} catch (CoreException e) {
+			throw new PartInitException("CoreException opening the file store on the URI.", e);
+		}
+
+		// open the editor on the file
+		return IDE.openEditorOnFileStore(page, fileStore);
+	}
+	
+	/**
+	 * Retrieves active page from the workbench.
+	 * 
+	 * @return the active page or {@code null} if not available or called from non-UI thread
+	 */
+	public static IWorkbenchPage getActivePage() {
+		IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		if (activeWindow != null) {
+			return activeWindow.getActivePage();
+		}
+		
+		return null;
+	}
+
 }
