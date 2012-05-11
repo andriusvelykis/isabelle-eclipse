@@ -35,8 +35,13 @@
    </extension>
    <extension
          point="org.eclipse.ui.views">
+      <category
+            id="isabelle.eclipse.ui"
+            name="Isabelle">
+      </category>
       <view
             allowMultiple="true"
+            category="isabelle.eclipse.ui"
             class="isabelle.eclipse.ui.views.ProverOutputView"
             icon="icons/isabelle.png"
             id="isabelle.eclipse.ui.proverOutputView"
