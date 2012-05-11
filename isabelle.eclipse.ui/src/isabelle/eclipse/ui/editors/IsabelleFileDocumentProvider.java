@@ -26,7 +26,7 @@ public class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
 	@Override
 	public void connect(Object element) throws CoreException {
 		super.connect(element);
-		System.out.println("Connecting isabelle document provider");
+//		System.out.println("Connecting isabelle document provider");
 		IDocument baseDocument = getDocument(element);
 		if (baseDocument != null) {
 			IsabelleDocument document = new IsabelleDocument(baseDocument);

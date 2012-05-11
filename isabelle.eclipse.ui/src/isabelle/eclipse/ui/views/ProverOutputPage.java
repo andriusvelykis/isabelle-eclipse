@@ -170,7 +170,7 @@ public class ProverOutputPage extends Page {
 	}
 
 	private String renderOutput(int offset, Set<Command> restriction, IProgressMonitor monitor) {
-		long start = System.currentTimeMillis();
+//		long start = System.currentTimeMillis();
 		// TODO: do not redo the same command?
 		updateCommand(offset);
 		
@@ -198,11 +198,11 @@ public class ProverOutputPage extends Page {
 		List<Tree> commandResults = SnapshotUtil.getCommandResults(snapshot,
 				currentCommand, new String[0], excludeFilter);
 
-		System.out.println("Got command results: " + (System.currentTimeMillis() - start));
+//		System.out.println("Got command results: " + (System.currentTimeMillis() - start));
 		
 		String htmlPage = PrettyHtml.renderHtmlPage(commandResults, getCssPaths(), "", "IsabelleText", 12);
 
-		System.out.println("Done rendering: " + (System.currentTimeMillis() - start));
+//		System.out.println("Done rendering: " + (System.currentTimeMillis() - start));
 		
 		return htmlPage;
 	}

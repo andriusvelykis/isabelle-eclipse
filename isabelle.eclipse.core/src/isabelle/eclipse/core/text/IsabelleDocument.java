@@ -27,7 +27,7 @@ public class IsabelleDocument extends Document {
 					return;
 				}
 				
-				System.out.println("Sync document - changed");
+//				System.out.println("Sync document - changed");
 				syncFromBase();
 			}
 			
@@ -37,7 +37,7 @@ public class IsabelleDocument extends Document {
 					return;
 				}
 				
-				System.out.println("Sync document - about to be changed");
+//				System.out.println("Sync document - about to be changed");
 			}
 		});
 		
@@ -65,12 +65,12 @@ public class IsabelleDocument extends Document {
 	
 	private void syncFromBase() {
 		
-		System.out.println("Sync from base");
+//		System.out.println("Sync from base");
 		String text = baseDocument.get();
 		
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
 		if (isabelle.isInit()) {
-			System.out.println("Sync from base Isabelle");
+//			System.out.println("Sync from base Isabelle");
 			text = Symbol.decode(text);
 		}
 		
