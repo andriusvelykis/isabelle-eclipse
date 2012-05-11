@@ -28,20 +28,20 @@ public class IsabelleAnnotationConstants {
 	private static final String ANNOTATION_ERROR = "org.eclipse.ui.workbench.texteditor.error";
 	private static final String ANNOTATION_WARNING = "org.eclipse.ui.workbench.texteditor.warning";
 	// TODO add custom legacy annotation
-	private static final String ANNOTATION_LEGACY = "isabelle.eclipse.editor.legacy";
-	private static final String ANNOTATION_INFO = "org.eclipse.ui.workbench.texteditor.info";
+	private static final String ANNOTATION_LEGACY = "isabelle.eclipse.ui.annotation.legacy";
+	private static final String ANNOTATION_INFO = "isabelle.eclipse.ui.annotation.info";
 	
 	// TODO foreground colours, Isabelle_Markup.foreground? Or actually syntax colours?
-	private static final String ANNOTATION_BAD = "isabelle.eclipse.editor.markup.bad";
-	private static final String ANNOTATION_HILITE = "isabelle.eclipse.editor.markup.hilite";
-	private static final String ANNOTATION_TOKEN = "isabelle.eclipse.editor.markup.token";
+	private static final String ANNOTATION_BAD = "isabelle.eclipse.ui.annotation.markup.bad";
+	private static final String ANNOTATION_HILITE = "isabelle.eclipse.ui.annotation.markup.hilite";
+	private static final String ANNOTATION_TOKEN = "isabelle.eclipse.ui.annotation.markup.token";
 	
-	private static final String ANNOTATION_OUTDATED = "isabelle.eclipse.editor.commandStatus.outdated";
-	private static final String ANNOTATION_UNFINISHED = "isabelle.eclipse.editor.commandStatus.unfinished";
+	private static final String ANNOTATION_OUTDATED = "isabelle.eclipse.ui.annotation.cmd.outdated";
+	private static final String ANNOTATION_UNFINISHED = "isabelle.eclipse.ui.annotation.cmd.unfinished";
 	// TODO use Isabelle's colors? At least as preference defaults?
-	private static final String ANNOTATION_UNPROCESSED = "isabelle.eclipse.editor.commandStatus.unprocessed";
-//	private static final String ANNOTATION_FAILED = "isabelle.eclipse.editor.commandStatus.failed";
-//	private static final String ANNOTATION_FINISHED = "isabelle.eclipse.editor.commandStatus.finished";
+	private static final String ANNOTATION_UNPROCESSED = "isabelle.eclipse.ui.annotation.cmd.unprocessed";
+//	private static final String ANNOTATION_FAILED = "isabelle.eclipse.ui.annotation.cmd.failed";
+//	private static final String ANNOTATION_FINISHED = "isabelle.eclipse.ui.annotation.cmd.finished";
 	
 	public static final Map<IsabelleAnnotation, String> ANNOTATION_KEYS;
 	public static final Map<String, IsabelleAnnotation> ANNOTATION_TYPES;

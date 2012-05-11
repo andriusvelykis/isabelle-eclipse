@@ -67,8 +67,8 @@ import scala.Tuple2;
 
 public class TheoryEditor extends TextEditor {
 
-	public static final String EDITOR_ID = "isabelle.eclipse.editors.TheoryEditor";
-	public static final String EDITOR_SCOPE = "isabelle.eclipse.editor.theoryEditorScope";
+	public static final String EDITOR_ID = "isabelle.eclipse.ui.theoryEditor";
+	public static final String EDITOR_SCOPE = "isabelle.eclipse.ui.theoryEditorScope";
 	
 	private ColorManager colorManager;
 	

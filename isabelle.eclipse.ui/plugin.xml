@@ -9,9 +9,9 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             extensions="thy"
             icon="icons/isabelle.png"
-            id="isabelle.eclipse.editors.TheoryEditor"
+            id="isabelle.eclipse.ui.theoryEditor"
             name="Isabelle/Isar Theory Editor"
-            symbolicFontName="isabelle.eclipse.isabelleFont">
+            symbolicFontName="isabelle.eclipse.ui.isabelleFont">
       </editor>
    </extension>
    <extension
@@ -26,7 +26,7 @@
          point="org.eclipse.ui.console.consolePageParticipants">
       <consolePageParticipant
             class="isabelle.eclipse.ui.views.RawOutputConsoleParticipant"
-            id="isabelle.eclipse.rawOutputConsoleParticipant">
+            id="isabelle.eclipse.ui.rawOutputConsoleParticipant">
          <enablement>
             <instanceof
                   value="org.eclipse.ui.console.MessageConsole">
@@ -39,7 +39,7 @@
             allowMultiple="true"
             class="isabelle.eclipse.ui.views.ProverOutputView"
             icon="icons/isabelle.png"
-            id="isabelle.eclipse.proverOutputView"
+            id="isabelle.eclipse.ui.proverOutputView"
             name="Prover Output"
             restorable="true">
       </view>
@@ -47,7 +47,7 @@
    <extension
          point="org.eclipse.ui.themes">
       <fontDefinition
-            id="isabelle.eclipse.isabelleFont"
+            id="isabelle.eclipse.ui.isabelleFont"
             label="IsabelleText"
             value="IsabelleText-regular-12">
       </fontDefinition>
@@ -89,14 +89,14 @@
          point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
       <referenceprovider
             class="isabelle.eclipse.ui.editors.IsabelleQuickDiffReference"
-            id="isabelle.eclipse.referenceprovider1"
+            id="isabelle.eclipse.ui.quickDiff"
             label="Isabelle Formatted Version on Disk">
       </referenceprovider>
    </extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="isabelle.eclipse.editor.legacy"
+            annotationType="isabelle.eclipse.ui.annotation.legacy"
             icon="icons/legacy.gif"
             textPreferenceKey="legacyIndication"
             presentationLayer="5"
@@ -122,7 +122,7 @@
             colorPreferenceValue="244,200,45">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.editor.markup.bad"
+            annotationType="isabelle.eclipse.ui.annotation.markup.bad"
             colorPreferenceKey="markupBadColor"
             colorPreferenceValue="255,204,204"
             highlightPreferenceKey="markupBadHighlighting"
@@ -140,7 +140,7 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.editor.markup.hilite"
+            annotationType="isabelle.eclipse.ui.annotation.markup.hilite"
             colorPreferenceKey="markupHiliteColor"
             colorPreferenceValue="255,235,194"
             highlightPreferenceKey="markupHiliteHighlighting"
@@ -158,7 +158,7 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.editor.markup.token"
+            annotationType="isabelle.eclipse.ui.annotation.markup.token"
             colorPreferenceKey="markupTokenColor"
             colorPreferenceValue="240,240,240"
             highlightPreferenceKey="markupTokenHighlighting"
@@ -176,7 +176,7 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.editor.commandStatus.outdated"
+            annotationType="isabelle.eclipse.ui.annotation.cmd.outdated"
             colorPreferenceKey="commandOutdatedColor"
             colorPreferenceValue="240,240,240"
             highlightPreferenceKey="commandOutdatedHighlighting"
@@ -194,7 +194,7 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.editor.commandStatus.unfinished"
+            annotationType="isabelle.eclipse.ui.annotation.cmd.unfinished"
             colorPreferenceKey="commandUnfinishedColor"
             colorPreferenceValue="255,228,225"
             highlightPreferenceKey="commandUnfinishedHighlighting"
@@ -212,7 +212,7 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.editor.commandStatus.unprocessed"
+            annotationType="isabelle.eclipse.ui.annotation.cmd.unprocessed"
             colorPreferenceKey="commandUnprocessedColor"
             colorPreferenceValue="255,228,225"
             highlightPreferenceKey="commandUnprocessedHighlighting"
@@ -230,7 +230,7 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.editor.commandStatus.failed"
+            annotationType="isabelle.eclipse.ui.annotation.cmd.failed"
             colorPreferenceKey="commandFailedColor"
             colorPreferenceValue="255,204,204"
             highlightPreferenceKey="commandFailedHighlighting"
@@ -248,7 +248,7 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.editor.commandStatus.finished"
+            annotationType="isabelle.eclipse.ui.annotation.cmd.finished"
             colorPreferenceKey="commandFinishedColor"
             colorPreferenceValue="239,247,248"
             highlightPreferenceKey="commandFinishedHighlighting"
@@ -269,51 +269,51 @@
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
       <type
-            name="isabelle.eclipse.editor.legacy"
+            name="isabelle.eclipse.ui.annotation.legacy"
             markerType="isabelle.eclipse.ui.markerLegacy"
             markerSeverity="1">
       </type>
       <type
-            name="isabelle.eclipse.editor.markup.bad">
+            name="isabelle.eclipse.ui.annotation.markup.bad">
       </type>
       <type
-            name="isabelle.eclipse.editor.markup.hilite">
+            name="isabelle.eclipse.ui.annotation.markup.hilite">
       </type>
       <type
-            name="isabelle.eclipse.editor.markup.token">
+            name="isabelle.eclipse.ui.annotation.markup.token">
       </type>
       <type
-            name="isabelle.eclipse.editor.commandStatus.outdated">
+            name="isabelle.eclipse.ui.annotation.cmd.outdated">
       </type>
       <type
-            name="isabelle.eclipse.editor.commandStatus.unfinished">
+            name="isabelle.eclipse.ui.annotation.cmd.unfinished">
       </type>
       <type
-            name="isabelle.eclipse.editor.commandStatus.unprocessed">
+            name="isabelle.eclipse.ui.annotation.cmd.unprocessed">
       </type>
       <type
-            name="isabelle.eclipse.editor.commandStatus.failed">
+            name="isabelle.eclipse.ui.annotation.cmd.failed">
       </type>
       <type
-            name="isabelle.eclipse.editor.commandStatus.finished">
+            name="isabelle.eclipse.ui.annotation.cmd.finished">
       </type>
       <type
             markerSeverity="0"
             markerType="isabelle.eclipse.ui.markerInfo"
-            name="isabelle.eclipse.editor.markup.info"
+            name="isabelle.eclipse.ui.annotation.info"
             super="org.eclipse.ui.workbench.texteditor.info">
       </type>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
       <command
-            categoryId="isabelle.eclipse.editor.theory"
+            categoryId="isabelle.eclipse.ui.category.theory"
             description="Move Prover To Selected Theory Line"
-            id="isabelle.eclipse.editor.submitToPoint"
+            id="isabelle.eclipse.ui.editor.submitToPoint"
             name="Go To Point">
       </command>
       <category
-            id="isabelle.eclipse.editor.theory"
+            id="isabelle.eclipse.ui.category.theory"
             name="Isabelle Theory">
       </category>
    </extension>
@@ -321,12 +321,12 @@
          point="org.eclipse.ui.handlers">
       <handler
             class="isabelle.eclipse.ui.actions.SubmitToPointCommand"
-            commandId="isabelle.eclipse.editor.submitToPoint">
+            commandId="isabelle.eclipse.ui.editor.submitToPoint">
          <activeWhen>
             <with
                   variable="activePartId">
                <equals
-                     value="isabelle.eclipse.editors.TheoryEditor">
+                     value="isabelle.eclipse.ui.theoryEditor">
                </equals>
             </with>
          </activeWhen>
@@ -338,7 +338,7 @@
             <with
                   variable="activePartId">
                <equals
-                     value="isabelle.eclipse.proverOutputView">
+                     value="isabelle.eclipse.ui.proverOutputView">
                </equals>
             </with>
          </activeWhen>
@@ -350,9 +350,9 @@
             allPopups="false"
             locationURI="toolbar:org.eclipse.ui.main.toolbar">
          <toolbar
-               id="isabelle.eclipse.editor.toolbar">
+               id="isabelle.eclipse.ui.main.toolbar">
             <command
-                  commandId="isabelle.eclipse.editor.submitToPoint"
+                  commandId="isabelle.eclipse.ui.editor.submitToPoint"
                   icon="icons/isabelle.png"
                   label="Go To Point"
                   style="push">
@@ -363,8 +363,8 @@
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="isabelle.eclipse.editor.submitToPoint"
-            contextId="isabelle.eclipse.editor.theoryEditorScope"
+            commandId="isabelle.eclipse.ui.editor.submitToPoint"
+            contextId="isabelle.eclipse.ui.theoryEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Shift+M1+Enter">
       </key>
@@ -373,7 +373,7 @@
          point="org.eclipse.ui.contexts">
       <context
             description="Editing Isabelle Theory Files"
-            id="isabelle.eclipse.editor.theoryEditorScope"
+            id="isabelle.eclipse.ui.theoryEditorScope"
             name="Editing Isabelle Theory"
             parentId="org.eclipse.ui.textEditorScope">
       </context>
@@ -381,7 +381,7 @@
    <extension
          point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
       <target
-            id="isabelle.eclipse.isabelleTheory"
+            id="isabelle.eclipse.ui.theoryEditor"
             name="Theory Editor">
          <context
                type="isabelle.eclipse.ui.editors.TheoryEditor">
@@ -393,9 +393,9 @@
       <hyperlinkDetector
             activate="true"
             class="isabelle.eclipse.ui.editors.IsabelleHyperlinkDetector"
-            id="isabelle.eclipse.editor.IsabelleHyperlinkDetector"
+            id="isabelle.eclipse.ui.isabelleHyperlinkDetector"
             name="Isabelle Definition"
-            targetId="isabelle.eclipse.isabelleTheory">
+            targetId="isabelle.eclipse.ui.theoryEditor">
       </hyperlinkDetector>
    </extension>
 

@@ -28,7 +28,7 @@ public class IsabelleTheoryConfiguration extends TextSourceViewerConfiguration {
 	/**
 	 * The hyperlink detector target ID, as defined in plugin.xml
 	 */
-	private static final String ISABELLE_THEORY_HYPERLINK_TARGET = "isabelle.eclipse.isabelleTheory";
+	private static final String ISABELLE_THEORY_HYPERLINK_TARGET = "isabelle.eclipse.ui.theoryEditor";
 
 	private static final Token$Kind$ TOKEN_KIND = isabelle.Token$Kind$.MODULE$;
 	
