@@ -73,7 +73,7 @@
    </extension>
    <extension
          id="markerLegacy"
-         name="Legacy Warning"
+         name="Isabelle Legacy Warning"
          point="org.eclipse.core.resources.markers">
       <super
             type="isabelle.eclipse.ui.markerProblem">
