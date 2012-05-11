@@ -94,7 +94,7 @@ public class ProverOutputPage extends Page {
         mainComposite.setLayout(new FillLayout());
         
         outputArea = new Browser(mainComposite, SWT.NONE);
-        outputArea.setText("Initialised output view");
+//        outputArea.setText("Initialised output view");
 	}
 
 	@Override
