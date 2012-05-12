@@ -3,7 +3,7 @@ package isabelle.eclipse.ui.editors;
 import isabelle.Text.Range;
 import isabelle.eclipse.core.text.AnnotationInfo;
 import isabelle.eclipse.core.text.IsabelleAnnotation;
-import isabelle.eclipse.ui.IsabelleEclipsePlugin;
+import isabelle.eclipse.ui.IsabelleUIPlugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -267,7 +267,7 @@ public class AnnotationUpdater {
 						markerResource.findMarkers(markerType, false, IResource.DEPTH_ZERO)));
 			}
 		} catch (CoreException e) {
-			IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
+			IsabelleUIPlugin.log(e.getLocalizedMessage(), e);
 		}
 		
 		if (changeRange.isEmpty()) {
@@ -324,7 +324,7 @@ public class AnnotationUpdater {
 				}
 				
 			} catch (CoreException e) {
-				IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
+				IsabelleUIPlugin.log(e.getLocalizedMessage(), e);
 			}
 			
 			// did not match with a corresponding marker in the new state, so delete it
@@ -358,7 +358,7 @@ public class AnnotationUpdater {
 		try {
 			markerResource.getWorkspace().run(r, null, IWorkspace.AVOID_UPDATE, null);
 		} catch (CoreException ce) {
-			IsabelleEclipsePlugin.log(ce.getMessage(), ce);
+			IsabelleUIPlugin.log(ce.getMessage(), ce);
 		}
 	}
 	

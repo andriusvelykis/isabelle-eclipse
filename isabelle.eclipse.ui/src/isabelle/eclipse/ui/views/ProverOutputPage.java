@@ -17,7 +17,7 @@ import isabelle.Session.Commands_Changed;
 import isabelle.XML.Tree;
 import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.core.util.SafeSessionActor;
-import isabelle.eclipse.ui.IsabelleEclipsePlugin;
+import isabelle.eclipse.ui.IsabelleUIPlugin;
 import isabelle.eclipse.ui.editors.TheoryEditor;
 import isabelle.eclipse.ui.util.SessionEventSupport;
 import isabelle.scala.ISessionCommandsListener;
@@ -209,7 +209,7 @@ public class ProverOutputPage extends Page {
 	
 	private List<String> getCssPaths() {
 		List<String> cssPaths = new ArrayList<String>();
-		Bundle bundle = Platform.getBundle(IsabelleEclipsePlugin.PLUGIN_ID);
+		Bundle bundle = Platform.getBundle(IsabelleUIPlugin.PLUGIN_ID);
 		addResourcePath(cssPaths, bundle, "etc/isabelle.css");
 		addResourcePath(cssPaths, bundle, "etc/isabelle-jedit.css");
 		return cssPaths;
@@ -218,7 +218,7 @@ public class ProverOutputPage extends Page {
 	private void addResourcePath(List<String> paths, Bundle bundle, String pathInBundle) {
 		URL fileURL = bundle.getEntry(pathInBundle);
 		if (fileURL == null) {
-			IsabelleEclipsePlugin.log("Unable to locate resource " + pathInBundle, null);
+			IsabelleUIPlugin.log("Unable to locate resource " + pathInBundle, null);
 			return;
 		}
 		
@@ -227,7 +227,7 @@ public class ProverOutputPage extends Page {
 			String path = fullURL.toString();
 			paths.add(path);
 		} catch (IOException e) {
-			IsabelleEclipsePlugin.log("Unable to locate resource " + pathInBundle, e);
+			IsabelleUIPlugin.log("Unable to locate resource " + pathInBundle, e);
 		}
 	}
 	

@@ -6,7 +6,7 @@ import isabelle.Isabelle_Process.Result;
 import isabelle.Session;
 import isabelle.XML;
 import isabelle.eclipse.core.util.SafeSessionActor;
-import isabelle.eclipse.ui.IsabelleEclipsePlugin;
+import isabelle.eclipse.ui.IsabelleUIPlugin;
 import isabelle.eclipse.ui.util.SessionEventSupport;
 import isabelle.scala.ISessionRawMessageListener;
 import isabelle.scala.SessionActor;
@@ -63,7 +63,7 @@ public class RawOutputConsole extends MessageConsole {
 			try {
 				consoleStream.close();
 			} catch (IOException e) {
-				IsabelleEclipsePlugin.log("Unable to close raw output console", e);
+				IsabelleUIPlugin.log("Unable to close raw output console", e);
 			} finally {
 				consoleStream = null;
 			}
@@ -88,7 +88,7 @@ public class RawOutputConsole extends MessageConsole {
 		try {
 			consoleStream.write(output);
 		} catch (IOException e) {
-			IsabelleEclipsePlugin.log("Problems writing to raw output console", e);
+			IsabelleUIPlugin.log("Problems writing to raw output console", e);
 		}
 		
 	}

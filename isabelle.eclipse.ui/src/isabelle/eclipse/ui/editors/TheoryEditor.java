@@ -18,7 +18,7 @@ import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.resource.URIPathEncoder;
 import isabelle.eclipse.core.text.DocumentModel;
-import isabelle.eclipse.ui.IsabelleEclipsePlugin;
+import isabelle.eclipse.ui.IsabelleUIPlugin;
 import isabelle.eclipse.ui.views.TheoryOutlinePage;
 import isabelle.scala.DocumentRef;
 import isabelle.scala.TheoryInfoUtil;
@@ -377,7 +377,7 @@ public class TheoryEditor extends TextEditor {
 				model.dispose();
 				docProvider.disconnect(input);
 			} catch (CoreException e) {
-				IsabelleEclipsePlugin.log(e.getMessage(), e);
+				IsabelleUIPlugin.log(e.getMessage(), e);
 			}
 		}
 	}
@@ -473,7 +473,7 @@ public class TheoryEditor extends TextEditor {
 		try {
 			uri = getInputURI(input);
 		} catch (URISyntaxException e) {
-			IsabelleEclipsePlugin.log(e.getMessage(), e);
+			IsabelleUIPlugin.log(e.getMessage(), e);
 			return null;
 		}
 		
@@ -486,7 +486,7 @@ public class TheoryEditor extends TextEditor {
 		
 		Option<String> theoryNameOpt = Thy_Header.thy_name(uriStr);
 		if (theoryNameOpt.isEmpty()) {
-			IsabelleEclipsePlugin.log("Invalid theory name for URI: " + uriStr, null);
+			IsabelleUIPlugin.log("Invalid theory name for URI: " + uriStr, null);
 			return null;
 		}
 		
@@ -593,7 +593,7 @@ public class TheoryEditor extends TextEditor {
 					end = document.getLineOffset(endLine) + document.getLineLength(endLine);
 				}
 			} catch (BadLocationException e) {
-				IsabelleEclipsePlugin.log(e.getMessage(), e);
+				IsabelleUIPlugin.log(e.getMessage(), e);
 			}
 		}
 		

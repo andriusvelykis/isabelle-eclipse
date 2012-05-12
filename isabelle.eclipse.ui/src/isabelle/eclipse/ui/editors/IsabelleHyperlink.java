@@ -2,7 +2,7 @@ package isabelle.eclipse.ui.editors;
 
 import isabelle.Command;
 import isabelle.eclipse.core.resource.URIThyLoad;
-import isabelle.eclipse.ui.IsabelleEclipsePlugin;
+import isabelle.eclipse.ui.IsabelleUIPlugin;
 import isabelle.scala.DocumentRef;
 
 import java.net.URI;
@@ -78,7 +78,7 @@ public class IsabelleHyperlink implements IHyperlink {
 			// open in theory editor
 			editor = (TheoryEditor) IDE.openEditor(page, targetUri, TheoryEditor.EDITOR_ID, true);
 		} catch (PartInitException e) {
-			IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
+			IsabelleUIPlugin.log(e.getLocalizedMessage(), e);
 			return;
 		}
 		

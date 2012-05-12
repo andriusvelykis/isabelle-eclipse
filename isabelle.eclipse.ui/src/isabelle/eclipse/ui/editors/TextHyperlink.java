@@ -1,6 +1,6 @@
 package isabelle.eclipse.ui.editors;
 
-import isabelle.eclipse.ui.IsabelleEclipsePlugin;
+import isabelle.eclipse.ui.IsabelleUIPlugin;
 
 import java.net.URI;
 
@@ -58,7 +58,7 @@ public class TextHyperlink implements IHyperlink {
 		try {
 			editor = EditorUtil.openEditor(page, targetUri);
 		} catch (PartInitException e) {
-			IsabelleEclipsePlugin.log(e.getLocalizedMessage(), e);
+			IsabelleUIPlugin.log(e.getLocalizedMessage(), e);
 			return;
 		}
 		

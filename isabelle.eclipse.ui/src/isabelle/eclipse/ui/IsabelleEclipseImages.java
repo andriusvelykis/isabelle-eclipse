@@ -15,7 +15,7 @@ public class IsabelleEclipseImages {
 
 	static {
 		String pathSuffix = "icons/"; //$NON-NLS-1$	
-		ICON_BASE_URL= IsabelleEclipsePlugin.getDefault().getBundle().getEntry(pathSuffix);
+		ICON_BASE_URL= IsabelleUIPlugin.getDefault().getBundle().getEntry(pathSuffix);
 	}
 	
 	public static final String IMG_RAW_OUTPUT_CONSOLE = ICON_BASE_URL + "isabelle.png";
@@ -27,7 +27,7 @@ public class IsabelleEclipseImages {
 	 * or <code>null</code> if it does not exist.
 	 */
 	public static Image getImage(String path) {
-		ImageRegistry imageRegistry = IsabelleEclipsePlugin.getDefault().getImageRegistry();
+		ImageRegistry imageRegistry = IsabelleUIPlugin.getDefault().getImageRegistry();
 		Image image = imageRegistry.get(path);
 		if (image == null) {
 			ImageDescriptor desc = ImageDescriptor.getMissingImageDescriptor();
@@ -43,7 +43,7 @@ public class IsabelleEclipseImages {
 	}
 	
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return IsabelleEclipsePlugin.getDefault().getImageRegistry().getDescriptor(path);
+		return IsabelleUIPlugin.getDefault().getImageRegistry().getDescriptor(path);
 	}
 	
 }

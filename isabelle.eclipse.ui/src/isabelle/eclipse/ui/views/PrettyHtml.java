@@ -1,7 +1,7 @@
 package isabelle.eclipse.ui.views;
 
 import isabelle.XML.Tree;
-import isabelle.eclipse.ui.IsabelleEclipsePlugin;
+import isabelle.eclipse.ui.IsabelleUIPlugin;
 import isabelle.scala.PrettyUtil;
 
 import java.io.StringWriter;
@@ -84,7 +84,7 @@ public class PrettyHtml {
 			
 			return output;
 		} catch (TransformerException ex) {
-			IsabelleEclipsePlugin.log("Problems printing HTML document", ex);
+			IsabelleUIPlugin.log("Problems printing HTML document", ex);
 			return "";
 		}
 	}

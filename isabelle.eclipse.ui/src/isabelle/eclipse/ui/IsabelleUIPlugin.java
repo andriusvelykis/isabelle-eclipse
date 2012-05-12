@@ -9,18 +9,18 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class IsabelleEclipsePlugin extends AbstractUIPlugin {
+public class IsabelleUIPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "isabelle.eclipse.ui"; //$NON-NLS-1$
 
 	// The shared instance
-	private static IsabelleEclipsePlugin plugin;
+	private static IsabelleUIPlugin plugin;
 	
 	/**
 	 * The constructor
 	 */
-	public IsabelleEclipsePlugin() {
+	public IsabelleUIPlugin() {
 	}
 
 	/*
@@ -46,7 +46,7 @@ public class IsabelleEclipsePlugin extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static IsabelleEclipsePlugin getDefault() {
+	public static IsabelleUIPlugin getDefault() {
 		return plugin;
 	}
 
