@@ -1,6 +1,6 @@
 package isabelle.eclipse.ui.views;
 
-import isabelle.eclipse.ui.IsabelleEclipseImages;
+import isabelle.eclipse.ui.IsabelleImages;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.console.IConsole;
@@ -18,7 +18,7 @@ public class RawOutputConsoleFactory extends SingletonConsoleFactory {
 	}
 
 	private ImageDescriptor getConsoleImage() {
-		return IsabelleEclipseImages.getImageDescriptor(IsabelleEclipseImages.IMG_RAW_OUTPUT_CONSOLE);
+		return IsabelleImages.getImageDescriptor(IsabelleImages.IMG_RAW_OUTPUT_CONSOLE);
 	}
 
 

@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import isabelle.eclipse.core.text.DocumentModel;
-import isabelle.eclipse.ui.IsabelleEclipseImages;
+import isabelle.eclipse.ui.IsabelleImages;
 import isabelle.eclipse.ui.editors.TheoryEditor;
 import isabelle.scala.TheoryNode;
 
@@ -194,7 +194,7 @@ public class TheoryOutlinePage extends ContentOutlinePage {
 
 		@Override
 		public Image getImage(Object element) {
-			return IsabelleEclipseImages.getImage(IsabelleEclipseImages.IMG_OUTLINE_ITEM);
+			return IsabelleImages.getImage(IsabelleImages.IMG_OUTLINE_ITEM);
 		}
 
 		@Override

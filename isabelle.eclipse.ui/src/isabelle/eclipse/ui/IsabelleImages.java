@@ -8,7 +8,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 
 
-public class IsabelleEclipseImages {
+public class IsabelleImages {
 
 	/* Declare Common paths */
 	private static URL ICON_BASE_URL= null;

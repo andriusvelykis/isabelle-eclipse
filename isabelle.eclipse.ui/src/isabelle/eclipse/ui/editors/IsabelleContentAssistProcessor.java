@@ -7,7 +7,7 @@ import java.util.List;
 import isabelle.Completion;
 import isabelle.Symbol;
 import isabelle.eclipse.core.text.DocumentModel;
-import isabelle.eclipse.ui.IsabelleEclipseImages;
+import isabelle.eclipse.ui.IsabelleImages;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -61,7 +61,7 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 				return null;
 			}
 			
-			Image image = IsabelleEclipseImages.getImage(IsabelleEclipseImages.IMG_CONTENT_ASSIST);
+			Image image = IsabelleImages.getImage(IsabelleImages.IMG_CONTENT_ASSIST);
 			
 			List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 
