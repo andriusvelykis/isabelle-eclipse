@@ -80,13 +80,13 @@ public class IsabelleDocument extends Document {
 	}
 	
 	public void syncToBase() {
-		System.out.println("Sync to base");
+//		System.out.println("Sync to base");
 		
 		String text = get();
 		
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
 		if (isabelle.isInit()) {
-			System.out.println("Sync to base Isabelle");
+//			System.out.println("Sync to base Isabelle");
 			text = Symbol.encode(text);
 		}
 		
