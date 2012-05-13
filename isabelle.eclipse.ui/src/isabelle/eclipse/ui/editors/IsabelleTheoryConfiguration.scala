@@ -24,7 +24,7 @@ class IsabelleTheoryConfiguration(val editor: TheoryEditor, val colorManager: Co
   /** The hyperlink detector target ID, as defined in plugin.xml */
   val ISABELLE_THEORY_HYPERLINK_TARGET = "isabelle.eclipse.ui.theoryEditor"
   
-  val isabelleScanner = new IsabelleTokenScanner(editor) {
+  private class IsabelleColorScanner extends IsabelleTokenScanner(editor) {
 
     override def createToken(tokenInfo: isabelle.Token) =
       new Token(new TextAttribute(colorManager.getColor(
@@ -43,11 +43,21 @@ class IsabelleTheoryConfiguration(val editor: TheoryEditor, val colorManager: Co
     }
   }
 
+  override def getConfiguredDocumentPartitioning(sourceViewer: ISourceViewer) = 
+    IsabellePartitions.ISABELLE_PARTITIONING
+    
   override def getContentAssistant(sourceViewer: ISourceViewer): IContentAssistant = {
 
     val ca = new ContentAssistant()
+    ca.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer))
+    
     val pr = new IsabelleContentAssistProcessor(editor)
     ca.setContentAssistProcessor(pr, IDocument.DEFAULT_CONTENT_TYPE)
+    
+    // set the same content assistant on all partition types
+    IsabellePartitions.contentTypes foreach (
+        contentType => ca.setContentAssistProcessor(pr, contentType))
+    
     ca.setInformationControlCreator(getInformationControlCreator(sourceViewer))
     ca
   }
@@ -55,10 +65,18 @@ class IsabelleTheoryConfiguration(val editor: TheoryEditor, val colorManager: Co
   override def getPresentationReconciler(sourceViewer: ISourceViewer): IPresentationReconciler = {
     val reconciler = super.getPresentationReconciler(sourceViewer).asInstanceOf[PresentationReconciler]
 
-    val dr = new DefaultDamagerRepairer(isabelleScanner)
+    def handlePartition(partitionType: String) {
+      val dr = new DefaultDamagerRepairer(new IsabelleColorScanner())
+      reconciler.setDamager(dr, partitionType)
+      reconciler.setRepairer(dr, partitionType)
+    }
 
-    reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE)
-    reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE)
+    handlePartition(IDocument.DEFAULT_CONTENT_TYPE)
+
+    // set damager/repairer for each content type
+    IsabellePartitions.contentTypes foreach (
+      contentType => handlePartition(contentType))
+
     reconciler
   }
 

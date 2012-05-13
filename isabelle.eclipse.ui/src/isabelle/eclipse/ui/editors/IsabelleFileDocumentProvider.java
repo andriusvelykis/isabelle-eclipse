@@ -8,6 +8,8 @@ import java.util.Map;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
@@ -31,6 +33,14 @@ public class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
 		if (baseDocument != null) {
 			IsabelleDocument document = new IsabelleDocument(baseDocument);
 			isabelleDocuments.put(element, document);
+			
+			// create document partitioner: cannot do it via documentSetup extension point,
+			// because the IsabelleDocument is created on top of the base document
+			IDocumentPartitioner partitioner = new FastPartitioner(
+					IsabellePartitions.createTheoryScanner(), IsabellePartitions.contentTypes());
+			document.setDocumentPartitioner(IsabellePartitions.ISABELLE_PARTITIONING(), partitioner);
+			partitioner.connect(document);
+			
 			
 			IAnnotationModel annotationModel = createAnnotationModel(element);
 			annotationModel.connect(document);
