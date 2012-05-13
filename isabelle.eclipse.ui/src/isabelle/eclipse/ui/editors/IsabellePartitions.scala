@@ -49,7 +49,7 @@ object IsabellePartitions {
   /** Creates a partition scanner for Isabelle Theory mode, which returns tokens with partition IDs */
   def createTheoryScanner(): IPartitionTokenScanner = {
 
-    val rules = textRules ++ keywordRules(THEORY_KEYWORDS)
+    val rules = textRules// ++ keywordRules(THEORY_KEYWORDS)
 
     val scanner = new RuleBasedPartitionScanner()
     scanner.setPredicateRules(rules.toArray)
@@ -59,7 +59,7 @@ object IsabellePartitions {
   /** Creates a partition scanner for Isabelle Session mode, which returns tokens with partition IDs */
   def createSessionScanner(): IPartitionTokenScanner = {
 
-    val rules = textRules ++ keywordRules(SESSION_KEYWORDS)
+    val rules = textRules// ++ keywordRules(SESSION_KEYWORDS)
 
     val scanner = new RuleBasedPartitionScanner()
     scanner.setPredicateRules(rules.toArray)
@@ -73,11 +73,13 @@ object IsabellePartitions {
       new MultiLineRule("`", "`", new Token(ISABELLE_ALTSTRING), '\\'),
       new MultiLineRule("\"", "\"", new Token(ISABELLE_STRING), '\\'))
   
-  /** Create rules to scan basic top level keywords */
-  private def keywordRules(keywords: List[String]) = {
-    val keyword = new Token(ISABELLE_KEYWORD)
-    
-    THEORY_KEYWORDS map (word => new WordPatternRule(wordDetector, word, word, keyword))
-  }
+// keyword rules not working at the moment
+// 
+//  /** Create rules to scan basic top level keywords */
+//  private def keywordRules(keywords: List[String]) = {
+//    val keyword = new Token(ISABELLE_KEYWORD)
+//    
+//    THEORY_KEYWORDS map (word => new WordPatternRule(wordDetector, word, word, keyword))
+//  }
   
 }
