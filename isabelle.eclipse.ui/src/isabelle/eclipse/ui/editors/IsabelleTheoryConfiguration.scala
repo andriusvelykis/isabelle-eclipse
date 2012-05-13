@@ -26,7 +26,7 @@ class IsabelleTheoryConfiguration(val editor: TheoryEditor, val colorManager: Co
   
   private class IsabelleColorScanner extends IsabelleTokenScanner(editor) {
 
-    override def createToken(tokenInfo: isabelle.Token) =
+    override def getToken(tokenInfo: isabelle.Token) =
       new Token(new TextAttribute(colorManager.getColor(
         getTokenColor(tokenInfo))))
   }
