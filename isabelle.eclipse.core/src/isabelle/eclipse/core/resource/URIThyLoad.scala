@@ -4,7 +4,6 @@ import isabelle.Document
 import isabelle.Isabelle_System
 import isabelle.Path
 import isabelle.Thy_Header
-import isabelle.Thy_Load
 import isabelle.eclipse.core.IsabelleCorePlugin
 
 import java.net.URI
@@ -38,18 +37,25 @@ import org.eclipse.emf.common.util.{URI => EmfURI}
 object URIThyLoad {
 
   /** Appends (resolves) the source path against the given base URI */
-  def resolveURI(base: URI, source_path: Path): URI = {
+  def resolveURI(base: URI, source_path: Path, isDir: Boolean = false): URI = {
     val path = source_path.expand
+    
+    // a method to ensure a directory URI string if isDir is set
+    // otherwise the dir can get treated as file, e.g. in URIs
+    // file:/Root/dir/ is a directory, but
+    // file:/Root/dir is a file (missing trailing "/")
+    def checkDir(uriStr: String): String = 
+      if (!isDir || uriStr.endsWith("/")) uriStr else uriStr + "/"
 
     if (path.is_absolute) {
       // path is absolute file system path - use Isabelle's libraries
       // to resolve (e.g. it has some cygwin considerations)
       val platformPath = Isabelle_System.platform_path(path);
       // encode as file system URI
-      efs.URIUtil.toURI(platformPath);
+      efs.URIUtil.toURI(checkDir(platformPath));
     } else {
       // assume relative URI and resolve it against the base URI
-      val pathStr = path.implode 
+      val pathStr = checkDir(path.implode) 
 
       try {
         val sourceUri = new URI(pathStr);
@@ -98,7 +104,7 @@ object URIThyLoad {
   }
 }
 
-class URIThyLoad extends Thy_Load {
+class URIThyLoad extends ThyLoad2 {
 
   /* Appends the (possibly) relative path to the base directory, thus resolving relative paths if
    * needed.
@@ -106,13 +112,25 @@ class URIThyLoad extends Thy_Load {
    * (non-Javadoc)
    * @see isabelle.Thy_Load#append(java.lang.String, isabelle.Path)
    */
-  override def append(dir: String, source_path: Path): String = {
+  override def append(dir: String, source_path: Path): String = 
+    appendTranscode(dir, source_path)
+  
+  /* Appends the (possibly) relative directory path to the base directory, thus resolving relative
+   * paths if needed.
+   * 
+   * (non-Javadoc)
+   * @see isabelle.eclipse.core.resource.ThyLoad2#appendDir(java.lang.String, isabelle.Path)
+   */
+  override def appendDir(dir: String, source_path: Path): String =
+    appendTranscode(dir, source_path, true)
+    
+  private def appendTranscode(dir: String, source_path: Path, isDir: Boolean = false): String = {
 //    val dirUri = URI.create(dir);
-    val dirUri = URIPathEncoder.decodePath(dir);
-    val resolvedUri = URIThyLoad.resolveURI(dirUri, source_path);
+    val dirUri = URIPathEncoder.decodePath(dir)
+    val resolvedUri = URIThyLoad.resolveURI(dirUri, source_path, isDir)
 
 //    resolvedUri.toString();
-    URIPathEncoder.encodeAsPath(resolvedUri);    
+    URIPathEncoder.encodeAsPath(resolvedUri)
   }
 
   /* Reads theory header for the given document reference. The implementation resolves the URI and

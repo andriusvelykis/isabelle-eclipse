@@ -119,7 +119,7 @@ public class IsabelleHyperlinkDetector extends AbstractHyperlinkDetector {
 		
 		// resolve the target URI
 		Path targetPath = Path.explode(filePath); 
-		URI platformUri = URIThyLoad.resolveURI(sourceUri, targetPath);
+		URI platformUri = URIThyLoad.resolveURI(sourceUri, targetPath, URIThyLoad.resolveURI$default$3());
 		
 		// the relative path may be a workspace file (platform: URI),
 		// so resolve it to file URI
