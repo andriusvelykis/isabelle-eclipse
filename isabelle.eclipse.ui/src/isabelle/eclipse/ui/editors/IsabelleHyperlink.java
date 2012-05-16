@@ -71,7 +71,7 @@ public class IsabelleHyperlink implements IHyperlink {
 	public void open() {
 		
 		// resolve target file URI from the command
-		URI targetUri = URIThyLoad.resolveDocumentUri(DocumentRef.create(targetCommand));
+		URI targetUri = URIThyLoad.resolveDocumentUri(targetCommand.node_name());
 		
 		TheoryEditor editor;
 		try {

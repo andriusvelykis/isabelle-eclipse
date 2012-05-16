@@ -354,7 +354,7 @@ public class TheoryEditor extends TextEditor {
 		for (DocumentRef ref : depRefs) {
 
 			// resolve document URI to load the file contents
-			URI uri = URIThyLoad.resolveDocumentUri(ref);
+			URI uri = URIThyLoad.resolveDocumentUri(ref.getRef());
 			
 			IFileStore fileStore;
 			try {
