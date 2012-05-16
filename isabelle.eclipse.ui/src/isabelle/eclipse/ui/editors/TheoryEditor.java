@@ -2,9 +2,10 @@ package isabelle.eclipse.ui.editors;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import isabelle.Command;
 import isabelle.Document.Snapshot;
@@ -324,7 +325,8 @@ public class TheoryEditor extends TextEditor {
 		List<Tuple2<DocumentRef, Result<Thy_Header>>> deps = TheoryInfoUtil.getDependencies(
 				theoryInfo, Collections.singletonList(documentRef));
 		
-		List<DocumentRef> depRefs = new ArrayList<DocumentRef>();
+		// use set to avoid duplicates but preserve the order
+		Set<DocumentRef> depRefs = new LinkedHashSet<DocumentRef>();
 		for (Tuple2<DocumentRef, Result<Thy_Header>> dep : deps) {
 			depRefs.add(dep._1());
 		}
