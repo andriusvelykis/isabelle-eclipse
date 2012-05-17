@@ -115,7 +115,7 @@ public class IsabelleHyperlinkDetector extends AbstractHyperlinkDetector {
 		
 		// first get the URI of the source
 		String sourceUriStr = isabelleModel.getName().getNode();
-		URI sourceUri = URIPathEncoder.decodePath(sourceUriStr);
+		URI sourceUri = URIPathEncoder.decodePath(sourceUriStr, false);
 		
 		// resolve the target URI
 		Path targetPath = Path.explode(filePath); 

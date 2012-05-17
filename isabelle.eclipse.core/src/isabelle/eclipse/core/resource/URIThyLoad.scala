@@ -73,7 +73,7 @@ object URIThyLoad {
   def resolveDocumentUri(name: Document.Node.Name): URI = {
 
     val uriStr = name.node
-    val platformUri = URIPathEncoder.decodePath(uriStr);
+    val platformUri = URIPathEncoder.decodePath(uriStr, false);
 
     // resolve platform URI if needed (gives filesystem URI for platform: (workspace) URIs)
     resolvePlatformUri(platformUri.toString());
@@ -126,7 +126,7 @@ class URIThyLoad extends ThyLoad2 {
     
   private def appendTranscode(dir: String, source_path: Path, isDir: Boolean = false): String = {
 //    val dirUri = URI.create(dir);
-    val dirUri = URIPathEncoder.decodePath(dir)
+    val dirUri = URIPathEncoder.decodePath(dir, true)
     val resolvedUri = URIThyLoad.resolveURI(dirUri, source_path, isDir)
 
 //    resolvedUri.toString();
