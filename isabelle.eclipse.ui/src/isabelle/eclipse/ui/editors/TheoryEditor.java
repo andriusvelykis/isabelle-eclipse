@@ -23,6 +23,7 @@ import isabelle.eclipse.core.resource.URIPathEncoder;
 import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.ui.IsabelleUIPlugin;
+import isabelle.eclipse.ui.text.DocumentListenerSupport;
 import isabelle.eclipse.ui.util.SessionEventSupport;
 import isabelle.eclipse.ui.views.TheoryOutlinePage;
 import isabelle.scala.DocumentRef;
@@ -45,7 +46,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.IViewportListener;
@@ -100,6 +103,12 @@ public class TheoryEditor extends TextEditor {
 	 * perspective upon editor resize.
 	 */
 	private final ControlListener viewerControlListener;
+	
+	/**
+	 * A listener for document events in the editor. Updates the active
+	 * perspective upon document modification.
+	 */
+	private DocumentListenerSupport documentListener;
 	
 	private TheoryOutlinePage outlinePage = null;
 	
@@ -363,6 +372,20 @@ public class TheoryEditor extends TextEditor {
 		// listen to scroll and resize events
 		getSourceViewer().addViewportListener(viewerViewportListener);
 		getSourceViewer().getTextWidget().addControlListener(viewerControlListener);
+		
+		// listen to document change as well
+		this.documentListener = new DocumentListenerSupport(getSourceViewer(),
+				new IDocumentListener() {
+
+					@Override
+					public void documentChanged(DocumentEvent event) {
+						updateActivePerspective();
+					}
+
+					@Override
+					public void documentAboutToBeChanged(DocumentEvent event) {
+					}
+				});
 	}
 	
 	private void disposePerspectiveListeners() {
@@ -370,6 +393,10 @@ public class TheoryEditor extends TextEditor {
 		if (viewer != null && viewer.getTextWidget() != null) {
 			viewer.removeViewportListener(viewerViewportListener);
 			viewer.getTextWidget().removeControlListener(viewerControlListener);
+		}
+		
+		if (documentListener != null) {
+			documentListener.dispose();
 		}
 	}
 	
