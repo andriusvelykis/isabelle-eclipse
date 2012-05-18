@@ -3,6 +3,7 @@ package isabelle.eclipse.ui.editors;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,6 +11,7 @@ import java.util.Set;
 import isabelle.Command;
 import isabelle.Document.Snapshot;
 import isabelle.Exn.Result;
+import isabelle.Session.Commands_Changed;
 import isabelle.Session;
 import isabelle.Thy_Header;
 import isabelle.Thy_Info;
@@ -19,9 +21,14 @@ import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.resource.URIPathEncoder;
 import isabelle.eclipse.core.text.DocumentModel;
+import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.ui.IsabelleUIPlugin;
+import isabelle.eclipse.ui.util.SessionEventSupport;
 import isabelle.eclipse.ui.views.TheoryOutlinePage;
 import isabelle.scala.DocumentRef;
+import isabelle.scala.ISessionCommandsListener;
+import isabelle.scala.SessionActor;
+import isabelle.scala.SessionEventType;
 import isabelle.scala.TheoryInfoUtil;
 
 import org.eclipse.core.filesystem.EFS;
@@ -45,10 +52,12 @@ import org.eclipse.jface.text.IViewportListener;
 import org.eclipse.jface.text.JFaceTextUtil;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ILineRange;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
@@ -95,6 +104,7 @@ public class TheoryEditor extends TextEditor {
 	private TheoryOutlinePage outlinePage = null;
 	
 	private final TheoryAnnotations markers = new TheoryAnnotations(this);
+	private final SessionEventSupport sessionEvents;
 	
 //	private int submittedOffset = 0;
 	
@@ -141,6 +151,37 @@ public class TheoryEditor extends TextEditor {
 				shutdownSession(session, false);
 			}
 		});
+		
+		// When commands change (e.g. results from the prover), signal to update the document view,
+		// e.g. new markups, etc.
+		sessionEvents = new SessionEventSupport(EnumSet.of(SessionEventType.COMMAND)) {
+			
+			@Override
+			protected SessionActor createSessionActor(Session session) {
+				return new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
+					
+					@Override
+					public void commandsChanged(Commands_Changed changed) {
+						
+						if (isabelleModel == null) {
+							// no model available, so ignore
+							return;
+						}
+						
+						// avoid updating if commands are from a different document
+						if (changed.nodes().contains(isabelleModel.getName().getRef())) {
+							refreshView();
+						}
+					}
+				});
+			}
+
+			@Override
+			protected void sessionInit(Session session) {
+				// when the session is initialised refresh the view
+				refreshView();
+			}
+		};
 	}
 	
 	@Override
@@ -212,6 +253,25 @@ public class TheoryEditor extends TextEditor {
 		};
 		reloadJob.schedule();
 	}
+	
+	/**
+	 * Refreshes the text presentation
+	 */
+	private void refreshView() {
+		final ISourceViewer viewer = getSourceViewer();
+		if (viewer != null && viewer.getTextWidget() != null) {
+			final Control control = viewer.getTextWidget();
+			control.getDisplay().asyncExec(new Runnable() {
+				
+				@Override
+				public void run() {
+					if (!control.isDisposed()) {
+						viewer.invalidateTextPresentation();
+					}
+				}
+			});
+		}
+	}
 
 	@Override
 	public void dispose() {
@@ -227,6 +287,7 @@ public class TheoryEditor extends TextEditor {
 		isabelle.removeSessionListener(sessionListener);
 		
 		markers.dispose();
+		sessionEvents.dispose();
 		
 		colorManager.dispose();
 		super.dispose();
