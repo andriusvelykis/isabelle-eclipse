@@ -3,7 +3,6 @@ package isabelle.eclipse.ui.editors;
 import isabelle.Command;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.ui.IsabelleUIPlugin;
-import isabelle.scala.DocumentRef;
 
 import java.net.URI;
 
