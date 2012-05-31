@@ -9,7 +9,7 @@ import isabelle.eclipse.core.text.AnnotationFactory;
 import isabelle.eclipse.core.text.AnnotationInfo;
 import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.core.util.SafeSessionActor;
-import isabelle.eclipse.ui.util.SessionEventSupport;
+import isabelle.eclipse.core.util.SessionEventSupport;
 import isabelle.scala.ISessionCommandsListener;
 import isabelle.scala.SessionActor;
 import isabelle.scala.SessionEventType;

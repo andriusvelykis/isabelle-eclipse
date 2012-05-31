@@ -1,4 +1,4 @@
-package isabelle.eclipse.ui.util;
+package isabelle.eclipse.core.util;
 
 import isabelle.Session;
 import isabelle.eclipse.core.IsabelleCorePlugin;
