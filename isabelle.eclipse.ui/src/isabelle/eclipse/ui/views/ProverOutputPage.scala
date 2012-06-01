@@ -1,0 +1,260 @@
+package isabelle.eclipse.ui.views
+
+import isabelle.Command
+import isabelle.Markup
+import isabelle.Session
+import isabelle.XML
+import isabelle.eclipse.core.util.SessionEvents
+import isabelle.eclipse.core.util.LoggingActor
+import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.editors.TheoryEditor
+import java.io.IOException
+import org.eclipse.core.runtime.FileLocator
+import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.Platform
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.jface.viewers.ISelectionChangedListener
+import org.eclipse.jface.viewers.ISelectionProvider
+import org.eclipse.jface.viewers.IPostSelectionProvider
+import org.eclipse.jface.viewers.SelectionChangedEvent
+import org.eclipse.swt.SWT
+import org.eclipse.swt.browser.Browser
+import org.eclipse.swt.layout.FillLayout
+import org.eclipse.swt.widgets.Control
+import org.eclipse.swt.widgets.Composite
+import org.eclipse.ui.part.IPageSite
+import org.eclipse.ui.part.Page
+import org.eclipse.ui.texteditor.ITextEditor
+import org.osgi.framework.Bundle
+import scala.actors.Actor._
+import scala.collection.JavaConversions._
+
+
+class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents {
+
+  // the actor to react to session events
+  override protected val sessionActor = LoggingActor {
+    loop {
+      react {
+        case changed: Session.Commands_Changed => {
+
+          // check if current command is among the changed ones
+          val cmd = currentCommand filter { changed.commands.contains }
+
+          if (cmd.isDefined) {
+            // the command has changed - update using it
+            updateOutput(_ => cmd)
+          }
+        }
+        case bad => IsabelleUIPlugin.log("Bad message received in output page: " + bad, null)
+      }
+    }
+  }
+
+  // subscribe to commands change session events
+  override protected def sessionEvents(session: Session) = List(session.commands_changed)
+
+  private var mainComposite: Composite = _
+  private var outputArea: Browser = _
+
+  private var showTrace = false
+  private var followSelection = true
+  private var currentCommand: Option[Command] = None
+
+  private var lastEditorOffset = -1
+  private var updateJob: Job = new UpdateOutputJob(_ => None);
+
+  // selection listener to update output when editor selection changes
+  val editorListener = selectionListener { _ => updateOutputAtCaret() }
+
+  override def createControl(parent: Composite) {
+    mainComposite = new Composite(parent, SWT.NONE)
+    mainComposite.setLayout(new FillLayout())
+
+    outputArea = new Browser(mainComposite, SWT.NONE)
+
+    // init session event listeners
+    initSessionEvents()
+
+    addEditorListener(editorListener)
+    
+    // init output on the editor position 
+    updateOutputAtCaret()
+  }
+
+  override def getControl() = mainComposite
+
+  override def setFocus() = outputArea.setFocus
+
+  override def init(pageSite: IPageSite) {
+    super.init(pageSite)
+  }
+
+  override def dispose() {
+
+    removeEditorListener(editorListener)
+    disposeSessionEvents()
+
+    super.dispose()
+  }
+
+  private def updateOutputAtCaret() = {
+    lastEditorOffset = editor.getCaretPosition();
+    if (followSelection) {
+      updateOutput(_ => commandAtOffset(lastEditorOffset))
+    }
+  }
+
+  private def updateOutput(cmdProvider: (Unit => Option[Command]), delay: Long = 0) {
+    val updateJob = new UpdateOutputJob(cmdProvider)
+
+    // cancel the previous job
+    this.updateJob.cancel()
+    this.updateJob = updateJob
+
+    this.updateJob.schedule(delay)
+  }
+
+  private def commandAtOffset(offset: Int): Option[Command] = {
+    val isabelleModel = Option(editor.getIsabelleModel())
+    // get the command at the snapshot if the model is available
+    isabelleModel flatMap { _.getSnapshot.node.proper_command_at(offset) }
+  }
+
+  private def renderOutput(cmd: Command, monitor: IProgressMonitor): Option[String] = {
+
+    // TODO do not output when invisible?
+    // FIXME handle "sendback" in output_dockable.scala
+
+    // get all command results except tracing
+    val isabelleModel = Option(editor.getIsabelleModel())
+
+    isabelleModel match {
+      case None => { System.out.println("Isabelle model not available"); None }
+      case Some(model) => {
+        // model is available - get the results and render them
+        val snapshot = model.getSnapshot();
+
+        val filtered_results =
+          snapshot.command_state(cmd).results.iterator.map(_._2) filter {
+            case XML.Elem(Markup(Markup.TRACING, _), _) => showTrace // FIXME not scalable
+            case _ => true
+          }
+
+        val htmlPage = PrettyHtml.renderHtmlPage(filtered_results.toList, getCssPaths(), "", "IsabelleText", 12)
+        Some(htmlPage)
+      }
+    }
+  }
+
+  private def getCssPaths(): List[String] = {
+    val bundle = Platform.getBundle(IsabelleUIPlugin.PLUGIN_ID)
+    def path = getResourcePath(bundle) _
+
+    List(path("etc/isabelle.css"), path("etc/isabelle-jedit.css")).flatten
+  }
+
+  private def getResourcePath(bundle: Bundle)(pathInBundle: String): Option[String] = {
+    val fileURL = Option(bundle.getEntry(pathInBundle));
+
+    fileURL match {
+      case Some(url) => {
+        try {
+          val fullURL = FileLocator.resolve(url).toString()
+          Some(fullURL.toString())
+        } catch {
+          case ioe: IOException => {
+            IsabelleUIPlugin.log("Unable to locate resource " + pathInBundle, ioe)
+            None
+          }
+        }
+      }
+      case None => { IsabelleUIPlugin.log("Unable to locate resource " + pathInBundle, null); None }
+    }
+  }
+
+  private def setContent(htmlPage: String) {
+    // set the input in the UI thread
+    uiExec {
+      if (!outputArea.isDisposed()) {
+        
+        val currentPage = outputArea.getText()
+        if (currentPage != htmlPage) {
+          // avoid flashing the output if it is the same
+          outputArea.setText(htmlPage);
+        }
+      }
+    }
+  }
+
+  private def uiExec(f: => Unit) {
+    outputArea.getDisplay.asyncExec(new Runnable {
+      override def run() { f }
+    })
+  }
+
+  // TODO implement for IE: http://www.quirksmode.org/dom/range_intro.html, http://help.dottoro.com/ljumcfud.php
+  private def selectAllJavascript = "window.getSelection().selectAllChildren(document.body);"
+
+  def selectAllText() {
+    if (outputArea != null) {
+      outputArea.execute(selectAllJavascript);
+    }
+  }
+
+  def copySelectionToClipboard() {
+    // do nothing at the moment - allow browser copy facilities to work
+  }
+  
+  private def selectionListener(f: (SelectionChangedEvent => Unit)) =
+    new ISelectionChangedListener {
+      override def selectionChanged(event: SelectionChangedEvent) {
+        f(event)
+      }
+    }
+
+  private def addEditorListener(listener: ISelectionChangedListener) {
+    editor.getSelectionProvider match {
+      case post: IPostSelectionProvider => post.addPostSelectionChangedListener(listener)
+      case normal => normal.addSelectionChangedListener(listener)
+    }
+  }
+
+  private def removeEditorListener(listener: ISelectionChangedListener) {
+    editor.getSelectionProvider match {
+      case post: IPostSelectionProvider => post.removePostSelectionChangedListener(listener)
+      case normal => normal.removeSelectionChangedListener(listener)
+    }
+  }
+
+  private class UpdateOutputJob(cmdProvider: (Unit => Option[Command]))
+    extends Job("Updating prover output") {
+//    setPriority(Job.INTERACTIVE)
+
+    override def run(monitor: IProgressMonitor): IStatus = {
+
+      if (monitor.isCanceled()) {
+        return Status.CANCEL_STATUS
+      }
+
+      // retrieve the current command
+      currentCommand = cmdProvider()
+
+      // render the command if available
+      val result = currentCommand flatMap { cmd => renderOutput(cmd, monitor) }
+
+      // check if cancelled - then do not set the output
+      if (monitor.isCanceled()) {
+        return Status.CANCEL_STATUS
+      }
+
+      // set the result if available
+      result foreach setContent
+
+      Status.OK_STATUS
+    }
+  }
+
+}
