@@ -21,6 +21,7 @@ public class IsabelleImages {
 	public static final String IMG_RAW_OUTPUT_CONSOLE = ICON_BASE_URL + "isabelle.png";
 	public static final String IMG_CONTENT_ASSIST = ICON_BASE_URL + "isabelle.png";
 	public static final String IMG_OUTLINE_ITEM = ICON_BASE_URL + "isabelle.png";
+	public static final String IMG_SHOW_TRACE = ICON_BASE_URL + "show_trace.gif";
 	
 	/**
 	 * Returns the <code>Image<code> identified by the given path,

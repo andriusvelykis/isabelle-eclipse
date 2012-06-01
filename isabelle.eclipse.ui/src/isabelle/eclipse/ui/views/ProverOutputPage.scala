@@ -30,10 +30,27 @@ import org.eclipse.ui.texteditor.ITextEditor
 import org.osgi.framework.Bundle
 import scala.actors.Actor._
 import scala.collection.JavaConversions._
+import org.eclipse.jface.action.Action
+import isabelle.eclipse.ui.IsabelleImages
+import org.eclipse.ui.IActionBars
+import org.eclipse.jface.action.IAction
 
+object ProverOutputPage {
+  
+  private val viewId = IsabelleUIPlugin.PLUGIN_ID + ".proverOutputView"
+  private val propShowTrace = viewId + ".showTrace"
+  
+  // init default values once
+  private def prefs = IsabelleUIPlugin.getPreferences();
+  prefs.setDefault(propShowTrace, false);
+  
+}
 
 class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents {
 
+  // import object contents to avoid full name referencing
+  import ProverOutputPage._
+  
   // the actor to react to session events
   override protected val sessionActor = LoggingActor {
     loop {
@@ -59,7 +76,8 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   private var mainComposite: Composite = _
   private var outputArea: Browser = _
 
-  private var showTrace = false
+  // get the preferences value for showing the trace
+  private var showTrace = prefs.getBoolean(propShowTrace)
   private var followSelection = true
   private var currentCommand: Option[Command] = None
 
@@ -90,6 +108,17 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   override def init(pageSite: IPageSite) {
     super.init(pageSite)
+    
+    registerToolbarActions(pageSite.getActionBars)
+  }
+
+  private def registerToolbarActions(actionBars: IActionBars) {
+
+    Option(actionBars.getToolBarManager()) foreach { mgr =>
+      {
+        mgr.add(new ToggleShowTraceAction())
+      }
+    }
   }
 
   override def dispose() {
@@ -255,6 +284,32 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
       Status.OK_STATUS
     }
+  }
+
+  private class ToggleShowTraceAction extends Action("Show Trace", IAction.AS_CHECK_BOX) {
+
+//    PlatformUI.getWorkbench().getHelpSystem().setHelp(this, TOGGLE_TRACE_ID)
+    setImageDescriptor(IsabelleImages.getImageDescriptor(IsabelleImages.IMG_SHOW_TRACE))
+//    setDisabledImageDescriptor(null)
+    setToolTipText("Show Proof Trace")
+    setDescription("Show Proof Trace")
+    setChecked(showTrace)
+
+    override def run() {
+      setChecked(isChecked());
+      valueChanged(isChecked());
+    }
+
+    private def valueChanged(show: Boolean) {
+      showTrace = show;
+      
+      // set new value in the preferences
+      prefs.setValue(propShowTrace, show)
+      
+      // update the output with current command (refresh with new trace value)
+      updateOutput(_ => currentCommand)
+    }
+
   }
 
 }
