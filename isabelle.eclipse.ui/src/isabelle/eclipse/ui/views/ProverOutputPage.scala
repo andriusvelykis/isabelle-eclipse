@@ -34,15 +34,23 @@ import org.eclipse.jface.action.Action
 import isabelle.eclipse.ui.IsabelleImages
 import org.eclipse.ui.IActionBars
 import org.eclipse.jface.action.IAction
+import org.eclipse.ui.PlatformUI
+import org.eclipse.ui.ISharedImages
+import org.eclipse.ui.IWorkbenchCommandConstants
+import org.eclipse.jface.action.GroupMarker
+import org.eclipse.ui.handlers.IHandlerService
+import org.eclipse.jface.commands.ActionHandler
 
 object ProverOutputPage {
   
   private val viewId = IsabelleUIPlugin.PLUGIN_ID + ".proverOutputView"
   private val propShowTrace = viewId + ".showTrace"
+  private val propLinkEditor = viewId + ".linkEditor"
   
   // init default values once
   private def prefs = IsabelleUIPlugin.getPreferences();
   prefs.setDefault(propShowTrace, false);
+  prefs.setDefault(propLinkEditor, true);
   
 }
 
@@ -81,7 +89,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   private var followSelection = true
   private var currentCommand: Option[Command] = None
 
-  private var lastEditorOffset = -1
   private var updateJob: Job = new UpdateOutputJob(_ => None);
 
   // selection listener to update output when editor selection changes
@@ -113,12 +120,28 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
   private def registerToolbarActions(actionBars: IActionBars) {
-
+    
+    // toggle link is also a handler for "link with editor" workbench action
+    val toggleLinkAction = new ToggleLinkAction();
+    toggleLinkAction.setActionDefinitionId(IWorkbenchCommandConstants.NAVIGATE_TOGGLE_LINK_WITH_EDITOR);
+    
+    // add actions to toolbar
     Option(actionBars.getToolBarManager()) foreach { mgr =>
       {
+        // also add group markers to allow command-based additions
+        mgr.add(new GroupMarker("info-view"))
         mgr.add(new ToggleShowTraceAction())
+        mgr.add(new GroupMarker("view"))
+        mgr.add(toggleLinkAction)
       }
     }
+    
+    // register as the handler
+    val handlerService = getSite().getService(classOf[IHandlerService]).asInstanceOf[IHandlerService];
+    handlerService.activateHandler(
+        IWorkbenchCommandConstants.NAVIGATE_TOGGLE_LINK_WITH_EDITOR,
+        new ActionHandler(toggleLinkAction));
+
   }
 
   override def dispose() {
@@ -130,9 +153,9 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
   private def updateOutputAtCaret() = {
-    lastEditorOffset = editor.getCaretPosition();
     if (followSelection) {
-      updateOutput(_ => commandAtOffset(lastEditorOffset))
+      val offset = editor.getCaretPosition();
+      updateOutput(_ => commandAtOffset(offset))
     }
   }
 
@@ -286,29 +309,54 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     }
   }
 
-  private class ToggleShowTraceAction extends Action("Show Trace", IAction.AS_CHECK_BOX) {
-
-//    PlatformUI.getWorkbench().getHelpSystem().setHelp(this, TOGGLE_TRACE_ID)
+  private class ToggleShowTraceAction extends ToggleAction("Show Trace", "Show Proof Trace", propShowTrace, showTrace) {
     setImageDescriptor(IsabelleImages.getImageDescriptor(IsabelleImages.IMG_SHOW_TRACE))
 //    setDisabledImageDescriptor(null)
-    setToolTipText("Show Proof Trace")
-    setDescription("Show Proof Trace")
-    setChecked(showTrace)
+
+    override def handleValueChanged(show: Boolean) {
+      showTrace = show
+
+      // update the output with current command (refresh with new trace value)
+      updateOutput(_ => currentCommand)
+    }
+  }
+  
+  /** Action to toggle linking with selection. */
+  private class ToggleLinkAction extends ToggleAction("Link with Editor", "Link with Editor", propLinkEditor, followSelection) {
+    private def images = PlatformUI.getWorkbench().getSharedImages();
+    setImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED));
+    setDisabledImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED_DISABLED));
+
+    override def handleValueChanged(link: Boolean) {
+      followSelection = link
+
+      // update the output with the current editor position (will do nothing if following disabled)
+      updateOutputAtCaret()
+    }
+  }
+  
+  private abstract class ToggleAction(text: String, desc: String, prefKey: String, initVal: Boolean)
+    extends Action(text, IAction.AS_CHECK_BOX) {
+
+//    PlatformUI.getWorkbench().getHelpSystem().setHelp(this, TOGGLE_LINK_ID)
+    setToolTipText(desc)
+    setDescription(desc)
+    setChecked(initVal)
 
     override def run() {
       setChecked(isChecked());
       valueChanged(isChecked());
     }
 
-    private def valueChanged(show: Boolean) {
-      showTrace = show;
-      
+    private def valueChanged(value: Boolean) {
       // set new value in the preferences
-      prefs.setValue(propShowTrace, show)
+      prefs.setValue(prefKey, value)
       
-      // update the output with current command (refresh with new trace value)
-      updateOutput(_ => currentCommand)
+      // delegate to the implementation
+      handleValueChanged(value)
     }
+    
+    protected def handleValueChanged(value: Boolean): Unit
 
   }
 

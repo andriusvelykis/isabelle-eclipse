@@ -18,7 +18,9 @@ Require-Bundle: org.eclipse.ui,
  org.scala-ide.scala.library;bundle-version="2.9.1",
  isabelle.pure;bundle-version="[2011.1.1,2011.1.2)",
  isabelle.eclipse.core;bundle-version="1.1.0",
- org.eclipse.core.databinding.observable;bundle-version="1.4.0"
+ org.eclipse.core.databinding.observable;bundle-version="1.4.0",
+ org.eclipse.core.expressions,
+ org.eclipse.help
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: AI4FM.org
