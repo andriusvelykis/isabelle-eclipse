@@ -6,6 +6,7 @@ import isabelle.Session
 import isabelle.XML
 import isabelle.eclipse.core.util.SessionEvents
 import isabelle.eclipse.core.util.LoggingActor
+import isabelle.eclipse.ui.IsabelleImages
 import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.editors.TheoryEditor
 import java.io.IOException
@@ -15,6 +16,10 @@ import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Platform
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.jface.action.Action
+import org.eclipse.jface.action.IAction
+import org.eclipse.jface.action.GroupMarker
+import org.eclipse.jface.commands.ActionHandler
 import org.eclipse.jface.viewers.ISelectionChangedListener
 import org.eclipse.jface.viewers.ISelectionProvider
 import org.eclipse.jface.viewers.IPostSelectionProvider
@@ -24,22 +29,17 @@ import org.eclipse.swt.browser.Browser
 import org.eclipse.swt.layout.FillLayout
 import org.eclipse.swt.widgets.Control
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.ui.IActionBars
+import org.eclipse.ui.ISharedImages
+import org.eclipse.ui.IWorkbenchCommandConstants
+import org.eclipse.ui.PlatformUI
+import org.eclipse.ui.handlers.IHandlerService
 import org.eclipse.ui.part.IPageSite
 import org.eclipse.ui.part.Page
 import org.eclipse.ui.texteditor.ITextEditor
 import org.osgi.framework.Bundle
 import scala.actors.Actor._
 import scala.collection.JavaConversions._
-import org.eclipse.jface.action.Action
-import isabelle.eclipse.ui.IsabelleImages
-import org.eclipse.ui.IActionBars
-import org.eclipse.jface.action.IAction
-import org.eclipse.ui.PlatformUI
-import org.eclipse.ui.ISharedImages
-import org.eclipse.ui.IWorkbenchCommandConstants
-import org.eclipse.jface.action.GroupMarker
-import org.eclipse.ui.handlers.IHandlerService
-import org.eclipse.jface.commands.ActionHandler
 
 object ProverOutputPage {
   
