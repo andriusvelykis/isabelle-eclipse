@@ -30,20 +30,30 @@ public class IsabelleImages {
 		ImageRegistry imageRegistry = IsabelleUIPlugin.getDefault().getImageRegistry();
 		Image image = imageRegistry.get(path);
 		if (image == null) {
-			ImageDescriptor desc = ImageDescriptor.getMissingImageDescriptor();
-			try {
-				desc = ImageDescriptor.createFromURL(new URL(path));
-				imageRegistry.put(path, desc);
-				image = imageRegistry.get(path);
-			} catch (MalformedURLException me) {
-			}
+			getImageDescriptor(path);
+			image = imageRegistry.get(path);
 		}
 		
 		return image;
 	}
 	
+	/**
+	 * Returns the <code>ImageDescriptor<code> identified by the given path,
+	 * or <code>null</code> if it does not exist.
+	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return IsabelleUIPlugin.getDefault().getImageRegistry().getDescriptor(path);
+		ImageRegistry imageRegistry = IsabelleUIPlugin.getDefault().getImageRegistry();
+		ImageDescriptor desc = imageRegistry.getDescriptor(path);
+		if (desc == null) {
+			desc = ImageDescriptor.getMissingImageDescriptor();
+			try {
+				desc = ImageDescriptor.createFromURL(new URL(path));
+				imageRegistry.put(path, desc);
+			} catch (MalformedURLException me) {
+			}
+		}
+		
+		return desc;
 	}
 	
 }
