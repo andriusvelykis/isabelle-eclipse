@@ -73,6 +73,9 @@ public class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
 		}
 		annotationModels.remove(element);
 		
+		// dispose the IsabelleDocument to disconnect sync from base document
+		document.dispose();
+		
 		super.disconnect(element);
 	}
 

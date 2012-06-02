@@ -13,10 +13,9 @@ object IsabelleDocument {
   /** Encapsulate a document with a flag that it is being updated by us. */
   private class FlagDocument(val document: IDocument) { var updating = false }
 
-  private def keepInSync(from: FlagDocument, to: FlagDocument, transcode: String => String) {
-
+  private def keepInSync(from: FlagDocument, to: FlagDocument, transcode: String => String): IDocumentListener = {
     // attach a listener to 'from' document and sync to 'to' document when it changes
-    from.document addDocumentListener listener { _ =>
+    val syncListener = listener { _ =>
       {
         // check if document is being updated by us, then do not react to changes
         if (!from.updating) {
@@ -24,6 +23,9 @@ object IsabelleDocument {
         }
       }
     }
+    
+    from.document.addDocumentListener(syncListener)
+    syncListener
   }
   
   private def listener(f: DocumentEvent => Unit) =
@@ -54,16 +56,24 @@ class IsabelleDocument(val base: IDocument) extends Document {
 
   import IsabelleDocument._
 
-  {
+  private val (baseListener, thisListener) = {
     val baseDoc = new FlagDocument(base)
     val thisDoc = new FlagDocument(this);
 
     // init listeners to keep the documents in sync
-    keepInSync(baseDoc, thisDoc, Symbol.decode)
-    keepInSync(thisDoc, baseDoc, Symbol.encode)
-    
+    val baseListener = keepInSync(baseDoc, thisDoc, Symbol.decode)
+    val thisListener = keepInSync(thisDoc, baseDoc, Symbol.encode)
+
     // do initial sync from base to this
     sync(baseDoc, thisDoc, Symbol.decode)
+
+    (baseListener, thisListener)
+  }
+  
+  def dispose() {
+    // disconnect the document listeners, because Base document can be reused
+    base.removeDocumentListener(baseListener)
+    this.removeDocumentListener(thisListener)
   }
   
 }
