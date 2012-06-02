@@ -7,10 +7,13 @@ import org.eclipse.jface.text.BadLocationException
 import org.eclipse.jface.text.Document
 import org.eclipse.jface.text.DocumentEvent
 import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.IDocumentExtension4
 import org.eclipse.jface.text.IDocumentListener
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.Region
+import scala.annotation.tailrec
 import scala.collection.mutable.WeakHashMap
+
 
 /** A document containing text with Isabelle Unicode symbols (as opposed to the ASCII version
   * that gets saved to disk).
@@ -122,7 +125,12 @@ object IsabelleDocument {
     }
 
     to.updating = true
-    to.document.set(transcoded)
+    (to.document, from.document) match {
+      // for modern documents, set the same modification stamp as the original
+      case (to: IDocumentExtension4, from: IDocumentExtension4) => to.set(transcoded, from.getModificationStamp);
+      // just set the text
+      case (to, _) => to.set(transcoded)
+    }
     to.updating = false
   }
   
@@ -157,16 +165,31 @@ object IsabelleDocument {
         case (offset, oldText, newText) => (toRegion.getOffset + offset, oldText.length, newText)
       }
     } else {
-      // Isabelle not initialised, so not transcoding is done - just forward the original text replacement
+      // Isabelle not initialised, so no transcoding is done - just forward the original text replacement
       List((event.getOffset, event.getLength, event.getText))
     }
     
+    // Make a list of modification stamps to attach to each event.
+    // Note that only the last edit gets the actual modification stamp from the event,
+    // all the others get 'fake' (smaller) ones.
+    // This is a bit of a workaround to get undo working correctly for edits that
+    // are applied as multi-edits in the base document.
+    // The modification stamp list therefore is all 'fake' stamps with the last one 'good' stamp.
+    val modStamps = mkModStamps(event.getModificationStamp, edits)
+    // add the modification stamps to the edits tuples
+    val editsWithMod = edits.zip(modStamps) map packArgs
+    
     // function to apply edits in the 'to' document
-    val replace = Function.tupled(to.document.replace _)
+    // if modern documents are used, also set the modification stamp
+    val replace: (Int, Int, String, Long) => Unit =
+      to.document match {
+        case d: IDocumentExtension4 => { (offset, length, text, modStamp) => d.replace(offset, length, text, modStamp) }
+        case d => { (offset, length, text, _) => d.replace(offset, length, text) }
+      }
     
     to.updating = true
     // apply the edits
-    edits foreach replace
+    editsWithMod foreach Function.tupled(replace)
     to.updating = false
   }
 
@@ -217,5 +240,21 @@ object IsabelleDocument {
       case e: BadLocationException => None
     }
   }
-
+  
+  /** Creates a list of modification stamps. The list is of the same length as `edits` and
+    * its last element is the given modification stamp. All previous elements are 'fake'
+    * modification stamps.
+    */
+  @tailrec
+  private def mkModStamps(eventModStamp: Long, edits: List[_]): List[Long] = edits match {
+      case Nil => Nil
+      case last :: Nil => eventModStamp :: Nil
+      case edit :: tail => (eventModStamp - 1) :: mkModStamps(eventModStamp, tail)
+    }
+  
+  /** Packs the value into the main args tuple. */
+  private def packArgs[A, B, C, D](v: ((A, B, C), D)): (A, B, C, D) = {
+    val ((a, b, c), d) = v
+    (a, b, c, d)
+  }
 }
