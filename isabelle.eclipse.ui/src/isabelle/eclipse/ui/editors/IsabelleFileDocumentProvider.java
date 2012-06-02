@@ -92,9 +92,9 @@ public class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
 			throws CoreException {
 		
 		if (document instanceof IsabelleDocument) {
-			// sync to the base one and use that
-			((IsabelleDocument) document).syncToBase();
-			document = ((IsabelleDocument) document).getBaseDocument();
+			// use the base document for saving
+			// it should be synced already via the listeners
+			document = ((IsabelleDocument) document).base();
 		}
 		
 		return super.createSaveOperation(element, document, overwrite);
