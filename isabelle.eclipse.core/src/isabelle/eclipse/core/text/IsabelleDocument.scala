@@ -13,8 +13,8 @@ class IsabelleDocument(val base: IDocument) extends Document {
   import IsabelleDocument._
 
   private val (baseListener, thisListener) = {
-    val baseDoc = new FlagDocument(base)
-    val thisDoc = new FlagDocument(this);
+    val baseDoc = new UpdatingDocument(base)
+    val thisDoc = new UpdatingDocument(this);
 
     // init listeners to keep the documents in sync
     val baseListener = keepInSync(baseDoc, thisDoc, Symbol.decode)
@@ -37,9 +37,9 @@ class IsabelleDocument(val base: IDocument) extends Document {
 object IsabelleDocument {
   
   /** Encapsulate a document with a flag that it is being updated by us. */
-  private class FlagDocument(val document: IDocument) { var updating = false }
+  private class UpdatingDocument(val document: IDocument) { var updating = false }
 
-  private def keepInSync(from: FlagDocument, to: FlagDocument, transcode: String => String): IDocumentListener = {
+  private def keepInSync(from: UpdatingDocument, to: UpdatingDocument, transcode: String => String): IDocumentListener = {
     // attach a listener to 'from' document and sync to 'to' document when it changes
     val syncListener = listener { _ =>
       {
@@ -60,7 +60,7 @@ object IsabelleDocument {
       override def documentAboutToBeChanged(event: DocumentEvent) {}
     }
   
-  private def sync(from: FlagDocument, to: FlagDocument, transcode: String => String) = {
+  private def sync(from: UpdatingDocument, to: UpdatingDocument, transcode: String => String) = {
 
     val text = from.document.get()
 
