@@ -8,6 +8,32 @@ import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.IDocumentListener
 
 
+class IsabelleDocument(val base: IDocument) extends Document {
+
+  import IsabelleDocument._
+
+  private val (baseListener, thisListener) = {
+    val baseDoc = new FlagDocument(base)
+    val thisDoc = new FlagDocument(this);
+
+    // init listeners to keep the documents in sync
+    val baseListener = keepInSync(baseDoc, thisDoc, Symbol.decode)
+    val thisListener = keepInSync(thisDoc, baseDoc, Symbol.encode)
+
+    // do initial sync from base to this
+    sync(baseDoc, thisDoc, Symbol.decode)
+
+    (baseListener, thisListener)
+  }
+  
+  def dispose() {
+    // disconnect the document listeners, because Base document can be reused
+    base.removeDocumentListener(baseListener)
+    this.removeDocumentListener(thisListener)
+  }
+  
+}
+
 object IsabelleDocument {
   
   /** Encapsulate a document with a flag that it is being updated by us. */
@@ -48,32 +74,6 @@ object IsabelleDocument {
     to.updating = true
     to.document.set(transcoded)
     to.updating = false
-  }
-  
-}
-
-class IsabelleDocument(val base: IDocument) extends Document {
-
-  import IsabelleDocument._
-
-  private val (baseListener, thisListener) = {
-    val baseDoc = new FlagDocument(base)
-    val thisDoc = new FlagDocument(this);
-
-    // init listeners to keep the documents in sync
-    val baseListener = keepInSync(baseDoc, thisDoc, Symbol.decode)
-    val thisListener = keepInSync(thisDoc, baseDoc, Symbol.encode)
-
-    // do initial sync from base to this
-    sync(baseDoc, thisDoc, Symbol.decode)
-
-    (baseListener, thisListener)
-  }
-  
-  def dispose() {
-    // disconnect the document listeners, because Base document can be reused
-    base.removeDocumentListener(baseListener)
-    this.removeDocumentListener(thisListener)
   }
   
 }
