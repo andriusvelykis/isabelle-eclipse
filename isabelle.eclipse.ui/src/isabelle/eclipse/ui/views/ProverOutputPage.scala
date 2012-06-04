@@ -195,7 +195,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
             case _ => true
           }
 
-        val htmlPage = PrettyHtml.renderHtmlPage(filtered_results.toList, getCssPaths(), "", "IsabelleText", 12)
+        val htmlPage = ProverOutputHtml.renderHtmlPage(filtered_results.toList, getCssPaths(), "", "IsabelleText", 12)
         Some(htmlPage)
       }
     }
