@@ -6,12 +6,16 @@ import isabelle.Pretty
 import isabelle.XML
 import isabelle.eclipse.ui.IsabelleUIPlugin
 import java.io.StringWriter
+import java.net.URLDecoder
+import java.net.URLEncoder
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerException
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
+import org.w3c.dom.Attr
+import org.w3c.dom.Element
 import org.w3c.dom.Node
 
 
@@ -45,6 +49,9 @@ object ProverOutputHtml {
       fontFamily: String, fontSize: Int): String = {
 
     val bodyNode = renderHtmlBody(commandResults, 120)
+    
+    // replace sendback SPANs with hyperlinks otherwise cannot get an event when it is selected
+    replaceXmlNode(sendbackToLink)(bodyNode)
 
     // print body to String
     val bodyHtml = printNode(bodyNode)
@@ -97,6 +104,81 @@ object ProverOutputHtml {
 
     val validBody = if (body.isEmpty) "<body/>" else body
     HTML_TEMPLATE.format(cssPaths, inlineCss, body)
+  }
+
+  /** Extractor object for "sendback" SPAN element in output HTML */
+  private object SendbackSpan {
+    def unapply(node: Node): Option[(Element, String)] = node match {
+      case e: Element if e.getTagName == HTML.SPAN && e.getAttribute(HTML.CLASS) == Markup.SENDBACK =>
+        Some((e, e.getTextContent))
+      case _ => None
+    }
+  }
+  
+  /** Replaces "sendback" SPAN element with a hyperlink */
+  private def sendbackToLink: PartialFunction[Node, Node] = {
+    case SendbackSpan(elem, content) => {
+      val newElem = elem.getOwnerDocument.createElement("a")
+
+      // copy attributes from sendback elem
+      val attrs = elem.getAttributes
+      val attrSeq = for (index <- 0 until attrs.getLength) yield attrs.item(index)
+
+      attrSeq foreach {
+        case a: Attr => newElem.setAttribute(a.getName, a.getValue)
+        case _ => // ignore
+      }
+      
+      // set the sendback link as the HREF attribute
+      newElem.setAttribute("href", SendbackLink(content))
+      // also set the text content
+      newElem.setTextContent(content)
+      newElem
+    }
+  }
+
+  /** Extractor and factory object for "sendback" hyperlink text.
+    * The link refers to the same page and the "sendback" information (command replacement) is encoded as query parameter.
+    */
+  object SendbackLink {
+
+    val sendbackPrefix = "#?sendback="
+    private val URL_ENCODING = "UTF-8"
+
+    def unapply(link: String): Option[String] = {
+      // there can be a prefix before the '#'
+      val afterHash = link.dropWhile(_ != '#')
+      
+      if (afterHash.startsWith(sendbackPrefix)) {
+        val rest = afterHash.substring(sendbackPrefix.length)
+        // decode the text
+        Some(URLDecoder.decode(rest, URL_ENCODING))
+      } else {
+        None
+      }
+    }
+
+    def apply(text: String): String = {
+      // encode the text
+      val encoded = URLEncoder.encode(text, URL_ENCODING)
+      // concat with the prefix
+      sendbackPrefix + encoded
+    }
+  }
+  
+  def replaceXmlNode(repl: PartialFunction[Node, Node])(node: Node) {
+    val children = node.getChildNodes;
+    val childSeq = for (index <- 0 until children.getLength) yield children.item(index)
+    
+    childSeq foreach { child =>
+      if (repl.isDefinedAt(child)) {
+        val replChild = repl.apply(child)
+        node.replaceChild(replChild, child)
+      } else {
+        // continue deeper
+        replaceXmlNode(repl)(child)
+      }
+    }
   }
   
 }

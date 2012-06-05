@@ -26,6 +26,8 @@ import org.eclipse.jface.viewers.IPostSelectionProvider
 import org.eclipse.jface.viewers.SelectionChangedEvent
 import org.eclipse.swt.SWT
 import org.eclipse.swt.browser.Browser
+import org.eclipse.swt.browser.LocationAdapter
+import org.eclipse.swt.browser.LocationEvent
 import org.eclipse.swt.layout.FillLayout
 import org.eclipse.swt.widgets.Control
 import org.eclipse.swt.widgets.Composite
@@ -40,6 +42,7 @@ import org.eclipse.ui.texteditor.ITextEditor
 import org.osgi.framework.Bundle
 import scala.actors.Actor._
 import scala.collection.JavaConversions._
+
 
 /**
   * @author Andrius Velykis 
@@ -105,6 +108,18 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     mainComposite.setLayout(new FillLayout())
 
     outputArea = new Browser(mainComposite, SWT.NONE)
+    
+    // add listener to hyperlink selection
+    // the results can have hyperlinks, e.g. "sendback" to replace the command with some text, used in 'sledgehammer' resutls
+    outputArea.addLocationListener(new LocationAdapter {
+      override def changing(event: LocationEvent) {
+        event.location match {
+          // handle sendback
+          case ProverOutputHtml.SendbackLink(content) => doSendback(content)
+          case _ => // do nothing
+        }
+      }
+    })
 
     // init session event listeners
     initSessionEvents()
@@ -264,6 +279,23 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   def copySelectionToClipboard() {
     // do nothing at the moment - allow browser copy facilities to work
+  }
+  
+  def doSendback(text: String) {
+    
+    // if command and isabelle model are available, replace the current command with sendback text
+    (currentCommand, Option(editor.getIsabelleModel())) match {
+      case (Some(cmd), Some(isabelleModel)) => {
+        val cmdOffsetOpt = isabelleModel.getSnapshot.node.command_start(cmd)
+        
+        cmdOffsetOpt foreach {offset => {
+          // replace the command text in the document with sendback text
+          editor.getDocument().replace(offset, cmd.length, text)
+        }
+        }
+      }
+      case _ =>
+    }
   }
   
   private def selectionListener(f: (SelectionChangedEvent => Unit)) =
