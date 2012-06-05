@@ -14,6 +14,10 @@ import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 import org.w3c.dom.Node
 
+
+/** Utilities to render Isabelle output as a HTML page.
+  * @author Andrius Velykis 
+  */
 object ProverOutputHtml {
 
   /** A template for HTML file, with placeholders for CSS statements and body, to be used with String.format() */

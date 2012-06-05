@@ -41,6 +41,9 @@ import org.osgi.framework.Bundle
 import scala.actors.Actor._
 import scala.collection.JavaConversions._
 
+/**
+  * @author Andrius Velykis 
+  */
 object ProverOutputPage {
   
   private val viewId = IsabelleUIPlugin.PLUGIN_ID + ".proverOutputView"
@@ -54,6 +57,9 @@ object ProverOutputPage {
   
 }
 
+/**
+  * @author Andrius Velykis 
+  */
 class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents {
 
   // import object contents to avoid full name referencing
