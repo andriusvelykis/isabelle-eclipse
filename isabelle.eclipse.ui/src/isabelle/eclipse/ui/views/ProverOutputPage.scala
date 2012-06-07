@@ -303,7 +303,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     }
   }
   
-  def doSendback(text: String) {
+  private def doSendback(text: String) {
     
     // if command and isabelle model are available, replace the current command with sendback text
     (currentCommand, Option(editor.getIsabelleModel())) match {
