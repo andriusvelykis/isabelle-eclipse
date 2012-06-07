@@ -10,6 +10,7 @@ import isabelle.eclipse.ui.IsabelleImages
 import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.editors.TheoryEditor
 import java.io.IOException
+import java.net.URL
 import org.eclipse.core.runtime.FileLocator
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.IStatus
@@ -102,6 +103,9 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   // selection listener to update output when editor selection changes
   val editorListener = selectionListener { _ => updateOutputAtCaret() }
+  
+  // load CSS file contents, because they cannot be accessed from the browser when packaged into JARs
+  private lazy val inlineCss = getCssPaths.flatMap(readResource(_)).mkString("\n\n")
 
   override def createControl(parent: Composite) {
     mainComposite = new Composite(parent, SWT.NONE)
@@ -216,27 +220,27 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
             case _ => true
           }
 
-        val htmlPage = ProverOutputHtml.renderHtmlPage(filtered_results.toList, getCssPaths(), "", "IsabelleText", 12)
+        val htmlPage = ProverOutputHtml.renderHtmlPage(filtered_results.toList, Nil, inlineCss, "IsabelleText", 12)
         Some(htmlPage)
       }
     }
   }
 
-  private def getCssPaths(): List[String] = {
+  private def getCssPaths(): List[URL] = {
     val bundle = Platform.getBundle(IsabelleUIPlugin.PLUGIN_ID)
     def path = getResourcePath(bundle) _
 
     List(path("etc/isabelle.css"), path("etc/isabelle-jedit.css")).flatten
   }
 
-  private def getResourcePath(bundle: Bundle)(pathInBundle: String): Option[String] = {
+  private def getResourcePath(bundle: Bundle)(pathInBundle: String): Option[URL] = {
     val fileURL = Option(bundle.getEntry(pathInBundle));
 
     fileURL match {
       case Some(url) => {
         try {
-          val fullURL = FileLocator.resolve(url).toString()
-          Some(fullURL.toString())
+          val fullURL = FileLocator.resolve(url)
+          Some(fullURL)
         } catch {
           case ioe: IOException => {
             IsabelleUIPlugin.log("Unable to locate resource " + pathInBundle, ioe)
@@ -279,6 +283,24 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   def copySelectionToClipboard() {
     // do nothing at the moment - allow browser copy facilities to work
+  }
+  
+  /** Reads the target resource URL contents */
+  private def readResource(url: URL): Option[String] = {
+    try {
+      val source = scala.io.Source.fromURL(url, "UTF-8")
+      try {
+        // read text
+        Some(source.mkString)
+      } finally {
+        source.close
+      }
+    } catch {
+      case ioe: IOException => {
+        IsabelleUIPlugin.log(ioe.getMessage, ioe)
+        None
+      }
+    }
   }
   
   def doSendback(text: String) {
