@@ -11,7 +11,6 @@ import org.eclipse.jface.text.IDocumentExtension4
 import org.eclipse.jface.text.IDocumentListener
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.Region
-import scala.annotation.tailrec
 import scala.collection.mutable.WeakHashMap
 
 
@@ -245,7 +244,6 @@ object IsabelleDocument {
     * its last element is the given modification stamp. All previous elements are 'fake'
     * modification stamps.
     */
-  @tailrec
   private def mkModStamps(eventModStamp: Long, edits: List[_]): List[Long] = edits match {
       case Nil => Nil
       case last :: Nil => eventModStamp :: Nil
