@@ -2,7 +2,6 @@ package isabelle.eclipse.core.text
 
 import isabelle.Symbol
 import isabelle.eclipse.core.IsabelleCorePlugin
-import org.eclipse.compare.rangedifferencer.RangeDifferencer
 import org.eclipse.jface.text.BadLocationException
 import org.eclipse.jface.text.Document
 import org.eclipse.jface.text.DocumentEvent
@@ -141,7 +140,7 @@ object IsabelleDocument {
 
     val isabelle = IsabelleCorePlugin.getIsabelle
     // check if Isabelle is initialised, otherwise we do not have access to symbol encodings
-    val edits = if (isabelle.isInit) {
+    val edit = if (isabelle.isInit) {
       
       // Find the regions in both documents affected by the document change event.
       // We assume that symbol encodings do not span multiple lines. Therefore we find the lines
@@ -158,37 +157,27 @@ object IsabelleDocument {
       val transcoded = transcode(fromText)
       
       // compare the transcoded text with what is already in the target document - find the differences
-      val diffs = DiffUtils.diff(toText, transcoded)
+      val diff = minContiguousDiff(toText, transcoded)
+      
       // adapt the differences to the absolute offset (they are 0-based from the `toText`)
-      diffs map {
-        case ((oldOffset, oldText), (newOffset, newText)) => (toRegion.getOffset + oldOffset, oldText.length, newText)
+      diff map {
+        case (offset, length, replaceText) => (toRegion.getOffset + offset, length, replaceText)
       }
     } else {
       // Isabelle not initialised, so no transcoding is done - just forward the original text replacement
-      List((event.getOffset, event.getLength, event.getText))
+      Some((event.getOffset, event.getLength, event.getText))
     }
     
-    // Make a list of modification stamps to attach to each event.
-    // Note that only the last edit gets the actual modification stamp from the event,
-    // all the others get 'fake' (smaller) ones.
-    // This is a bit of a workaround to get undo working correctly for edits that
-    // are applied as multi-edits in the base document.
-    // The modification stamp list therefore is all 'fake' stamps with the last one 'good' stamp.
-    val modStamps = mkModStamps(event.getModificationStamp, edits)
-    // add the modification stamps to the edits tuples
-    val editsWithMod = edits.zip(modStamps) map packArgs
-    
-    // function to apply edits in the 'to' document
-    // if modern documents are used, also set the modification stamp
-    val replace: (Int, Int, String, Long) => Unit =
-      to.document match {
-        case d: IDocumentExtension4 => { (offset, length, text, modStamp) => d.replace(offset, length, text, modStamp) }
-        case d => { (offset, length, text, _) => d.replace(offset, length, text) }
-      }
-    
     to.updating = true
-    // apply the edits
-    editsWithMod foreach Function.tupled(replace)
+    // apply the edit
+    edit foreach {println _}
+    edit foreach { case (offset, length, text) =>
+      to.document match {
+        // if modern documents are used, also set the modification stamp
+        case d: IDocumentExtension4 => d.replace(offset, length, text, event.getModificationStamp)
+        case d => d.replace(offset, length, text)
+      }
+    }
     to.updating = false
   }
 
@@ -240,19 +229,37 @@ object IsabelleDocument {
     }
   }
   
-  /** Creates a list of modification stamps. The list is of the same length as `edits` and
-    * its last element is the given modification stamp. All previous elements are 'fake'
-    * modification stamps.
+  /** Finds the minimal contiguous diff between the old text and the new text. Returns the diff
+    * as 'replacement' edit to use in document.
+    * 
+    * We are using a contiguous diff instead of multiple small replacements to avoid multiple issues.
+    * For example, we need to keep the modification stamp for correct 'undo' functionality -
+    * otherwise we would need to spoof fake modification stamps (see previous versions of the document).
+    * Furthermore, with multiple replacements we need to adjust offsets of subsequent replacements
+    * to take into account earlier replacements (e.g. if new text was added, the other offsets have changed).
     */
-  private def mkModStamps(eventModStamp: Long, edits: List[_]): List[Long] = edits match {
-      case Nil => Nil
-      case last :: Nil => eventModStamp :: Nil
-      case edit :: tail => (eventModStamp - 1) :: mkModStamps(eventModStamp, tail)
-    }
-  
-  /** Packs the value into the main args tuple. */
-  private def packArgs[A, B, C, D](v: ((A, B, C), D)): (A, B, C, D) = {
-    val ((a, b, c), d) = v
-    (a, b, c, d)
+  private def minContiguousDiff(oldText: String, newText: String): Option[(Int, Int, String)] = {
+      // compare the transcoded text with what is already in the target document - find the differences
+      val diffs = DiffUtils.diff(oldText, newText)
+      
+      diffs match {
+        case Nil => None
+        // single element
+        case ((offset, oldText), (_, newText)) :: Nil => Some(offset, oldText.length, newText)
+        case multiple => {
+          // for multiple diffs, make the minimum contiguous range
+          // so take the first and last diffs and construct the range between them
+          val ((firstOldOffset, _), (firstNewOffset, _)) = multiple.head
+          val (lastOld, lastNew) = multiple.last
+          
+          // get the end points
+          def endOffset: ((Int, String)) => Int = { case (offset, text) => offset + text.length }
+          val (endOld, endNew) = (endOffset(lastOld), endOffset(lastNew))
+          
+          // offset, length in old + new text range
+          Some(firstOldOffset, endOld - firstOldOffset, newText.substring(firstNewOffset, endNew))
+        }
+      }
   }
+  
 }
