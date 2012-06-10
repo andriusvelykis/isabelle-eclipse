@@ -170,7 +170,6 @@ object IsabelleDocument {
     
     to.updating = true
     // apply the edit
-    edit foreach {println _}
     edit foreach { case (offset, length, text) =>
       to.document match {
         // if modern documents are used, also set the modification stamp
