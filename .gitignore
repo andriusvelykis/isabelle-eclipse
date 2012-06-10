@@ -1,6 +1,5 @@
-isabelle.eclipse/bin
+isabelle.eclipse.ui/bin
 isabelle.eclipse.launch/bin
 isabelle.eclipse.core/bin
 isabelle.pure/bin
-isabelle.scala/bin
 .cache
