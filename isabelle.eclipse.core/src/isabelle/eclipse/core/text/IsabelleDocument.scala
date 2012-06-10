@@ -161,7 +161,7 @@ object IsabelleDocument {
       val diffs = DiffUtils.diff(toText, transcoded)
       // adapt the differences to the absolute offset (they are 0-based from the `toText`)
       diffs map {
-        case (offset, oldText, newText) => (toRegion.getOffset + offset, oldText.length, newText)
+        case (oldOffset, oldText, newOffset, newText) => (toRegion.getOffset + oldOffset, oldText.length, newText)
       }
     } else {
       // Isabelle not initialised, so no transcoding is done - just forward the original text replacement
