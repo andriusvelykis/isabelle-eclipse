@@ -22,7 +22,6 @@ import org.eclipse.jface.action.IAction
 import org.eclipse.jface.action.GroupMarker
 import org.eclipse.jface.commands.ActionHandler
 import org.eclipse.jface.viewers.ISelectionChangedListener
-import org.eclipse.jface.viewers.ISelectionProvider
 import org.eclipse.jface.viewers.IPostSelectionProvider
 import org.eclipse.jface.viewers.SelectionChangedEvent
 import org.eclipse.swt.SWT
@@ -30,7 +29,6 @@ import org.eclipse.swt.browser.Browser
 import org.eclipse.swt.browser.LocationAdapter
 import org.eclipse.swt.browser.LocationEvent
 import org.eclipse.swt.layout.FillLayout
-import org.eclipse.swt.widgets.Control
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.IActionBars
 import org.eclipse.ui.ISharedImages
@@ -39,10 +37,8 @@ import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.handlers.IHandlerService
 import org.eclipse.ui.part.IPageSite
 import org.eclipse.ui.part.Page
-import org.eclipse.ui.texteditor.ITextEditor
 import org.osgi.framework.Bundle
 import scala.actors.Actor._
-import scala.collection.JavaConversions._
 
 
 /**
