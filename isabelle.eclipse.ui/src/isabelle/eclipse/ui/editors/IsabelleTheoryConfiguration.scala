@@ -96,10 +96,15 @@ class IsabelleTheoryConfiguration(val editor: TheoryEditor, val colorManager: IS
     reconciler
   }
   
+  private val prefs = fPreferenceStore
+  
   /** Resolve the color manager and preference store values for the abstract trait */
   private trait IsabelleScanner extends AbstractIsabelleScanner {
     def colorManager = IsabelleTheoryConfiguration.this.colorManager
-    def preferenceStore = fPreferenceStore
+    
+    // cannot reference parent fPreferenceStore directly here - Scala-IDE Juno crashes
+    // bug reported: http://www.assembla.com/spaces/scala-ide/support/tickets/1001114-sbt-crash-for-mixed-scala-java-project
+    def preferenceStore = prefs
   }
 
   /** Joins the scanners in a chained composite scanner */
