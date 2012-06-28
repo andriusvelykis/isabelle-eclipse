@@ -92,7 +92,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   // get the preferences value for showing the trace
   private var showTrace = prefs.getBoolean(propShowTrace)
-  private var followSelection = true
+  private var followSelection = prefs.getBoolean(propLinkEditor)
   private var currentCommand: Option[Command] = None
 
   private var updateJob: Job = new UpdateOutputJob(_ => None);
