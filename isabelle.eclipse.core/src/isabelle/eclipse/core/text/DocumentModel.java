@@ -109,7 +109,7 @@ public class DocumentModel {
 	
 	private Result<Thy_Header> parseTheoryHeader() {
 		try {
-			Thy_Header result = Thy_Header.check(name.getTheory(), document.get());//.replace("\r\n", "\n"));
+			Thy_Header result = session.thy_load().check_thy(name);
 			return new Res<Thy_Header>(result);
 		} catch (Throwable ex) {
 			return new Exn.Exn<Thy_Header>(ex);
