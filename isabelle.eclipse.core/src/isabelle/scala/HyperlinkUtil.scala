@@ -15,13 +15,16 @@ object HyperlinkUtil {
   def getHyperlink(snapshot: Document.Snapshot, offset: Int, length: Int = 1): HyperlinkInfo =
   {
       val markup =
-        snapshot.select_markup(Text.Range(offset, offset + length)) {
-          // FIXME Isar_Document.Hyperlink extractor
+        snapshot.select_markup[HyperlinkInfo](
+          Text.Range(offset, offset + length),
+          Some(Set(Isabelle_Markup.ENTITY)),
+        { markup: Text.Markup => markup match {
+          // FIXME Isabelle_Rendering.hyperlink
           case Text.Info(info_range,
-            XML.Elem(Markup(Markup.ENTITY, props), _)) if (props.find(
+            XML.Elem(Markup(Isabelle_Markup.ENTITY, props), _)) if (props.find(
             {
-              case (Markup.KIND, Markup.ML_OPEN) => true
-              case (Markup.KIND, Markup.ML_STRUCT) => true
+              case (Markup.KIND, Isabelle_Markup.ML_OPEN) => true
+              case (Markup.KIND, Isabelle_Markup.ML_STRUCT) => true
               case _ => false
             }).isEmpty) =>
             
@@ -44,9 +47,9 @@ object HyperlinkUtil {
                 }
               case _ => null
             }
-        }
+        }})
       markup match {
-        case Text.Info(_, Some(link)) #:: _ => link
+        case Text.Info(_, link) #:: _ => link
         case _ => null
       }
   }
