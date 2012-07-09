@@ -12,7 +12,7 @@ import Thy_Syntax.Structure
 object TheoryNode {
 
   def getTree(session: Session, thy_name: DocumentRef, text: String): java.util.List[TheoryNode] = {
-    val syntax = session.current_syntax()
+    val syntax = session.recent_syntax()
 
     def make_tree(offset: Text.Offset, entry: Structure.Entry): List[TheoryNode] =
       entry match {
