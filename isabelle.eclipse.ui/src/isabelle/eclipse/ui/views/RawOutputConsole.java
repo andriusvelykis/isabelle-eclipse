@@ -2,7 +2,7 @@ package isabelle.eclipse.ui.views;
 
 import java.io.IOException;
 import java.util.EnumSet;
-import isabelle.Isabelle_Process.Result;
+import isabelle.Isabelle_Process.Output;
 import isabelle.Session;
 import isabelle.XML;
 import isabelle.eclipse.core.util.SafeSessionActor;
@@ -31,7 +31,7 @@ public class RawOutputConsole extends MessageConsole {
 				return new SafeSessionActor().rawMessages(new ISessionRawMessageListener() {
 					
 					@Override
-					public void handleMessage(Result result) {
+					public void handleMessage(Output result) {
 						outputMessage(result);
 					}
 				});
@@ -73,7 +73,7 @@ public class RawOutputConsole extends MessageConsole {
 		super.dispose();
 	}
 	
-	private void outputMessage(Result result) {
+	private void outputMessage(Output result) {
 
 		if (consoleStream == null) {
 			return;
