@@ -73,7 +73,7 @@ object SnapshotUtil {
   def getCommandResults(snapshot : Snapshot, cmd : Command, 
       includeMarkups : Array[String], excludeMarkups : Array[String]) : ju.List[XML.Tree] = {
     val includeAll = includeMarkups.isEmpty
-    snapshot.command_state(cmd).results.toList.map(_._2) filter {
+    snapshot.state.command_state(snapshot.version, cmd).results.toList.map(_._2) filter {
       case XML.Elem(Markup(markup, _), _) if excludeMarkups contains markup => false
       case _ if includeAll => true
       case XML.Elem(Markup(markup, _), _) if includeMarkups contains markup => true
