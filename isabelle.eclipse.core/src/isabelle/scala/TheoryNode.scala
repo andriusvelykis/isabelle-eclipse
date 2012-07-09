@@ -2,12 +2,19 @@
 package isabelle.scala
 
 import java.util.ArrayList
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.TreeNode
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable
+import scala.collection.JavaConversions.seqAsJavaList
 
-import isabelle._
-import Thy_Syntax.Structure
+import isabelle.Document
+import isabelle.Library
+import isabelle.Pretty
+import isabelle.Session
+import isabelle.Text
+import isabelle.Thy_Syntax.Structure
+import isabelle.XML
+
 
 object TheoryNode {
 
@@ -38,35 +45,37 @@ object TheoryNode {
 
   def getRawTree(snapshot : Document.Snapshot) : TheoryNode = {
 
-    val root = new TheoryNode("root",0,0)
+    val root = new DefaultMutableTreeNode(new TheoryNode("root",0,0))
     
     for ((command, command_start) <- snapshot.node.command_range()) {
-      node_tree(snapshot.command_state(command).root_markup, root)((info: Text.Info[Any]) =>
-        {
-          val range = info.range + command_start
-          val content = command.source(info.range).replace('\n', ' ')
-          val info_text =
-            info.info match {
-              case elem @ XML.Elem(_, _) =>
-                Pretty.formatted(List(elem), margin = 40).mkString("\n")
-              case x => x.toString
-            }
+      snapshot.state.command_state(snapshot.version, command).markup
+        .swing_tree(root)((info: Text.Info[List[XML.Elem]]) =>
+          {
+            val range = info.range + command_start
+            val content = command.source(info.range).replace('\n', ' ')
+            val info_text =
+              Pretty.formatted(Library.separate(Pretty.FBreak, info.info), margin = 40).mkString
 
-          new TheoryNode(command.toString, range.start, range.stop, content, info_text)
-        })
+            new DefaultMutableTreeNode(new TheoryNode(command.toString, range.start, range.stop, content, info_text))
+          })
     }
-    root
+    
+    adaptTreeNode(root)
   }
-
-  // adapted from swing_tree
-  private def node_tree(tree: Markup_Tree, parent: TheoryNode)(nodeMap: Text.Info[Any] => TheoryNode)
-  {
-    for ((_, (info, subtree)) <- tree.branches) {
-      val current = nodeMap(info)
-      node_tree(subtree, current)(nodeMap)
-      parent.add(current)
-    }
+  
+  // convert from Swing tree node to custom tree data structure
+  // (maybe get rid of Swing here eventually - need to adapt the API)
+  private def adaptTreeNode(node: DefaultMutableTreeNode): TheoryNode = {
+    val thNode = node.getUserObject.asInstanceOf[TheoryNode]
+    
+    // recursively adapt each child and add to the theory node
+    nodeChildren(node).map(adaptTreeNode).foreach(thNode.add)
+    
+    thNode
   }
+  
+  private def nodeChildren[N <: TreeNode](node: N) =
+    for (i <- 0 to node.getChildCount) yield node.getChildAt(i).asInstanceOf[N]
 
 }
 
