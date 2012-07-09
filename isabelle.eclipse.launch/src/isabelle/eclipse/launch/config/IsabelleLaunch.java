@@ -68,7 +68,7 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 		// the session is started asynchronously, so we need to listen for it to finish.
 		Phase phase = waitForPhaseResult(session);
 		if (phase == Isabelle.SESSION_FAILED) {
-			String syslog = session.syslog();
+			String syslog = session.current_syslog();
 			abort("Isabelle failed to initialise the session.", syslog);
 		}
 		
