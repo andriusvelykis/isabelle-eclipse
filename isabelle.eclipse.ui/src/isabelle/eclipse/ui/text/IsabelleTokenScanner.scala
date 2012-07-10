@@ -17,12 +17,10 @@ import isabelle.eclipse.ui.editors.TheoryEditor
 class IsabelleTokenScanner(val editor: TheoryEditor) extends AbstractTokenStreamScanner {
 
   private def syntax: Option[Outer_Syntax] = {
-    val isabelleModel = editor.getIsabelleModel();
-    if (isabelleModel != null && isabelleModel.getSession().is_ready) {
-      Some(isabelleModel.getSession().current_syntax())
-    } else {
-      None
-    }
+    val isabelleModel = Option(editor.getIsabelleModel)
+    
+    val session = isabelleModel.map(_.getSession).filter(_.is_ready)
+    session.map(_.recent_syntax)
   }
 
   protected def tokenStream(document: IDocument, offset: Int, length: Int): Stream[TokenInfo] =
