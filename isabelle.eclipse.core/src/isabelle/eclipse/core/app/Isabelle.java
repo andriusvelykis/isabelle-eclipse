@@ -12,7 +12,6 @@ import isabelle.Session$Failed$;
 import isabelle.Session$Ready$;
 import isabelle.Session$Shutdown$;
 import isabelle.Thy_Info;
-import isabelle.eclipse.core.resource.ThyInfo2;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.scala.ISessionPhaseListener;
@@ -91,7 +90,7 @@ public class Isabelle {
 		// use custom URI-based theory loading
 		URIThyLoad thyLoad = new URIThyLoad();
 		session = new Session(thyLoad);
-		thyInfo = new ThyInfo2(thyLoad);
+		thyInfo = new Thy_Info(thyLoad);
 		
 		List<String> sessionArgs = Arrays.asList("-mxsymbols", /*"-mno_brackets", "-mno_type_brackets",*/ logic ); 
 		
