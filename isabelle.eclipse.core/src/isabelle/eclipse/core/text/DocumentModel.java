@@ -23,8 +23,7 @@ import isabelle.Exn;
 import isabelle.Exn.Res;
 import isabelle.Exn.Result;
 import isabelle.Session;
-import isabelle.Text$Edit$;
-import isabelle.Text$Perspective$;
+import isabelle.Text;
 import isabelle.Text.Edit;
 import isabelle.Text.Perspective;
 import isabelle.Text.Range;
@@ -36,7 +35,7 @@ import static isabelle.eclipse.core.IsabelleCorePlugin.ISABELLE_SUBMIT;
 
 public class DocumentModel {
 
-	private static final Text$Edit$ TEXT_EDIT = Text$Edit$.MODULE$;
+	private static final Text.Edit$ TEXT_EDIT = Text.Edit$.MODULE$;
 	
 	private final Session session;
 	private final IDocument document;
@@ -46,7 +45,7 @@ public class DocumentModel {
 	
 	private final List<Edit> pendingEdits = new LinkedList<Edit>();
 	private boolean pendingPerspective = false;
-	private Perspective lastPerspective = Text$Perspective$.MODULE$.empty();
+	private Perspective lastPerspective = Text.Perspective$.MODULE$.empty();
 	
 	private int submitOffset = 0;
 	private Range activePerspectiveRange = new Range(0, 0);
