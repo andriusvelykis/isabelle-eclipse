@@ -1,6 +1,7 @@
 package isabelle.eclipse.ui.views
 
 import isabelle.Command
+import isabelle.Isabelle_Markup
 import isabelle.Markup
 import isabelle.Session
 import isabelle.XML
@@ -193,7 +194,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   private def commandAtOffset(offset: Int): Option[Command] = {
     val isabelleModel = Option(editor.getIsabelleModel())
     // get the command at the snapshot if the model is available
-    isabelleModel flatMap { _.getSnapshot.node.proper_command_at(offset) }
+    isabelleModel flatMap { _.getSnapshot.node.command_at(offset).map(_._1) }
   }
 
   private def renderOutput(cmd: Command, monitor: IProgressMonitor): Option[String] = {
@@ -210,13 +211,14 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
         // model is available - get the results and render them
         val snapshot = model.getSnapshot();
 
-        val filtered_results =
-          snapshot.command_state(cmd).results.iterator.map(_._2) filter {
-            case XML.Elem(Markup(Markup.TRACING, _), _) => showTrace // FIXME not scalable
+        val filteredResults =
+          snapshot.state.command_state(snapshot.version, cmd).results.iterator.map(_._2) filter {
+            // FIXME not scalable
+            case XML.Elem(Markup(Isabelle_Markup.TRACING, _), _) => showTrace
             case _ => true
           }
 
-        val htmlPage = ProverOutputHtml.renderHtmlPage(filtered_results.toList, Nil, inlineCss, "IsabelleText", 12)
+        val htmlPage = ProverOutputHtml.renderHtmlPage(filteredResults.toList, Nil, inlineCss, "IsabelleText", 12)
         Some(htmlPage)
       }
     }
