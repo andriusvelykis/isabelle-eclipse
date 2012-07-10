@@ -8,9 +8,6 @@ import org.eclipse.core.runtime.ListenerList;
 import isabelle.Isabelle_System;
 import isabelle.Session;
 import isabelle.Session.Phase;
-import isabelle.Session$Failed$;
-import isabelle.Session$Ready$;
-import isabelle.Session$Shutdown$;
 import isabelle.Thy_Info;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.util.SafeSessionActor;
@@ -23,9 +20,9 @@ import isabelle.scala.SessionUtil;
 
 public class Isabelle {
 
-	public static final Session$Failed$ SESSION_FAILED = Session$Failed$.MODULE$;
-	public static final Session$Ready$ SESSION_READY = Session$Ready$.MODULE$;
-	public static final Session$Shutdown$ SESSION_SHUTDOWN = Session$Shutdown$.MODULE$;
+	public static final Session.Failed$ SESSION_FAILED = Session.Failed$.MODULE$;
+	public static final Session.Ready$ SESSION_READY = Session.Ready$.MODULE$;
+	public static final Session.Shutdown$ SESSION_SHUTDOWN = Session.Shutdown$.MODULE$;
 	
 	private Session session;
 	private Thy_Info thyInfo;
