@@ -19,7 +19,7 @@ class IsabelleTokenScanner(val editor: TheoryEditor) extends AbstractTokenStream
   private def syntax: Option[Outer_Syntax] = {
     val isabelleModel = Option(editor.getIsabelleModel)
     
-    val session = isabelleModel.map(_.getSession).filter(_.is_ready)
+    val session = isabelleModel.map(_.session).filter(_.is_ready)
     session.map(_.recent_syntax)
   }
 

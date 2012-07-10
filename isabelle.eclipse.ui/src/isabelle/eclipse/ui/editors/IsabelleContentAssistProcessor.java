@@ -91,7 +91,7 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 	
 	public static List<CompletionProposalInfo> getCompletions(DocumentModel isabelleModel, String text){
 
-		Completion completion = isabelleModel.getSession().current_syntax().completion();
+		Completion completion = isabelleModel.session().recent_syntax().completion();
 		Option<Tuple2<String, scala.collection.immutable.List<String>>> rawProposalsOpt = 
 				completion.complete(text);
 

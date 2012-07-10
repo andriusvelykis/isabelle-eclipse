@@ -81,11 +81,11 @@ public class TheoryOutlinePage extends ContentOutlinePage {
 			text = document.get();
 		}
 		
-		return TheoryNode.getTree(isabelleModel.getSession(), isabelleModel.getName(), text);
+		return TheoryNode.getTree(isabelleModel.session(), isabelleModel.name(), text);
 	}
 	
 	private List<TheoryNode> parseRawOutline(DocumentModel isabelleModel) {
-		TheoryNode root = TheoryNode.getRawTree(isabelleModel.getSnapshot());
+		TheoryNode root = TheoryNode.getRawTree(isabelleModel.snapshot());
 		return Collections.singletonList(root);
 	}
 	

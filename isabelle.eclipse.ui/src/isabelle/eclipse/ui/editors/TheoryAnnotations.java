@@ -86,7 +86,7 @@ public class TheoryAnnotations {
 						}
 						
 						// avoid updating annotations if commands are from a different document
-						if (changed.nodes().contains(isabelleModel.getName().getRef())) {
+						if (changed.nodes().contains(isabelleModel.name())) {
 							updateAnnotations(changed.commands());
 						}
 					}
@@ -112,7 +112,7 @@ public class TheoryAnnotations {
 			return;
 		}
 		
-		Set<Command> snapshotCommands = isabelleModel.getSnapshot().node().commands();
+		Set<Command> snapshotCommands = isabelleModel.snapshot().node().commands();
 		updateAnnotations(snapshotCommands);
 	}
 	
@@ -139,7 +139,7 @@ public class TheoryAnnotations {
 			return null;
 		}
 		
-		Snapshot snapshot = isabelleModel.getSnapshot();
+		Snapshot snapshot = isabelleModel.snapshot();
 		
 		Set<Command> snapshotCmds = snapshot.node().commands();
 		if (snapshotCmds.size() > lastCommandCount || lastSnapshotOutdated) {

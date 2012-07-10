@@ -10,7 +10,6 @@ import java.util.Set;
 
 import isabelle.Command;
 import isabelle.Document.Snapshot;
-import isabelle.Exn.Result;
 import isabelle.Session.Commands_Changed;
 import isabelle.Session;
 import isabelle.Thy_Header;
@@ -21,6 +20,7 @@ import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.resource.URIPathEncoder;
 import isabelle.eclipse.core.text.DocumentModel;
+import isabelle.eclipse.core.text.DocumentModel$;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.core.util.SessionEventSupport;
 import isabelle.eclipse.ui.IsabelleUIPlugin;
@@ -178,7 +178,7 @@ public class TheoryEditor extends TextEditor {
 						}
 						
 						// avoid updating if commands are from a different document
-						if (changed.nodes().contains(isabelleModel.getName().getRef())) {
+						if (changed.nodes().contains(isabelleModel.name())) {
 							refreshView();
 						}
 					}
@@ -351,7 +351,7 @@ public class TheoryEditor extends TextEditor {
 	private void initIsabelleModel() {
 		IDocument document = getDocument();
 		if (document != null && documentRef != null && isabelleSession != null) {
-			isabelleModel = DocumentModel.create(isabelleSession, document, documentRef);
+			isabelleModel = DocumentModel$.MODULE$.init(isabelleSession, document, documentRef.getRef());
 			
 			// update active perspective in the UI thread
 			getSite().getWorkbenchWindow().getWorkbench().getDisplay()
@@ -410,12 +410,12 @@ public class TheoryEditor extends TextEditor {
 		
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
 		Thy_Info theoryInfo = isabelle.getTheoryInfo();
-		List<Tuple2<DocumentRef, Result<Thy_Header>>> deps = TheoryInfoUtil.getDependencies(
+		List<? extends Tuple2<DocumentRef, ?>> deps = TheoryInfoUtil.getDependencies(
 				theoryInfo, Collections.singletonList(documentRef));
 		
 		// use set to avoid duplicates but preserve the order
 		Set<DocumentRef> depRefs = new LinkedHashSet<DocumentRef>();
-		for (Tuple2<DocumentRef, Result<Thy_Header>> dep : deps) {
+		for (Tuple2<DocumentRef, ?> dep : deps) {
 			depRefs.add(dep._1());
 		}
 		
@@ -462,7 +462,7 @@ public class TheoryEditor extends TextEditor {
 				docProvider.connect(input);
 				IDocument document = docProvider.getDocument(input);
 				// init document model
-				DocumentModel model = DocumentModel.create(isabelleSession, document, ref);
+				DocumentModel model = DocumentModel$.MODULE$.init(isabelleSession, document, ref.getRef());
 				// dispose immediately after initialisation
 				model.dispose();
 				docProvider.disconnect(input);
@@ -489,7 +489,7 @@ public class TheoryEditor extends TextEditor {
 			return null;
 		}
 		
-		return isabelleModel.getSnapshot();
+		return isabelleModel.snapshot();
 	}
 	
 	/**
