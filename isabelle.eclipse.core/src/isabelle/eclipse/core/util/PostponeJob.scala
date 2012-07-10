@@ -1,9 +1,9 @@
 package isabelle.eclipse.core.util
 
+import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.core.runtime.IProgressMonitor
 
 /** A convenience encapsulation of Eclipse Job that can be restarted periodically
   * (with possible postpone delay).
