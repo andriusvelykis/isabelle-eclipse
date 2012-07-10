@@ -26,6 +26,9 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 
 public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
+	
+	private static final Session.Failed$ SESSION_FAILED = Session.Failed$.MODULE$;
+	private static final Session.Ready$ SESSION_READY = Session.Ready$.MODULE$;
 
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
@@ -67,7 +70,7 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 		
 		// the session is started asynchronously, so we need to listen for it to finish.
 		Phase phase = waitForPhaseResult(session);
-		if (phase == Isabelle.SESSION_FAILED) {
+		if (phase == SESSION_FAILED) {
 			String syslog = session.current_syslog();
 			abort("Isabelle failed to initialise the session.", syslog);
 		}
@@ -127,7 +130,7 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 	}
 	
 	private boolean canHandlePhase(Phase phase) {
-		return phase == Isabelle.SESSION_READY || phase == Isabelle.SESSION_FAILED;
+		return phase == SESSION_READY || phase == SESSION_FAILED;
 	}
 	
 	public static String getLogicConfig(ILaunchConfiguration configuration) {
