@@ -1,11 +1,7 @@
 package isabelle.eclipse.core.util
 
-import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.Lock
-import org.eclipse.core.runtime.jobs.ISchedulingRule
-import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.core.runtime.NullProgressMonitor
-import org.eclipse.core.runtime.jobs.Job
+import java.util.concurrent.locks.ReadWriteLock
 
 /** Utility classes and methods related to concurrency uses 
   * 
