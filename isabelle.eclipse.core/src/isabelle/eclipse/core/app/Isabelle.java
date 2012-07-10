@@ -9,6 +9,7 @@ import isabelle.Isabelle_System;
 import isabelle.Session;
 import isabelle.Session.Phase;
 import isabelle.Thy_Info;
+import isabelle.Thy_Load;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.scala.ISessionPhaseListener;
@@ -26,6 +27,7 @@ public class Isabelle {
 	
 	private Session session;
 	private Thy_Info thyInfo;
+	private Thy_Load thyLoad;
 	
 	private final ListenerList sessionListeners = new ListenerList();
 	
@@ -85,7 +87,7 @@ public class Isabelle {
 		fireSystemInit();
 		
 		// use custom URI-based theory loading
-		URIThyLoad thyLoad = new URIThyLoad();
+		thyLoad = new URIThyLoad();
 		session = new Session(thyLoad);
 		thyInfo = new Thy_Info(thyLoad);
 		
@@ -119,6 +121,10 @@ public class Isabelle {
 	
 	public Thy_Info getTheoryInfo() {
 		return thyInfo;
+	}
+	
+	public Thy_Load getTheoryLoader() {
+		return thyLoad;
 	}
 	
 	public void addSessionListener(IIsabelleSessionListener listener) {
