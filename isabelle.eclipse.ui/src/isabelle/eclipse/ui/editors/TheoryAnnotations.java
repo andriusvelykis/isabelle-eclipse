@@ -22,7 +22,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
@@ -35,7 +34,10 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 
-import static scala.collection.JavaConversions.setAsJavaSet;
+import scala.collection.immutable.Set;
+
+import static scala.collection.JavaConversions.seqAsJavaList;
+import static scala.collection.JavaConversions.asScalaBuffer;
 
 public class TheoryAnnotations {
 	
@@ -85,7 +87,7 @@ public class TheoryAnnotations {
 						
 						// avoid updating annotations if commands are from a different document
 						if (changed.nodes().contains(isabelleModel.getName().getRef())) {
-							updateAnnotations(setAsJavaSet(changed.commands()));
+							updateAnnotations(changed.commands());
 						}
 					}
 				});
@@ -110,7 +112,7 @@ public class TheoryAnnotations {
 			return;
 		}
 		
-		Set<Command> snapshotCommands = setAsJavaSet(isabelleModel.getSnapshot().node().commands());
+		Set<Command> snapshotCommands = isabelleModel.getSnapshot().node().commands();
 		updateAnnotations(snapshotCommands);
 	}
 	
@@ -139,7 +141,7 @@ public class TheoryAnnotations {
 		
 		Snapshot snapshot = isabelleModel.getSnapshot();
 		
-		Set<Command> snapshotCmds = setAsJavaSet(snapshot.node().commands());
+		Set<Command> snapshotCmds = snapshot.node().commands();
 		if (snapshotCmds.size() > lastCommandCount || lastSnapshotOutdated) {
 			/*
 			 * More commands in the snapshot than was previously - update
@@ -155,10 +157,8 @@ public class TheoryAnnotations {
 			commands = snapshotCmds;
 			lastCommandCount = snapshotCmds.size();
 		} else {
-			// copy commands set
-			commands = new LinkedHashSet<Command>(commands);
 			// Only use commands that are in the snapshot.
-			commands.retainAll(snapshotCmds);
+			commands = commands.intersect(snapshotCmds);
 		}
 		
 		lastSnapshotOutdated = snapshot.is_outdated();
@@ -170,11 +170,11 @@ public class TheoryAnnotations {
 		
 		// get the ranges occupied by the changed commands
 		// and recalculate annotations for them afterwards
-		List<Range> commandRanges = AnnotationFactory.getCommandRanges(snapshot, commands);
+		List<Range> commandRanges = seqAsJavaList(AnnotationFactory.commandRanges(snapshot, commands));
 		// merge overlapping/adjoining ranges
 		List<Range> mergeRanges = mergeRanges(commandRanges);
 		
-		List<AnnotationInfo> annotations = AnnotationFactory.createAnnotations(snapshot, mergeRanges);
+		List<AnnotationInfo> annotations = seqAsJavaList(AnnotationFactory.createAnnotations(snapshot, asScalaBuffer(mergeRanges).toList()));
 		AnnotationConfig config = new AnnotationConfig(annotations, mergeRanges);
 		
 		return config;
@@ -264,7 +264,7 @@ public class TheoryAnnotations {
 		
 		public AnnotationUpdateJob(Set<Command> commands) {
 			super("Updating theory annotations");
-			this.commands = new HashSet<Command>(commands);
+			this.commands = commands;
 		}
 		
 		@Override
