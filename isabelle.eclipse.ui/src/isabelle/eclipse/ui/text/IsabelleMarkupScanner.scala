@@ -5,8 +5,8 @@ import org.eclipse.jface.text.rules.IToken
 import org.eclipse.jface.text.rules.Token
 
 import isabelle.Document.Snapshot
+import isabelle.Isabelle_Markup
 import isabelle.Markup
-import isabelle.Markup_Tree
 import isabelle.Text
 import isabelle.XML
 import isabelle.eclipse.ui.editors.TheoryEditor
@@ -38,16 +38,25 @@ class IsabelleMarkupScanner(val editor: TheoryEditor) extends AbstractTokenStrea
 
       case Some(snapshot) => {
         // create markup stream to get tokens
-        val markupInfos = snapshot.select_markup(Text.Range(offset, offset + length))(markupSelect)
+        val markupInfos =
+          snapshot.cumulate_markup[Option[IToken]](
+            Text.Range(offset, offset + length), None, None,
+            {
+              case (_, MarkupName(markup)) => Some(getToken(markup))
+            })
         
         // map markup infos to TokenInfo stream 
         markupInfos map tokenInfo
       }
     }
 
-  private val markupSelect: Markup_Tree.Select[IToken] = {
-    case Text.Info(_, XML.Elem(Markup(m, _), _)) => getToken(m)
-    case Text.Info(_, XML.Elem(Markup.Entity(kind, _), _)) => getToken(kind)
+  private object MarkupName {
+    def unapply(info: Any): Option[String] =
+      info match {
+        case Text.Info(_, XML.Elem(Isabelle_Markup.Entity(kind, _), _)) => Some(kind)
+        case Text.Info(_, XML.Elem(Markup(m, _), _)) => Some(m)
+        case _ => None
+      }
   }
   
   private def tokenInfo(tokenInfo: Text.Info[Option[IToken]]) = 
