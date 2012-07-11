@@ -95,12 +95,14 @@ object AnnotationFactory {
   /** Creates message annotations (e.g. errors/warnings) */
   private def createMessageAnnotations(snapshot: Snapshot, range: Text.Range): Stream[AnnotationInfo] = {
 
+    val msgMarkups = Set(Isabelle_Markup.WRITELN, Isabelle_Markup.WARNING, Isabelle_Markup.ERROR)
+    
     val results =
       snapshot.select_markup[(IsabelleAnnotation, String)](range,
         // Markups in the snapshot that have associated messages and should be created as annotations.
-        Some(Set(Isabelle_Markup.WRITELN, Isabelle_Markup.WARNING, Isabelle_Markup.ERROR)),
+        Some(msgMarkups),
         {
-          case Text.Info(_, msg @ XML.Elem(Markup(name, _), _)) => {
+          case Text.Info(_, msg @ XML.Elem(Markup(name, _), _)) if msgMarkups.contains(name) => {
             val annType = name match {
               case Isabelle_Markup.WRITELN => IsabelleAnnotation.MESSAGE_WRITELN
               case Isabelle_Markup.WARNING => IsabelleAnnotation.MESSAGE_WARNING
