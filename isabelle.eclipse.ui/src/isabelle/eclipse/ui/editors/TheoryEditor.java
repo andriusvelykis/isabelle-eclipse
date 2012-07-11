@@ -3,19 +3,18 @@ package isabelle.eclipse.ui.editors;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import isabelle.Command;
 import isabelle.Document.Snapshot;
+import isabelle.Event_Bus;
 import isabelle.Session.Commands_Changed;
 import isabelle.Session;
 import isabelle.Thy_Header;
 import isabelle.Thy_Info;
 import isabelle.eclipse.core.IsabelleCorePlugin;
-import isabelle.eclipse.core.app.IIsabelleSessionListener;
 import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.resource.URIPathEncoder;
@@ -28,8 +27,7 @@ import isabelle.eclipse.ui.text.DocumentListenerSupport;
 import isabelle.eclipse.ui.views.TheoryOutlinePage;
 import isabelle.scala.DocumentRef;
 import isabelle.scala.ISessionCommandsListener;
-import isabelle.scala.SessionActor;
-import isabelle.scala.SessionEventType;
+import isabelle.scala.ScalaCollections;
 import isabelle.scala.TheoryInfoUtil;
 
 import org.eclipse.core.filesystem.EFS;
@@ -76,6 +74,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import scala.Option;
 import scala.Tuple2;
+import scala.actors.Actor;
 
 
 public class TheoryEditor extends TextEditor {
@@ -84,8 +83,6 @@ public class TheoryEditor extends TextEditor {
 	public static final String EDITOR_SCOPE = "isabelle.eclipse.ui.theoryEditorScope";
 	
 	private ColorManager colorManager;
-	
-	private final IIsabelleSessionListener sessionListener;
 	
 	private Session isabelleSession;
 	
@@ -113,7 +110,7 @@ public class TheoryEditor extends TextEditor {
 	private TheoryOutlinePage outlinePage = null;
 	
 	private final TheoryAnnotations markers = new TheoryAnnotations(this);
-	private final SessionEventSupport sessionEvents;
+	private final SessionEventSupport<?> sessionEvents;
 	
 //	private int submittedOffset = 0;
 	
@@ -123,8 +120,6 @@ public class TheoryEditor extends TextEditor {
 		setSourceViewerConfiguration(new IsabelleTheoryConfiguration(this, colorManager));
 //		setSourceViewerConfiguration(new TextSourceViewerConfiguration(EditorsUI.getPreferenceStore()));
 		setDocumentProvider(new IsabelleFileDocumentProvider());
-		
-		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
 		
 		// create listeners for perspective change (scrolling & resize)
 		this.viewerViewportListener = new IViewportListener() {
@@ -143,7 +138,9 @@ public class TheoryEditor extends TextEditor {
 			}
 		};
 		
-		isabelle.addSessionListener(sessionListener = new IIsabelleSessionListener() {
+		// When commands change (e.g. results from the prover), signal to update the document view,
+		// e.g. new markups, etc.
+		sessionEvents = new SessionEventSupport<Commands_Changed>() {
 			
 			@Override
 			public void systemInit() {
@@ -152,22 +149,20 @@ public class TheoryEditor extends TextEditor {
 
 			@Override
 			public void sessionInit(Session session) {
-				initSession(session, getEditorInput());
+				TheoryEditor.this.initSession(session, getEditorInput());
+				
+				// when the session is initialised refresh the view
+				refreshView();
 			}
 			
 			@Override
 			public void sessionShutdown(Session session) {
-				shutdownSession(session, false);
+				TheoryEditor.this.shutdownSession(session, false);
 			}
-		});
-		
-		// When commands change (e.g. results from the prover), signal to update the document view,
-		// e.g. new markups, etc.
-		sessionEvents = new SessionEventSupport(EnumSet.of(SessionEventType.COMMAND)) {
 			
 			@Override
-			protected SessionActor createSessionActor(Session session) {
-				return new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
+			public Actor sessionActor() {
+				return (Actor) new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
 					
 					@Override
 					public void commandsChanged(Commands_Changed changed) {
@@ -182,13 +177,12 @@ public class TheoryEditor extends TextEditor {
 							refreshView();
 						}
 					}
-				});
+				}).getActor();
 			}
-
+			
 			@Override
-			protected void sessionInit(Session session) {
-				// when the session is initialised refresh the view
-				refreshView();
+			public scala.collection.immutable.List<Event_Bus<Commands_Changed>> sessionEvents0(Session session) {
+				return ScalaCollections.singletonList(session.commands_changed());
 			}
 		};
 	}
@@ -198,9 +192,9 @@ public class TheoryEditor extends TextEditor {
 		
 		// init Isabelle from core plugin
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
-		Session session = isabelle.getSession();
-		if (session != null) {
-			initSession(session, input);
+		Option<Session> session = isabelle.session();
+		if (session.isDefined()) {
+			initSession(session.get(), input);
 		}
 		
 		super.init(site, input);
@@ -292,8 +286,6 @@ public class TheoryEditor extends TextEditor {
 		disposePerspectiveListeners();
 		
 		// TODO review what happens if a second editor is opened for the same input
-		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
-		isabelle.removeSessionListener(sessionListener);
 		
 		markers.dispose();
 		sessionEvents.dispose();
@@ -409,7 +401,7 @@ public class TheoryEditor extends TextEditor {
 	private void loadTheoryImports() {
 		
 		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
-		Thy_Info theoryInfo = isabelle.getTheoryInfo();
+		Thy_Info theoryInfo = isabelle.thyInfo();
 		List<? extends Tuple2<DocumentRef, ?>> deps = TheoryInfoUtil.getDependencies(
 				theoryInfo, Collections.singletonList(documentRef));
 		

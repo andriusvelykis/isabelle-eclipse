@@ -45,7 +45,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
   private var pendingPerspective = false
 
   private def parseNodeHeader(): Document.Node_Header = Exn.capture {
-    IsabelleCorePlugin.getIsabelle.getTheoryLoader.check_header(name, Thy_Header.read(document.get))
+    IsabelleCorePlugin.getIsabelle.thyLoad.check_header(name, Thy_Header.read(document.get))
   }
 
   /**

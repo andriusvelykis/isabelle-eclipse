@@ -1,6 +1,7 @@
 package isabelle.eclipse.ui.editors;
 
 import isabelle.Command;
+import isabelle.Event_Bus;
 import isabelle.Document.Snapshot;
 import isabelle.Session;
 import isabelle.Session.Commands_Changed;
@@ -11,14 +12,12 @@ import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.core.util.SessionEventSupport;
 import isabelle.scala.ISessionCommandsListener;
-import isabelle.scala.SessionActor;
-import isabelle.scala.SessionEventType;
+import isabelle.scala.ScalaCollections;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
@@ -32,6 +31,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 
+import scala.actors.Actor;
 import scala.collection.immutable.Set;
 
 import static scala.collection.JavaConversions.seqAsJavaList;
@@ -58,7 +58,7 @@ public class TheoryAnnotations {
 		}
 	};
 	
-	private final SessionEventSupport sessionEvents;
+	private final SessionEventSupport<?> sessionEvents;
 	private int lastCommandCount = 0;
 	private boolean lastSnapshotOutdated = true;
 	
@@ -68,11 +68,17 @@ public class TheoryAnnotations {
 		
 		// When commands change (e.g. results from the prover), update the
 		// annotations accordingly.
-		sessionEvents = new SessionEventSupport(EnumSet.of(SessionEventType.COMMAND)) {
+		sessionEvents = new SessionEventSupport<Commands_Changed>() {
+
+			@Override
+			public void sessionInit(Session session) {
+				// when the session is initialised, update all annotations from scratch
+				updateAllAnnotations();
+			}
 			
 			@Override
-			protected SessionActor createSessionActor(Session session) {
-				return new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
+			public Actor sessionActor() {
+				return (Actor) new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
 					
 					@Override
 					public void commandsChanged(Commands_Changed changed) {
@@ -88,13 +94,12 @@ public class TheoryAnnotations {
 							updateAnnotations(changed.commands());
 						}
 					}
-				});
+				}).getActor();
 			}
-
+			
 			@Override
-			protected void sessionInit(Session session) {
-				// when the session is initialised, update all annotations from scratch
-				updateAllAnnotations();
+			public scala.collection.immutable.List<Event_Bus<Commands_Changed>> sessionEvents0(Session session) {
+				return ScalaCollections.singletonList(session.commands_changed());
 			}
 		};
 	}
