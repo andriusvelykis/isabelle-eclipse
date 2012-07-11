@@ -190,12 +190,8 @@ public class TheoryEditor extends TextEditor {
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		
-		// init Isabelle from core plugin
-		Isabelle isabelle = IsabelleCorePlugin.getIsabelle();
-		Option<Session> session = isabelle.session();
-		if (session.isDefined()) {
-			initSession(session.get(), input);
-		}
+		// init session events
+		sessionEvents.init();
 		
 		super.init(site, input);
 		

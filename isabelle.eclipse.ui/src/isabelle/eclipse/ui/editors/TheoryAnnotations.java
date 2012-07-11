@@ -102,6 +102,7 @@ public class TheoryAnnotations {
 				return ScalaCollections.singletonList(session.commands_changed());
 			}
 		};
+		sessionEvents.init();
 	}
 	
 	public void dispose() {

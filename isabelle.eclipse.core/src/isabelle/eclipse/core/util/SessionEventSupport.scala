@@ -5,8 +5,7 @@ import isabelle.Event_Bus
 
 abstract class SessionEventSupport[T] extends SessionEvents {
 
-  // init in constructor
-  initSessionEvents()
+  def init() = initSessionEvents()
   
   def dispose() = disposeSessionEvents()
   

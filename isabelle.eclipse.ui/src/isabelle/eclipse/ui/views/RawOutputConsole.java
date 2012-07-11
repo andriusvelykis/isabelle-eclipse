@@ -44,6 +44,7 @@ public class RawOutputConsole extends MessageConsole {
 				return ScalaCollections.singletonList(session.raw_output_messages());
 			}
 		};
+		sessionEvents.init();
 	}
 
 	@Override
