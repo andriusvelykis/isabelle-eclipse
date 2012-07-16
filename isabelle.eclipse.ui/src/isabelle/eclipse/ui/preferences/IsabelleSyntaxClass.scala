@@ -1,11 +1,10 @@
 package isabelle.eclipse.ui.preferences
 
 import isabelle.eclipse.ui.IsabelleUIPlugin
-
-import org.eclipse.jface.text.source.ISharedTextColors
 import org.eclipse.jface.preference.IPreferenceStore
-import org.eclipse.jface.text.TextAttribute
 import org.eclipse.jface.preference.PreferenceConverter
+import org.eclipse.jface.resource.ResourceManager
+import org.eclipse.jface.text.TextAttribute
 import org.eclipse.swt.SWT
 
 /** Definition of a syntax class that can be stored/read from a preference store.
@@ -27,8 +26,8 @@ case class IsabelleSyntaxClass(displayName: String, baseName: String) {
   def underlineKey = baseKey + UNDERLINE_SUFFIX
   def strikethroughKey = baseKey + STRIKETHROUGH_SUFFIX
 
-  def getTextAttribute(colorManager: ISharedTextColors, preferenceStore: IPreferenceStore): TextAttribute = {
-    val colour = colorManager.getColor(PreferenceConverter.getColor(preferenceStore, colourKey))
+  def getTextAttribute(resourceManager: ResourceManager, preferenceStore: IPreferenceStore): TextAttribute = {
+    val colour = resourceManager.createColor(PreferenceConverter.getColor(preferenceStore, colourKey))
     val style: Int = makeStyle(preferenceStore.getBoolean(boldKey), preferenceStore.getBoolean(italicKey),
       preferenceStore.getBoolean(strikethroughKey), preferenceStore.getBoolean(underlineKey))
     val backgroundColour = null

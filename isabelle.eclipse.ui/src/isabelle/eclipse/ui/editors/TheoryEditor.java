@@ -43,6 +43,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -82,7 +85,7 @@ public class TheoryEditor extends TextEditor {
 	public static final String EDITOR_ID = "isabelle.eclipse.ui.theoryEditor";
 	public static final String EDITOR_SCOPE = "isabelle.eclipse.ui.theoryEditorScope";
 	
-	private ColorManager colorManager;
+	private final ResourceManager resourceManager = new LocalResourceManager(JFaceResources.getResources());
 	
 	private Session isabelleSession;
 	
@@ -116,8 +119,7 @@ public class TheoryEditor extends TextEditor {
 	
 	public TheoryEditor() {
 		super();
-		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new IsabelleTheoryConfiguration(this, colorManager));
+		setSourceViewerConfiguration(new IsabelleTheoryConfiguration(this, resourceManager));
 //		setSourceViewerConfiguration(new TextSourceViewerConfiguration(EditorsUI.getPreferenceStore()));
 		setDocumentProvider(new IsabelleFileDocumentProvider());
 		
@@ -286,7 +288,7 @@ public class TheoryEditor extends TextEditor {
 		markers.dispose();
 		sessionEvents.dispose();
 		
-		colorManager.dispose();
+		resourceManager.dispose();
 		super.dispose();
 	}
 	

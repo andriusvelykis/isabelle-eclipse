@@ -2,12 +2,11 @@ package isabelle.eclipse.ui.text
 
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.preference.IPreferenceStore
+import org.eclipse.jface.resource.ResourceManager
 import org.eclipse.jface.text.rules.ITokenScanner
 import org.eclipse.jface.text.rules.IToken
 import org.eclipse.jface.text.rules.Token
-import org.eclipse.jface.text.source.ISharedTextColors
 import org.eclipse.jface.util.PropertyChangeEvent
-
 import isabelle.eclipse.ui.preferences.IsabelleSyntaxClass
 import isabelle.eclipse.ui.preferences.IsabelleSyntaxClasses
 
@@ -18,7 +17,7 @@ import isabelle.eclipse.ui.preferences.IsabelleSyntaxClasses
   */
 trait AbstractIsabelleScanner extends ITokenScanner {
 
-  protected def colorManager: ISharedTextColors
+  protected def resourceManager: ResourceManager
 
   protected def preferenceStore: IPreferenceStore
 
@@ -40,6 +39,6 @@ trait AbstractIsabelleScanner extends ITokenScanner {
       token.setData(getTextAttribute(syntaxClass))
 
   private def getTextAttribute(syntaxClass: IsabelleSyntaxClass) = 
-    syntaxClass.getTextAttribute(colorManager, preferenceStore)
+    syntaxClass.getTextAttribute(resourceManager, preferenceStore)
   
 }
