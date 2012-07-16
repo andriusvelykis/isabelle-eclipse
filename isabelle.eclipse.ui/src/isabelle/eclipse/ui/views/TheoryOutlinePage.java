@@ -22,6 +22,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
+import scala.Option;
+
+// TODO listen to changes in editor?
 public class TheoryOutlinePage extends ContentOutlinePage {
 
 	private final TheoryEditor editor;
@@ -60,11 +63,12 @@ public class TheoryOutlinePage extends ContentOutlinePage {
 	
 	private List<TheoryNode> parseOutline() {
 		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		if (isabelleModel == null) {
+		Option<DocumentModel> isabelleModelOpt = editor.isabelleModel();
+		if (isabelleModelOpt.isEmpty()) {
 			// return a dummy element signaling that the prover is not available
 			return getNoIsabelleNode();
 		}
+		DocumentModel isabelleModel = isabelleModelOpt.get();
 		
 		if (rawTree) {
 			return parseRawOutline(isabelleModel);
@@ -76,7 +80,7 @@ public class TheoryOutlinePage extends ContentOutlinePage {
 	private List<TheoryNode> parseIsabelleOutline(DocumentModel isabelleModel) {
 		
 		String text = "";
-		IDocument document = editor.getDocument();
+		IDocument document = editor.document();
 		if (document != null) {
 			text = document.get();
 		}

@@ -176,7 +176,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   private def updateOutputAtCaret() = {
     if (followSelection) {
-      val offset = editor.getCaretPosition();
+      val offset = editor.caretPosition
       updateOutput(_ => commandAtOffset(offset))
     }
   }
@@ -192,9 +192,8 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
   private def commandAtOffset(offset: Int): Option[Command] = {
-    val isabelleModel = Option(editor.getIsabelleModel())
     // get the command at the snapshot if the model is available
-    isabelleModel flatMap { _.snapshot.node.command_at(offset).map(_._1) }
+    editor.isabelleModel flatMap { _.snapshot.node.command_at(offset).map(_._1) }
   }
 
   private def renderOutput(cmd: Command, monitor: IProgressMonitor): Option[String] = {
@@ -203,9 +202,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     // FIXME handle "sendback" in output_dockable.scala
 
     // get all command results except tracing
-    val isabelleModel = Option(editor.getIsabelleModel())
-
-    isabelleModel match {
+    editor.isabelleModel match {
       case None => { System.out.println("Isabelle model not available"); None }
       case Some(model) => {
         // model is available - get the results and render them
@@ -304,13 +301,13 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   private def doSendback(text: String) {
     
     // if command and isabelle model are available, replace the current command with sendback text
-    (currentCommand, Option(editor.getIsabelleModel())) match {
+    (currentCommand, editor.isabelleModel) match {
       case (Some(cmd), Some(isabelleModel)) => {
         val cmdOffsetOpt = isabelleModel.snapshot.node.command_start(cmd)
         
         cmdOffsetOpt foreach {offset => {
           // replace the command text in the document with sendback text
-          editor.getDocument().replace(offset, cmd.length, text)
+          editor.document.replace(offset, cmd.length, text)
         }
         }
       }

@@ -10,6 +10,8 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 
+import scala.Option;
+
 public class IsabelleAutoEditStrategy implements IAutoEditStrategy {
 
 	private final TheoryEditor editor;
@@ -21,10 +23,11 @@ public class IsabelleAutoEditStrategy implements IAutoEditStrategy {
 	@Override
 	public void customizeDocumentCommand(IDocument document, DocumentCommand command) {
 		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		if (isabelleModel == null) {
+		Option<DocumentModel> isabelleModelOpt = editor.isabelleModel();
+		if (isabelleModelOpt.isEmpty()) {
 			return;
 		}
+		DocumentModel isabelleModel = isabelleModelOpt.get();
 		
 		System.out.println("Auto edit for " + command.text + " at " + command.offset);
 		

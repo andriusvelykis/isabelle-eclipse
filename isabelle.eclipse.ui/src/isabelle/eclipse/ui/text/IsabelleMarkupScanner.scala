@@ -19,7 +19,7 @@ import isabelle.eclipse.ui.editors.TheoryEditor
   */
 class IsabelleMarkupScanner(val editor: TheoryEditor) extends AbstractTokenStreamScanner {
 
-  private def snapshot: Option[Snapshot] = Option(editor.getIsabelleModel).map(_.snapshot)
+  private def snapshot: Option[Snapshot] = editor.isabelleModel.map(_.snapshot)
   
   protected def tokenStream(document: IDocument, offset: Int, length: Int): Stream[TokenInfo] =
     snapshot match {

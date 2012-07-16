@@ -17,9 +17,7 @@ import isabelle.eclipse.ui.editors.TheoryEditor
 class IsabelleTokenScanner(val editor: TheoryEditor) extends AbstractTokenStreamScanner {
 
   private def syntax: Option[Outer_Syntax] = {
-    val isabelleModel = Option(editor.getIsabelleModel)
-    
-    val session = isabelleModel.map(_.session).filter(_.is_ready)
+    val session = editor.isabelleModel.map(_.session).filter(_.is_ready)
     session.map(_.recent_syntax)
   }
 

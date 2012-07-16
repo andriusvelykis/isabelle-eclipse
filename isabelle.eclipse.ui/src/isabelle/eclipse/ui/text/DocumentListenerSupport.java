@@ -27,11 +27,10 @@ public class DocumentListenerSupport
   private IDocument document;
   private final IDocumentListener docListener;
 
-  public DocumentListenerSupport(ITextViewer viewer, IDocumentListener listener)
+  public DocumentListenerSupport(IDocumentListener listener)
   {
     super();
     this.docListener = listener;
-    this.textViewer = viewer;
 
     // A listener to re-attach document listener when a document changes in a viewer.
     this.documentChangeListener = new ITextInputListener()
@@ -58,25 +57,29 @@ public class DocumentListenerSupport
       }
     };
     
-    // Add document change listener to the source viewer.
-    textViewer.addTextInputListener(documentChangeListener);
-    // upon dispose, detach the listener
-    textViewer.getTextWidget().addDisposeListener(new DisposeListener()
-    {
-      @Override
-      public void widgetDisposed(DisposeEvent e)
-      {
-        textViewer.removeTextInputListener(documentChangeListener);
-        textViewer = null;
-      }
-    });
-    
-    // install the document listener onto the current document
-    document = textViewer.getDocument();
-    if (document != null) {
-      document.addDocumentListener(docListener);
-    }
-    
+  }
+  
+  public void init(ITextViewer viewer) {
+	  this.textViewer = viewer;
+	  
+	  // Add document change listener to the source viewer.
+	  textViewer.addTextInputListener(documentChangeListener);
+	  // upon dispose, detach the listener
+	  textViewer.getTextWidget().addDisposeListener(new DisposeListener()
+	  {
+	    @Override
+	    public void widgetDisposed(DisposeEvent e)
+	    {
+	      textViewer.removeTextInputListener(documentChangeListener);
+	      textViewer = null;
+	    }
+	  });
+	  
+	  // install the document listener onto the current document
+	  document = textViewer.getDocument();
+	  if (document != null) {
+	    document.addDocumentListener(docListener);
+	  }
   }
   
   public void dispose()

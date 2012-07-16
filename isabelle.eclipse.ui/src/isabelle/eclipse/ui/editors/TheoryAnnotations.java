@@ -31,6 +31,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 
+import scala.Option;
 import scala.actors.Actor;
 import scala.collection.immutable.Set;
 
@@ -83,11 +84,12 @@ public class TheoryAnnotations {
 					@Override
 					public void commandsChanged(Commands_Changed changed) {
 						
-						DocumentModel isabelleModel = TheoryAnnotations.this.editor.getIsabelleModel();
-						if (isabelleModel == null) {
+						Option<DocumentModel> isabelleModelOpt = TheoryAnnotations.this.editor.isabelleModel();
+						if (isabelleModelOpt.isEmpty()) {
 							// no model available, so cannot get a snapshot and annotations
 							return;
 						}
+						DocumentModel isabelleModel = isabelleModelOpt.get();
 						
 						// avoid updating annotations if commands are from a different document
 						if (changed.nodes().contains(isabelleModel.name())) {
@@ -111,10 +113,11 @@ public class TheoryAnnotations {
 	
 	public void updateAllAnnotations() {
 		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		if (isabelleModel == null) {
+		Option<DocumentModel> isabelleModelOpt = editor.isabelleModel();
+		if (isabelleModelOpt.isEmpty()) {
 			return;
 		}
+		DocumentModel isabelleModel = isabelleModelOpt.get();
 		
 		Set<Command> snapshotCommands = isabelleModel.snapshot().node().commands();
 		updateAnnotations(snapshotCommands);
@@ -136,12 +139,13 @@ public class TheoryAnnotations {
 	
 	private AnnotationConfig createAnnotations(Set<Command> commands) {
 		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		if (isabelleModel == null) {
+		Option<DocumentModel> isabelleModelOpt = TheoryAnnotations.this.editor.isabelleModel();
+		if (isabelleModelOpt.isEmpty()) {
 			// no model available, so cannot create new markers
 			// do not delete old persistent markers if present
 			return null;
 		}
+		DocumentModel isabelleModel = isabelleModelOpt.get();
 		
 		Snapshot snapshot = isabelleModel.snapshot();
 		
@@ -243,7 +247,7 @@ public class TheoryAnnotations {
 		// use modern models
 		Assert.isTrue(baseAnnotationModel instanceof IAnnotationModelExtension);
 		
-		IDocument document = editor.getDocument();
+		IDocument document = editor.document();
 		if (document == null) {
 			return;
 		}

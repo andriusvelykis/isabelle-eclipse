@@ -42,12 +42,12 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 		
 		System.out.println("Requesting completion");
 		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		if (isabelleModel == null) {
+		Option<DocumentModel> isabelleModelOpt = editor.isabelleModel();
+		if (isabelleModelOpt.isEmpty()) {
 			lastError = "No Isabelle session is running";
 			return null;
 		}
-		
+		DocumentModel isabelleModel = isabelleModelOpt.get();
 		IDocument document = viewer.getDocument();
 
 		try {

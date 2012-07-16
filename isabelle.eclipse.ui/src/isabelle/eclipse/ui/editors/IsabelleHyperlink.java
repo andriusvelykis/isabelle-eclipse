@@ -12,6 +12,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
+import scala.Some;
+
 
 /**
  * A hyperlink to Isabelle command definition. Resolves the command's file in the editor and selects
@@ -75,13 +77,13 @@ public class IsabelleHyperlink implements IHyperlink {
 		TheoryEditor editor;
 		try {
 			// open in theory editor
-			editor = (TheoryEditor) IDE.openEditor(page, targetUri, TheoryEditor.EDITOR_ID, true);
+			editor = (TheoryEditor) IDE.openEditor(page, targetUri, TheoryEditor$.MODULE$.EDITOR_ID(), true);
 		} catch (PartInitException e) {
 			IsabelleUIPlugin.log(e.getLocalizedMessage(), e);
 			return;
 		}
 		
 		// set the command selection in the opened editor
-		editor.setSelection(targetCommand, regionInCommand);
+		editor.setSelection(targetCommand, new Some<IRegion>(regionInCommand));
 	}
 }
