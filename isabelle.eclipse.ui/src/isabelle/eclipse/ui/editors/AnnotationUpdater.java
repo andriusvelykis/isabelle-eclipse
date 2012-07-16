@@ -31,6 +31,7 @@ import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import scala.Option;
+import scala.Some;
 
 import static isabelle.eclipse.ui.editors.IsabelleAnnotationConstants.*;
 
@@ -151,7 +152,7 @@ public class AnnotationUpdater {
 		List<AnnotationInfo> filtered = new ArrayList<AnnotationInfo>();
 		
 		for (AnnotationInfo ann : anns) {
-			if (types.contains(ann.getType())) {
+			if (types.contains(ann.annType())) {
 				filtered.add(ann);
 			}
 		}
@@ -196,7 +197,7 @@ public class AnnotationUpdater {
 			if (existingType != null) {
 
 				// remove matching annotations from the new ones
-				AnnotationInfo existingAnn = new AnnotationInfo(existingType, getRange(annPos), ann.getText());
+				AnnotationInfo existingAnn = new AnnotationInfo(existingType, getRange(annPos), Some.apply(ann.getText()));
 				boolean newAnnFound = newAnns.removeAll(Arrays.asList(existingAnn));
 				
 				if (newAnnFound) {
@@ -236,13 +237,13 @@ public class AnnotationUpdater {
 		for (AnnotationInfo ann : anns) {
 			
 			Annotation annotation = new Annotation(false);
-			String annKey = ANNOTATION_KEYS.get(ann.getType());
+			String annKey = ANNOTATION_KEYS.get(ann.annType());
 			annotation.setType(annKey);
 			
-			annotation.setText(ann.getMessage());
+			annotation.setText(ann.message().isDefined() ? ann.message().get() : null);
 			
 			// try to restrict the range to document limits
-			Option<Range> fixedRangeOpt = maxRange.try_restrict(ann.getRange());
+			Option<Range> fixedRangeOpt = maxRange.try_restrict(ann.range());
 			if (fixedRangeOpt.isEmpty()) {
 				// invalid range (e.g. outside the max range)
 				// so ignore the annotation altogether
@@ -314,7 +315,7 @@ public class AnnotationUpdater {
 
 					// remove matching markers from the new ones
 					AnnotationInfo existingMarker = new AnnotationInfo(existingType,
-							getMarkerRange(marker), marker.getAttribute(IMarker.MESSAGE, null));
+							getMarkerRange(marker), Option.apply(marker.getAttribute(IMarker.MESSAGE, null)));
 					boolean newMarkerFound = newMarkers.removeAll(Arrays.asList(existingMarker));
 					
 					if (newMarkerFound) {
@@ -348,7 +349,7 @@ public class AnnotationUpdater {
 				}
 				
 				for (AnnotationInfo markerInfo : addMarkers) {
-					MarkerKey markerKey = MARKER_KEYS.get(markerInfo.getType());
+					MarkerKey markerKey = MARKER_KEYS.get(markerInfo.annType());
 					IMarker marker = markerResource.createMarker(markerKey.getKey());
 					marker.setAttributes(getMarkerAttributes(maxRange, markerInfo, markerKey));
 				}
@@ -365,7 +366,7 @@ public class AnnotationUpdater {
 	private Map<String, Object> getMarkerAttributes(Range maxRange, AnnotationInfo ann, MarkerKey markerKey) {
 		
 		// restrict the range to avoid exceeding the document range
-		Option<Range> fixedRangeOpt = maxRange.try_restrict(ann.getRange());
+		Option<Range> fixedRangeOpt = maxRange.try_restrict(ann.range());
 		Range fixedRange;
 		if (fixedRangeOpt.isEmpty()) {
 			// invalid range (e.g. outside the max range)
@@ -390,7 +391,7 @@ public class AnnotationUpdater {
 			// ignore
 		}
 		
-		markerAttrs.put(IMarker.MESSAGE, ann.getMessage());
+		markerAttrs.put(IMarker.MESSAGE, ann.message().isDefined() ? ann.message().get() : null);
 		
 		return markerAttrs;
 	}

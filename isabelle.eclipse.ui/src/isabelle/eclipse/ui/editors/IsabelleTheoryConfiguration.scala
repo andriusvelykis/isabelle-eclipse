@@ -2,6 +2,7 @@ package isabelle.eclipse.ui.editors
 
 import java.util.Map
 import org.eclipse.core.runtime.IAdaptable
+import org.eclipse.jface.resource.ResourceManager
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.TextAttribute
 import org.eclipse.jface.text.contentassist.ContentAssistant
@@ -13,13 +14,11 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer
 import org.eclipse.jface.text.rules.IToken
 import org.eclipse.jface.text.rules.ITokenScanner
 import org.eclipse.jface.text.rules.Token
-import org.eclipse.jface.text.source.ISharedTextColors
 import org.eclipse.jface.text.source.ISourceViewer
 import org.eclipse.swt.graphics.RGB
 import org.eclipse.ui.editors.text.EditorsUI
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration
 import org.eclipse.ui.texteditor.ChainedPreferenceStore
-
 import isabelle.Outer_Syntax
 import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.text.AbstractIsabelleScanner
@@ -33,7 +32,7 @@ import isabelle.eclipse.ui.preferences.IsabelleTokenToSyntaxClass
 
 
 /** @author Andrius Velykis */
-class IsabelleTheoryConfiguration(val editor: TheoryEditor, val colorManager: ISharedTextColors)
+class IsabelleTheoryConfiguration(val editor: TheoryEditor, val resourceManager: ResourceManager)
   extends TextSourceViewerConfiguration(new ChainedPreferenceStore(Array(
       // chain the preference store to get default editor preference values as well as Isabelle-specific
       IsabelleUIPlugin.getPreferences(),
@@ -100,7 +99,7 @@ class IsabelleTheoryConfiguration(val editor: TheoryEditor, val colorManager: IS
   
   /** Resolve the color manager and preference store values for the abstract trait */
   private trait IsabelleScanner extends AbstractIsabelleScanner {
-    def colorManager = IsabelleTheoryConfiguration.this.colorManager
+    def resourceManager = IsabelleTheoryConfiguration.this.resourceManager
     
     // cannot reference parent fPreferenceStore directly here - Scala-IDE Juno crashes
     // bug reported: http://www.assembla.com/spaces/scala-ide/support/tickets/1001114-sbt-crash-for-mixed-scala-java-project

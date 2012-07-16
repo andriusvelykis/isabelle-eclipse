@@ -1,6 +1,7 @@
 package isabelle.eclipse.ui.views
 
 import isabelle.HTML
+import isabelle.Isabelle_Markup
 import isabelle.Markup
 import isabelle.Pretty
 import isabelle.XML
@@ -72,7 +73,7 @@ object ProverOutputHtml {
         body.toList.flatMap(div =>
           Pretty.formatted(List(div), width)//, Pretty.font_metric(fontMetrics))
             .map(t =>
-              XML.Elem(Markup(HTML.PRE, List((Markup.CLASS, Markup.MESSAGE))),
+              XML.Elem(Markup(HTML.PRE, List((HTML.CLASS, Isabelle_Markup.MESSAGE))),
                 HTML.spans(t, true))))
 
       val doc = builder.newDocument
@@ -109,7 +110,7 @@ object ProverOutputHtml {
   /** Extractor object for "sendback" SPAN element in output HTML */
   private object SendbackSpan {
     def unapply(node: Node): Option[(Element, String)] = node match {
-      case e: Element if e.getTagName == HTML.SPAN && e.getAttribute(HTML.CLASS) == Markup.SENDBACK =>
+      case e: Element if e.getTagName == HTML.SPAN && e.getAttribute(HTML.CLASS) == Isabelle_Markup.SENDBACK =>
         Some((e, e.getTextContent))
       case _ => None
     }

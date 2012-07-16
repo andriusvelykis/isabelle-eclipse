@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Isabelle Pure Scala Library
 Bundle-SymbolicName: isabelle.pure
-Bundle-Version: 2011.1.1
+Bundle-Version: 2012.0.0
 Bundle-Vendor: Isabelle
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: Pure.jar,

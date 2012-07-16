@@ -141,7 +141,7 @@ class URIThyLoad extends ThyLoad2 {
    * 
    * @see isabelle.Thy_Load#check_thy(Document.Node.Name)
    */
-  override def check_thy(name: Document.Node.Name): Thy_Header = {
+  override def read_header(name: Document.Node.Name): Thy_Header = {
     // resolve the document URI to load its contents
     val uri = URIThyLoad.resolveDocumentUri(name);
 
@@ -163,7 +163,7 @@ class URIThyLoad extends ThyLoad2 {
       case e: CoreException => {
         IsabelleCorePlugin.log(e);
         // in case of failure, perform default loading
-        super.check_thy(name);
+        super.read_header(name);
       }
     }
   }

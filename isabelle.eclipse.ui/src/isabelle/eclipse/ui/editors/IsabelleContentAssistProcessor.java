@@ -42,12 +42,12 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 		
 		System.out.println("Requesting completion");
 		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		if (isabelleModel == null) {
+		Option<DocumentModel> isabelleModelOpt = editor.isabelleModel();
+		if (isabelleModelOpt.isEmpty()) {
 			lastError = "No Isabelle session is running";
 			return null;
 		}
-		
+		DocumentModel isabelleModel = isabelleModelOpt.get();
 		IDocument document = viewer.getDocument();
 
 		try {
@@ -91,7 +91,7 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 	
 	public static List<CompletionProposalInfo> getCompletions(DocumentModel isabelleModel, String text){
 
-		Completion completion = isabelleModel.getSession().current_syntax().completion();
+		Completion completion = isabelleModel.session().recent_syntax().completion();
 		Option<Tuple2<String, scala.collection.immutable.List<String>>> rawProposalsOpt = 
 				completion.complete(text);
 

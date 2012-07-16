@@ -93,7 +93,7 @@ object IsabelleTokenToSyntaxClass {
 
 object IsabelleMarkupToSyntaxClass {
 
-  import isabelle.Markup. _
+  import isabelle.Isabelle_Markup._
 
   def apply(markupType: String): IsabelleSyntaxClass = markupType match {
     case STRING | ALTSTRING => IsabelleSyntaxClasses.STRING

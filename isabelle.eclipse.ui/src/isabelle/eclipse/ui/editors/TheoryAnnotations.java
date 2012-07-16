@@ -1,6 +1,7 @@
 package isabelle.eclipse.ui.editors;
 
 import isabelle.Command;
+import isabelle.Event_Bus;
 import isabelle.Document.Snapshot;
 import isabelle.Session;
 import isabelle.Session.Commands_Changed;
@@ -11,18 +12,13 @@ import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.core.util.SessionEventSupport;
 import isabelle.scala.ISessionCommandsListener;
-import isabelle.scala.SessionActor;
-import isabelle.scala.SessionEventType;
+import isabelle.scala.ScalaCollections;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
@@ -35,7 +31,12 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 
-import static scala.collection.JavaConversions.setAsJavaSet;
+import scala.Option;
+import scala.actors.Actor;
+import scala.collection.immutable.Set;
+
+import static scala.collection.JavaConversions.seqAsJavaList;
+import static scala.collection.JavaConversions.asScalaBuffer;
 
 public class TheoryAnnotations {
 	
@@ -58,7 +59,7 @@ public class TheoryAnnotations {
 		}
 	};
 	
-	private final SessionEventSupport sessionEvents;
+	private final SessionEventSupport<?> sessionEvents;
 	private int lastCommandCount = 0;
 	private boolean lastSnapshotOutdated = true;
 	
@@ -68,35 +69,42 @@ public class TheoryAnnotations {
 		
 		// When commands change (e.g. results from the prover), update the
 		// annotations accordingly.
-		sessionEvents = new SessionEventSupport(EnumSet.of(SessionEventType.COMMAND)) {
+		sessionEvents = new SessionEventSupport<Commands_Changed>() {
+
+			@Override
+			public void sessionInit(Session session) {
+				// when the session is initialised, update all annotations from scratch
+				updateAllAnnotations();
+			}
 			
 			@Override
-			protected SessionActor createSessionActor(Session session) {
-				return new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
+			public Actor sessionActor() {
+				return (Actor) new SafeSessionActor().commandsChanged(new ISessionCommandsListener() {
 					
 					@Override
 					public void commandsChanged(Commands_Changed changed) {
 						
-						DocumentModel isabelleModel = TheoryAnnotations.this.editor.getIsabelleModel();
-						if (isabelleModel == null) {
+						Option<DocumentModel> isabelleModelOpt = TheoryAnnotations.this.editor.isabelleModel();
+						if (isabelleModelOpt.isEmpty()) {
 							// no model available, so cannot get a snapshot and annotations
 							return;
 						}
+						DocumentModel isabelleModel = isabelleModelOpt.get();
 						
 						// avoid updating annotations if commands are from a different document
-						if (changed.nodes().contains(isabelleModel.getName().getRef())) {
-							updateAnnotations(setAsJavaSet(changed.commands()));
+						if (changed.nodes().contains(isabelleModel.name())) {
+							updateAnnotations(changed.commands());
 						}
 					}
-				});
+				}).getActor();
 			}
-
+			
 			@Override
-			protected void sessionInit(Session session) {
-				// when the session is initialised, update all annotations from scratch
-				updateAllAnnotations();
+			public scala.collection.immutable.List<Event_Bus<Commands_Changed>> sessionEvents0(Session session) {
+				return ScalaCollections.singletonList(session.commands_changed());
 			}
 		};
+		sessionEvents.init();
 	}
 	
 	public void dispose() {
@@ -105,12 +113,13 @@ public class TheoryAnnotations {
 	
 	public void updateAllAnnotations() {
 		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		if (isabelleModel == null) {
+		Option<DocumentModel> isabelleModelOpt = editor.isabelleModel();
+		if (isabelleModelOpt.isEmpty()) {
 			return;
 		}
+		DocumentModel isabelleModel = isabelleModelOpt.get();
 		
-		Set<Command> snapshotCommands = setAsJavaSet(isabelleModel.getSnapshot().node().commands());
+		Set<Command> snapshotCommands = isabelleModel.snapshot().node().commands();
 		updateAnnotations(snapshotCommands);
 	}
 	
@@ -130,16 +139,17 @@ public class TheoryAnnotations {
 	
 	private AnnotationConfig createAnnotations(Set<Command> commands) {
 		
-		DocumentModel isabelleModel = editor.getIsabelleModel();
-		if (isabelleModel == null) {
+		Option<DocumentModel> isabelleModelOpt = TheoryAnnotations.this.editor.isabelleModel();
+		if (isabelleModelOpt.isEmpty()) {
 			// no model available, so cannot create new markers
 			// do not delete old persistent markers if present
 			return null;
 		}
+		DocumentModel isabelleModel = isabelleModelOpt.get();
 		
-		Snapshot snapshot = isabelleModel.getSnapshot();
+		Snapshot snapshot = isabelleModel.snapshot();
 		
-		Set<Command> snapshotCmds = setAsJavaSet(snapshot.node().commands());
+		Set<Command> snapshotCmds = snapshot.node().commands();
 		if (snapshotCmds.size() > lastCommandCount || lastSnapshotOutdated) {
 			/*
 			 * More commands in the snapshot than was previously - update
@@ -155,10 +165,8 @@ public class TheoryAnnotations {
 			commands = snapshotCmds;
 			lastCommandCount = snapshotCmds.size();
 		} else {
-			// copy commands set
-			commands = new LinkedHashSet<Command>(commands);
 			// Only use commands that are in the snapshot.
-			commands.retainAll(snapshotCmds);
+			commands = commands.intersect(snapshotCmds);
 		}
 		
 		lastSnapshotOutdated = snapshot.is_outdated();
@@ -170,11 +178,11 @@ public class TheoryAnnotations {
 		
 		// get the ranges occupied by the changed commands
 		// and recalculate annotations for them afterwards
-		List<Range> commandRanges = AnnotationFactory.getCommandRanges(snapshot, commands);
+		List<Range> commandRanges = seqAsJavaList(AnnotationFactory.commandRanges(snapshot, commands));
 		// merge overlapping/adjoining ranges
 		List<Range> mergeRanges = mergeRanges(commandRanges);
 		
-		List<AnnotationInfo> annotations = AnnotationFactory.createAnnotations(snapshot, mergeRanges);
+		List<AnnotationInfo> annotations = seqAsJavaList(AnnotationFactory.createAnnotations(snapshot, asScalaBuffer(mergeRanges).toList()));
 		AnnotationConfig config = new AnnotationConfig(annotations, mergeRanges);
 		
 		return config;
@@ -239,7 +247,7 @@ public class TheoryAnnotations {
 		// use modern models
 		Assert.isTrue(baseAnnotationModel instanceof IAnnotationModelExtension);
 		
-		IDocument document = editor.getDocument();
+		IDocument document = editor.document();
 		if (document == null) {
 			return;
 		}
@@ -264,7 +272,7 @@ public class TheoryAnnotations {
 		
 		public AnnotationUpdateJob(Set<Command> commands) {
 			super("Updating theory annotations");
-			this.commands = new HashSet<Command>(commands);
+			this.commands = commands;
 		}
 		
 		@Override

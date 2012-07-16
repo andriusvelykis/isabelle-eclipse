@@ -1,6 +1,7 @@
 package isabelle.eclipse.ui.views
 
 import isabelle.Command
+import isabelle.Isabelle_Markup
 import isabelle.Markup
 import isabelle.Session
 import isabelle.XML
@@ -175,7 +176,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   private def updateOutputAtCaret() = {
     if (followSelection) {
-      val offset = editor.getCaretPosition();
+      val offset = editor.caretPosition
       updateOutput(_ => commandAtOffset(offset))
     }
   }
@@ -191,9 +192,8 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
   private def commandAtOffset(offset: Int): Option[Command] = {
-    val isabelleModel = Option(editor.getIsabelleModel())
     // get the command at the snapshot if the model is available
-    isabelleModel flatMap { _.getSnapshot.node.proper_command_at(offset) }
+    editor.isabelleModel flatMap { _.snapshot.node.command_at(offset).map(_._1) }
   }
 
   private def renderOutput(cmd: Command, monitor: IProgressMonitor): Option[String] = {
@@ -202,21 +202,20 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     // FIXME handle "sendback" in output_dockable.scala
 
     // get all command results except tracing
-    val isabelleModel = Option(editor.getIsabelleModel())
-
-    isabelleModel match {
+    editor.isabelleModel match {
       case None => { System.out.println("Isabelle model not available"); None }
       case Some(model) => {
         // model is available - get the results and render them
-        val snapshot = model.getSnapshot();
+        val snapshot = model.snapshot
 
-        val filtered_results =
-          snapshot.command_state(cmd).results.iterator.map(_._2) filter {
-            case XML.Elem(Markup(Markup.TRACING, _), _) => showTrace // FIXME not scalable
+        val filteredResults =
+          snapshot.state.command_state(snapshot.version, cmd).results.iterator.map(_._2) filter {
+            // FIXME not scalable
+            case XML.Elem(Markup(Isabelle_Markup.TRACING, _), _) => showTrace
             case _ => true
           }
 
-        val htmlPage = ProverOutputHtml.renderHtmlPage(filtered_results.toList, Nil, inlineCss, "IsabelleText", 12)
+        val htmlPage = ProverOutputHtml.renderHtmlPage(filteredResults.toList, Nil, inlineCss, "IsabelleText", 12)
         Some(htmlPage)
       }
     }
@@ -302,13 +301,13 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   private def doSendback(text: String) {
     
     // if command and isabelle model are available, replace the current command with sendback text
-    (currentCommand, Option(editor.getIsabelleModel())) match {
+    (currentCommand, editor.isabelleModel) match {
       case (Some(cmd), Some(isabelleModel)) => {
-        val cmdOffsetOpt = isabelleModel.getSnapshot.node.command_start(cmd)
+        val cmdOffsetOpt = isabelleModel.snapshot.node.command_start(cmd)
         
         cmdOffsetOpt foreach {offset => {
           // replace the command text in the document with sendback text
-          editor.getDocument().replace(offset, cmd.length, text)
+          editor.document.replace(offset, cmd.length, text)
         }
         }
       }

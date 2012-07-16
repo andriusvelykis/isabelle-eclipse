@@ -60,7 +60,7 @@ public class IsabelleHyperlinkDetector extends AbstractHyperlinkDetector {
 		IWorkbenchPage page = editor.getSite().getPage();
 		
 		// calculate the hyperlink information from snapshot in the given offset
-		Snapshot snapshot = isabelleModel.getSnapshot();
+		Snapshot snapshot = isabelleModel.snapshot();
 		HyperlinkInfo hyperlinkInfo = HyperlinkUtil.getHyperlink(snapshot, region.getOffset(), 1);
 		if (hyperlinkInfo == null) {
 			return null;
@@ -114,7 +114,7 @@ public class IsabelleHyperlinkDetector extends AbstractHyperlinkDetector {
 		// to the source URI (where the hyperlink was created)
 		
 		// first get the URI of the source
-		String sourceUriStr = isabelleModel.getName().getNode();
+		String sourceUriStr = isabelleModel.name().node();
 		URI sourceUri = URIPathEncoder.decodePath(sourceUriStr, false);
 		
 		// resolve the target URI

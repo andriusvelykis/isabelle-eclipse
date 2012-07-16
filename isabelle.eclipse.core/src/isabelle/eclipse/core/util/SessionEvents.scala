@@ -1,10 +1,12 @@
 package isabelle.eclipse.core.util
 
+import scala.actors.Actor
+import scala.actors.Actor._
+
 import isabelle.Event_Bus
 import isabelle.Session
 import isabelle.eclipse.core.IsabelleCorePlugin
-import isabelle.eclipse.core.app.IIsabelleSessionListener
-import scala.actors.Actor
+import isabelle.eclipse.core.app.Isabelle
 
 /** Support for listening to session events.
   *
@@ -15,13 +17,16 @@ import scala.actors.Actor
   */
 trait SessionEvents {
 
-  private val appListener = new IIsabelleSessionListener {
-
-    override def systemInit = {}
-
-    override def sessionInit(session: Session) = initSession(session)
-
-    override def sessionShutdown(session: Session) = shutdownSession(session)
+  /** a listener for system events, which attaches/detaches specific session listeners upon session init/shutdown  */
+  private val systemListener = LoggingActor {
+    loop {
+      react {
+        case Isabelle.SystemInit => systemInit()
+        case Isabelle.SessionInit(session) => initSession(session)
+        case Isabelle.SessionShutdown(session) => shutdownSession(session)
+        case _ =>
+      }
+    }
   }
 
   /** Initialiser, needs to be called to start listening to session events.
@@ -30,26 +35,34 @@ trait SessionEvents {
   protected def initSessionEvents() {
     // add listener to the isabelle app to react to session init
     val isabelle = IsabelleCorePlugin.getIsabelle
-    isabelle.addSessionListener(appListener)
+    isabelle.systemEvents += systemListener
     
-    Option(isabelle.getSession()) foreach initSession
+    if (isabelle.isInit) {
+      systemInit()
+    }
+    
+    isabelle.session foreach initSession
   }
   
   /** Disconnects listeners from session events. */
   protected def disposeSessionEvents() {
     // remove isabelle app listener
     val isabelle = IsabelleCorePlugin.getIsabelle
-    isabelle.removeSessionListener(appListener)
+    isabelle.systemEvents -= systemListener
     
-    Option(isabelle.getSession()) foreach shutdownSession
+    isabelle.session foreach shutdownSession
   }
   
   private def initSession(session: Session) {
     sessionEvents(session) foreach { _ += sessionActor }
+    
+    sessionInit(session)
   }
   
   private def shutdownSession(session: Session) {
     sessionEvents(session) foreach { _ -= sessionActor }
+    
+    sessionShutdown(session)
   }
   
   /** The actor to attach to the given event buses. */
@@ -57,5 +70,11 @@ trait SessionEvents {
   
   /** Event buses to attach the actor to. */
   protected def sessionEvents(session: Session): List[Event_Bus[_]]
+  
+  protected def systemInit() {}
+  
+  protected def sessionInit(session: Session) {}
+  
+  protected def sessionShutdown(session: Session) {}
   
 }

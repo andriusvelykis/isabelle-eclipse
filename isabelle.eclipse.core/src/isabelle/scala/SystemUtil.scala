@@ -18,8 +18,13 @@ object SystemUtil extends isabelle.Basic_Library {
     val standard_system = new Standard_System
     val settings =
     {
-      val env = Map(System.getenv.toList: _*) +
-        ("THIS_JAVA" -> standard_system.this_java())
+      val env0 = Map(System.getenv.toList: _*) +
+        ("ISABELLE_JDK_HOME" -> standard_system.this_jdk_home())
+
+      val user_home = System.getProperty("user.home")
+      val env =
+        if (user_home == null || env0.isDefinedAt("HOME")) env0
+        else env0 + ("HOME" -> user_home)
 
       val isabelle_home =
         if (path != null) path
@@ -42,14 +47,12 @@ object SystemUtil extends isabelle.Basic_Library {
         if (rc != 0) error(output)
 
         val entries =
-          for (entry <- Source.fromFile(dump).mkString split "\0" if entry != "") yield {
+          (for (entry <- Source.fromFile(dump).mkString split "\0" if entry != "") yield {
             val i = entry.indexOf('=')
             if (i <= 0) (entry -> "")
             else (entry.substring(0, i) -> entry.substring(i + 1))
-          }
-        Map(entries: _*) +
-          ("HOME" -> System.getenv("HOME")) +
-          ("PATH" -> System.getenv("PATH"))
+          }).toMap
+        entries + ("PATH" -> entries("PATH_JVM")) - "PATH_JVM"
       }
     }
     
@@ -68,13 +71,12 @@ object SystemUtil extends isabelle.Basic_Library {
         for (file <- files if file.isFile) logics += file.getName
       }
     }
-    logics.toList.sortWith(_ < _)
+    logics.toList.sorted
   }
   
   /* getenv */
 
-  def getenv(settings: Map[String, String], name: String): String =
-    settings.getOrElse(if (name == "HOME") "HOME_JVM" else name, "")
+  def getenv(settings: Map[String, String], name: String): String = settings.getOrElse(name, "")
 
   def getenv_strict(settings: Map[String, String], name: String): String =
   {

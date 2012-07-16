@@ -1,42 +1,50 @@
 package isabelle.eclipse.ui.views;
 
 import java.io.IOException;
-import java.util.EnumSet;
-import isabelle.Isabelle_Process.Result;
+import isabelle.Isabelle_Process.Output;
+import isabelle.Event_Bus;
 import isabelle.Session;
 import isabelle.XML;
 import isabelle.eclipse.core.util.SafeSessionActor;
 import isabelle.eclipse.core.util.SessionEventSupport;
 import isabelle.eclipse.ui.IsabelleUIPlugin;
 import isabelle.scala.ISessionRawMessageListener;
-import isabelle.scala.SessionActor;
-import isabelle.scala.SessionEventType;
+import isabelle.scala.ScalaCollections;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.console.MessageConsole;
 
+import scala.actors.Actor;
+
+
 public class RawOutputConsole extends MessageConsole {
 	
-	private final SessionEventSupport sessionEvents;
+	private final SessionEventSupport<?> sessionEvents;
 
 	private IOConsoleOutputStream consoleStream;
 	
 	public RawOutputConsole(String name, ImageDescriptor imageDescriptor) {
 		super(name, imageDescriptor, true);
 		
-		sessionEvents = new SessionEventSupport(EnumSet.of(SessionEventType.RAW_MESSAGES)) {
+		sessionEvents = new SessionEventSupport<Output>() {
 			
 			@Override
-			protected SessionActor createSessionActor(Session session) {
-				return new SafeSessionActor().rawMessages(new ISessionRawMessageListener() {
+			public Actor sessionActor() {
+				return (Actor) new SafeSessionActor().rawMessages(new ISessionRawMessageListener() {
 					
 					@Override
-					public void handleMessage(Result result) {
+					public void handleMessage(Output result) {
 						outputMessage(result);
 					}
-				});
+				}).getActor();
+			}
+			
+			@Override
+			public scala.collection.immutable.List<Event_Bus<Output>> sessionEvents0(Session session) {
+				return ScalaCollections.singletonList(session.raw_output_messages());
 			}
 		};
+		sessionEvents.init();
 	}
 
 	@Override
@@ -73,7 +81,7 @@ public class RawOutputConsole extends MessageConsole {
 		super.dispose();
 	}
 	
-	private void outputMessage(Result result) {
+	private void outputMessage(Output result) {
 
 		if (consoleStream == null) {
 			return;
