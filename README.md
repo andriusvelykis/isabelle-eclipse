@@ -26,6 +26,16 @@ Use the _Update Manager_ in Eclipse to download the plug-ins. Note that this upd
 -   **Eclipse 3.7 (Indigo) or 4.2 (Juno)**
 
     Isabelle/Eclipse should work with any Eclipse distribution (e.g. Eclipse Classic or just the minimal Platform Runtime). The required Scala library is currently distributed together with the plug-ins.
+    
+## Contributing
+
+Please report bugs, feature requests and other issues using the GitHub tracker:
+
+[http://github.com/andriusvelykis/isabelle-eclipse/issues](http://github.com/andriusvelykis/isabelle-eclipse/issues)
+
+You can contribute to the project by forking the repository and sending [pull requests][pull-req] with your changes. The plug-ins are built using Maven - will try adding installation/building instructions next. Feel free to contact the author for assistance. 
+
+[pull-req]: https://help.github.com/articles/using-pull-requests/
 
 ## Authors
 
