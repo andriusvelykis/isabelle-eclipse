@@ -33,6 +33,7 @@ import org.eclipse.jface.text.source.IAnnotationModelExtension;
 
 import scala.Option;
 import scala.actors.Actor;
+import scala.collection.GenSet;
 import scala.collection.immutable.Set;
 
 import static scala.collection.JavaConversions.seqAsJavaList;
@@ -166,7 +167,7 @@ public class TheoryAnnotations {
 			lastCommandCount = snapshotCmds.size();
 		} else {
 			// Only use commands that are in the snapshot.
-			commands = commands.intersect(snapshotCmds);
+			commands = commands.intersect((GenSet<Command>) snapshotCmds);
 		}
 		
 		lastSnapshotOutdated = snapshot.is_outdated();

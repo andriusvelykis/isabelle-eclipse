@@ -5,6 +5,7 @@ import java.util.List;
 
 import isabelle.Session;
 import isabelle.Session.Phase;
+import isabelle.Session$Failed$;
 import isabelle.eclipse.core.IsabelleCorePlugin;
 import isabelle.eclipse.core.app.Isabelle;
 import isabelle.eclipse.launch.IsabelleLaunchConstants;
@@ -62,7 +63,7 @@ public abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 		
 		// the session is started asynchronously, so we need to listen for it to finish.
 		Phase phase = PhaseTracker.waitForPhaseResult(session);
-		if (phase == Session.Failed$.MODULE$) {
+		if (phase == Session$Failed$.MODULE$) {
 			String syslog = session.current_syslog();
 			abort("Isabelle failed to initialise the session.", syslog);
 		}
