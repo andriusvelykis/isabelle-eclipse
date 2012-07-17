@@ -14,11 +14,13 @@
     <module>isabelle.eclipse.core</module>
     <module>isabelle.eclipse.launch</module>
     <module>isabelle.eclipse.ui</module>
+    <module>isabelle.eclipse-feature</module>
+    <module>isabelle.eclipse-repository</module>
   </modules>
 
   <properties>
     <tycho.version>0.15.0</tycho.version>
-    <scala.version>2.9.1</scala.version>
+    <scala.version>2.9.2</scala.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
@@ -41,7 +43,7 @@
     <repository>
        <id>scala-eclipse-toolchain-osgi</id>
        <layout>p2</layout>
-       <url>http://download.scala-ide.org/scala-eclipse-toolchain-osgi-${scala.version}.final/</url>
+       <url>http://download.scala-ide.org/scala-eclipse-toolchain-osgi-${scala.version}-SNAPSHOT/</url>
     </repository>
   </repositories>
 
@@ -90,30 +92,33 @@
           </environments>
         </configuration>
       </plugin>
-
-      <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
-        <executions>
-          <execution>
-            <id>scala-compile-first</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>add-source</goal>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>scala-test-compile</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
+    <pluginManagement>
+     <plugins>
+        <plugin>
+          <groupId>org.scala-tools</groupId>
+          <artifactId>maven-scala-plugin</artifactId>
+          <version>2.15.2</version>
+          <executions>
+            <execution>
+              <id>scala-compile-first</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>add-source</goal>
+                <goal>compile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>scala-test-compile</id>
+              <phase>process-test-resources</phase>
+              <goals>
+                <goal>testCompile</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
 </project>

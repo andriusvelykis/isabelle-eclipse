@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/isabelle.eclipse-feature_1.0.0.qualifier.jar" id="isabelle.eclipse-feature" version="1.0.0.qualifier">
+      <category name="isabelle.eclipse.category"/>
+   </feature>
+   <category-def name="isabelle.eclipse.category" label="Isabelle/Eclipse">
+      <description>
+         Eclipse plug-ins that provide Prover IDE for Isabelle proof assistant, based on Isabelle/Scala framework.
+      </description>
+   </category-def>
+</site>
