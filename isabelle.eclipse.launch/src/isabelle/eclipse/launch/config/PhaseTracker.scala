@@ -50,4 +50,6 @@ object PhaseTracker {
     res
   }
   
+  def isFailedPhase(phase: Session.Phase) = phase == Session.Failed
+  
 }
