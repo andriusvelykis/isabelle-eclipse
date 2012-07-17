@@ -14,6 +14,7 @@
     <module>isabelle.eclipse.core</module>
     <module>isabelle.eclipse.launch</module>
     <module>isabelle.eclipse.ui</module>
+    <module>isabelle.eclipse-feature</module>
   </modules>
 
   <properties>
