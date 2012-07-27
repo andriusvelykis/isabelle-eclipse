@@ -76,14 +76,11 @@ object ResourceUtil {
     */
   @throws(classOf[URISyntaxException])
   private def getResourceURI(resource: IResource): URI = {
-    val path = resource.getFullPath()
-    URIThyLoad.createPlatformUri(path.toString)
+    // use `file:` URIs, because Isabelle2012 does not allow `platform:` URI scheme
+    // TODO review with Isabelle2013
+    resource.getLocationURI()
+//    val path = resource.getFullPath()
+//    URIThyLoad.createPlatformUri(path.toString)
   }
-
-  /** Resolves parent URI for the given one. As proposed in
-    * http://stackoverflow.com/questions/10159186/how-to-get-parent-url-in-java
-    */
-  def getParentURI(uri: URI): URI =
-    if (uri.getPath.endsWith("/")) uri.resolve("..") else uri.resolve(".")
 
 }
