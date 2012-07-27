@@ -83,10 +83,4 @@ object ResourceUtil {
 //    URIThyLoad.createPlatformUri(path.toString)
   }
 
-  /** Resolves parent URI for the given one. As proposed in
-    * http://stackoverflow.com/questions/10159186/how-to-get-parent-url-in-java
-    */
-  def getParentURI(uri: URI): URI =
-    if (uri.getPath.endsWith("/")) uri.resolve("..") else uri.resolve(".")
-
 }
