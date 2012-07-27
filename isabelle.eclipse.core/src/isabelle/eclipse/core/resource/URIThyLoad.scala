@@ -2,18 +2,18 @@ package isabelle.eclipse.core.resource
 
 import isabelle.Document
 import isabelle.Isabelle_System
+import isabelle.Library
 import isabelle.Path
+import isabelle.Thy_Load
 import isabelle.Thy_Header
 import isabelle.eclipse.core.IsabelleCorePlugin
-
+import isabelle.eclipse.core.text.DocumentModel
 import java.net.URI
 import java.net.URISyntaxException
-
 import org.eclipse.core.filesystem.EFS
 import org.eclipse.core.filebuffers.FileBuffers
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.emf.common.CommonPlugin
-
 import org.eclipse.core.{runtime => erun}
 import org.eclipse.core.{filesystem => efs}
 import org.eclipse.emf.common.util.{URI => EmfURI}
@@ -35,27 +35,49 @@ import org.eclipse.emf.common.util.{URI => EmfURI}
   * @author Andrius Velykis
   */
 object URIThyLoad {
+  
+  /** Resolves parent URI for the given one. As proposed in
+    * http://stackoverflow.com/questions/10159186/how-to-get-parent-url-in-java
+    */
+  def getParentURI(uri: URI): URI =
+    if (uri.getPath.endsWith("/")) uri.resolve("..") else uri.resolve(".")
+
+
+  /**
+   * A URI-based view on Document.Node.Name.
+   *
+   * Each document is referenced by its URI and theory name.
+   * Implicit conversion is provided between URINodeName and Document.Node.Name.
+   */
+  sealed case class URINodeName(uri: URI, theory: String)
+
+
+  /** Creates a URI name. Assumes that the path is the String-encoded URI. */
+  implicit def toURINodeName(name: Document.Node.Name): URINodeName = URINodeName(URI.create(name.node), name.theory)
+
+  /** Creates a document name for the given URI. Parent URI (directory) is resolved from the node URI */
+  implicit def toDocumentNodeName(name: URINodeName): Document.Node.Name = {
+    val path = name.uri.toString
+    val parentPath = getParentURI(name.uri).toString
+    Document.Node.Name(path, parentPath, name.theory)
+  }
+
+
 
   /** Appends (resolves) the source path against the given base URI */
-  def resolveURI(base: URI, source_path: Path, isDir: Boolean = false): URI = {
+  def resolveURI(base: URI, source_path: Path): URI = {
+    // expand the path - this instantiates the path variables
     val path = source_path.expand
-    
-    // a method to ensure a directory URI string if isDir is set
-    // otherwise the dir can get treated as file, e.g. in URIs
-    // file:/Root/dir/ is a directory, but
-    // file:/Root/dir is a file (missing trailing "/")
-    def checkDir(uriStr: String): String = 
-      if (!isDir || uriStr.endsWith("/")) uriStr else uriStr + "/"
 
     if (path.is_absolute) {
       // path is absolute file system path - use Isabelle's libraries
       // to resolve (e.g. it has some cygwin considerations)
       val platformPath = Isabelle_System.platform_path(path);
       // encode as file system URI
-      efs.URIUtil.toURI(checkDir(platformPath));
+      efs.URIUtil.toURI(platformPath)
     } else {
       // assume relative URI and resolve it against the base URI
-      val pathStr = checkDir(path.implode) 
+      val pathStr = path.implode 
 
       try {
         val sourceUri = new URI(pathStr);
@@ -70,25 +92,22 @@ object URIThyLoad {
     }
   }
 
+
   def resolveDocumentUri(name: Document.Node.Name): URI = {
-
-    val uriStr = name.node
-    val platformUri = URIPathEncoder.decodePath(uriStr, false);
-
     // resolve platform URI if needed (gives filesystem URI for platform: (workspace) URIs)
-    resolvePlatformUri(platformUri.toString());
+    resolvePlatformUri(name.uri)
   }
 
-  /** Resolves the given URI String: if it was workspace-based ({@code platform:} scheme),
+  /** Resolves the given URI: if it was workspace-based ({@code platform:} scheme),
     * then it gets resolved to local filesystem.
     *
     * @param uriStr
     * @return
     */
-  def resolvePlatformUri(uriStr: String): URI = {
+  def resolvePlatformUri(uri: URI): URI = {
     // use EMF URI to resolve
-    val uri = EmfURI.createURI(uriStr);
-    val resolvedUri = CommonPlugin.resolve(uri);
+    val emfUri = EmfURI.createURI(uri.toString);
+    val resolvedUri = CommonPlugin.resolve(emfUri);
     URI.create(resolvedUri.toString());
   }
 
@@ -104,40 +123,47 @@ object URIThyLoad {
   }
 }
 
-class URIThyLoad extends ThyLoad2 {
-
-  /* Appends the (possibly) relative path to the base directory, thus resolving relative paths if
-   * needed.
-   * 
-   * (non-Javadoc)
-   * @see isabelle.Thy_Load#append(java.lang.String, isabelle.Path)
-   */
-  override def append(dir: String, source_path: Path): String = 
-    appendTranscode(dir, source_path)
+class URIThyLoad extends Thy_Load {
   
-  /* Appends the (possibly) relative directory path to the base directory, thus resolving relative
-   * paths if needed.
+  import URIThyLoad._
+  
+  /** Use URI-based resolution of import names. */
+  private def importName(baseUri: URI, s: String): Document.Node.Name =
+  {
+    val theory = Thy_Header.base_name(s)
+    if (is_loaded(theory)) Document.Node.Name(theory, "", theory)
+    else {
+      // explode the path into parts
+      val namePath = Path.explode(s)
+      val path = thy_path(namePath)
+      
+      // resolve the relative path (similar to append, but can resolve relative paths)
+      val nodeUri = resolveURI(baseUri, path)
+      
+      URINodeName(nodeUri, theory)
+    }
+  }
+  
+  /* Checks the theory header for consistency and resolves imported theories as document names.
    * 
-   * (non-Javadoc)
-   * @see isabelle.eclipse.core.resource.ThyLoad2#appendDir(java.lang.String, isabelle.Path)
+   * Redeclared to allow for URI resolution.
+   * 
+   * @see isabelle.Thy_Load#check_header(Document.Node.Name, Thy_Header)
    */
-  override def appendDir(dir: String, source_path: Path): String =
-    appendTranscode(dir, source_path, true)
-    
-  private def appendTranscode(dir: String, source_path: Path, isDir: Boolean = false): String = {
-//    val dirUri = URI.create(dir);
-    val dirUri = URIPathEncoder.decodePath(dir, true)
-    val resolvedUri = URIThyLoad.resolveURI(dirUri, source_path, isDir)
-
-//    resolvedUri.toString();
-    URIPathEncoder.encodeAsPath(resolvedUri)
+  override def check_header(name: Document.Node.Name, header: Thy_Header): Document.Node.Deps =
+  {
+    val uri = name.uri
+    val imports = header.imports.map(importName(uri, _))
+    // FIXME val uses = header.uses.map(p => (append(name.dir, Path.explode(p._1)), p._2))
+    val uses = header.uses
+    if (name.theory != header.name)
+      Library.error("Bad file name " + thy_path(Path.basic(name.theory)) + " for theory " + Library.quote(header.name))
+    Document.Node.Deps(imports, header.keywords, uses)
   }
 
   /* Reads theory header for the given document reference. The implementation resolves the URI and
    * loads the file contents using Eclipse EFS, thus benefiting from the support for non-local
    * filesystems.
-   * 
-   * (non-Javadoc)
    * 
    * @see isabelle.Thy_Load#check_thy(Document.Node.Name)
    */
@@ -157,6 +183,7 @@ class URIThyLoad extends ThyLoad2 {
 
       manager.disconnectFileStore(store, null);
 
+      // read the header from the file
       Thy_Header.read(fileText);
 
     } catch {

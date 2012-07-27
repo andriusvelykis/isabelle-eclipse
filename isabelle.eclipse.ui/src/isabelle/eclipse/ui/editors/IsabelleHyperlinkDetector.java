@@ -5,7 +5,6 @@ import java.net.URI;
 import isabelle.Document.Snapshot;
 import isabelle.Path;
 import isabelle.Text.Range;
-import isabelle.eclipse.core.resource.URIPathEncoder;
 import isabelle.eclipse.core.resource.URIThyLoad;
 import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.scala.HyperlinkUtil;
@@ -114,15 +113,14 @@ public class IsabelleHyperlinkDetector extends AbstractHyperlinkDetector {
 		// to the source URI (where the hyperlink was created)
 		
 		// first get the URI of the source
-		String sourceUriStr = isabelleModel.name().node();
-		URI sourceUri = URIPathEncoder.decodePath(sourceUriStr, false);
+		URI sourceUri = URIThyLoad.resolveDocumentUri(isabelleModel.name());
 		
 		// resolve the target URI
-		Path targetPath = Path.explode(filePath); 
-		URI platformUri = URIThyLoad.resolveURI(sourceUri, targetPath, URIThyLoad.resolveURI$default$3());
+		Path targetPath = Path.explode(filePath);
+		URI platformUri = URIThyLoad.resolveURI(sourceUri, targetPath);
 		
 		// the relative path may be a workspace file (platform: URI),
 		// so resolve it to file URI
-		return URIThyLoad.resolvePlatformUri(platformUri.toString());
+		return URIThyLoad.resolvePlatformUri(platformUri);
 	}
 }

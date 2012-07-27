@@ -28,8 +28,7 @@ import isabelle.Session
 import isabelle.Thy_Header
 import isabelle.eclipse.core.IsabelleCorePlugin
 import isabelle.eclipse.core.app.Isabelle
-import isabelle.eclipse.core.resource.URIPathEncoder
-import isabelle.eclipse.core.resource.URIThyLoad
+import isabelle.eclipse.core.resource.URIThyLoad._
 import isabelle.eclipse.core.text.DocumentModel
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
@@ -133,25 +132,13 @@ class TheoryEditor extends TextEditor {
     // (needs to conform to specific pattern, as specified in Thy_Header)
     inputURI(input) flatMap { uri =>
       {
-        
-//        val uriStr = uri.toString
-        val uriStr = URIPathEncoder.encodeAsPath(uri)
 
-        val name = Thy_Header.thy_name(uriStr) map { theory =>
-          {
-            val parentUri = ResourceUtil.getParentURI(uri)
-//            val parentStr = parentUri.toString
-            val parentStr = URIPathEncoder.encodeAsPath(parentUri)
-
-            Document.Node.Name(uriStr, parentStr, theory)
-          }
-        }
-
+        val name = Thy_Header.thy_name(uri.toString) map { URINodeName(uri, _) }
         if (name.isEmpty) {
-          IsabelleUIPlugin.log("Cannot resolve theory name for URI: " + uriStr, null)
+          IsabelleUIPlugin.log("Cannot resolve theory name for URI: " + uri.toString, null)
         }
 
-        name
+        name map toDocumentNodeName
       }
     }
   }
@@ -332,7 +319,7 @@ class TheoryEditor extends TextEditor {
       nodes.foreach(node => {
 
         // resolve document URI to load the file contents
-        val uri = URIThyLoad.resolveDocumentUri(node)
+        val uri = resolveDocumentUri(node)
 
         val fileStore =
           try {
