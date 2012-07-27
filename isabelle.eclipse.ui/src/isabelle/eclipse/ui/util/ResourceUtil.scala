@@ -76,8 +76,11 @@ object ResourceUtil {
     */
   @throws(classOf[URISyntaxException])
   private def getResourceURI(resource: IResource): URI = {
-    val path = resource.getFullPath()
-    URIThyLoad.createPlatformUri(path.toString)
+    // use `file:` URIs, because Isabelle2012 does not allow `platform:` URI scheme
+    // TODO review with Isabelle2013
+    resource.getLocationURI()
+//    val path = resource.getFullPath()
+//    URIThyLoad.createPlatformUri(path.toString)
   }
 
   /** Resolves parent URI for the given one. As proposed in
