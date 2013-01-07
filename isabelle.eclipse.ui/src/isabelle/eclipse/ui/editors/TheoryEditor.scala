@@ -302,7 +302,7 @@ class TheoryEditor extends TextEditor {
     def refreshView() {
 
       uiJob("Refreshing view") {
-        getSourceViewer.invalidateTextPresentation()
+        Option(getSourceViewer) foreach (_.invalidateTextPresentation())
       }
     }
 
