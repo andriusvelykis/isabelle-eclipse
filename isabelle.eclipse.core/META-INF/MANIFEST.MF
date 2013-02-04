@@ -5,7 +5,7 @@ Bundle-SymbolicName: isabelle.eclipse.core;singleton:=true
 Bundle-Version: 1.2.0.qualifier
 Bundle-Activator: isabelle.eclipse.core.IsabelleCorePlugin
 Require-Bundle: org.eclipse.core.runtime,
- org.scala-ide.scala.library;bundle-version="2.9.1",
+ org.scala-ide.scala.library;bundle-version="2.10.0",
  isabelle.pure;bundle-version="[2013.0.1,2013.1.0)",
  org.eclipse.core.filesystem;bundle-version="1.0.0",
  org.eclipse.text,
