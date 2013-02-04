@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Isabelle Eclipse Interface
 Bundle-SymbolicName: isabelle.eclipse.ui;singleton:=true
-Bundle-Version: 1.0.1.qualifier
+Bundle-Version: 1.2.0.qualifier
 Bundle-Activator: isabelle.eclipse.ui.IsabelleUIPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -16,7 +16,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor;bundle-version="3.6.1",
  org.scala-ide.scala.library;bundle-version="2.9.1",
  isabelle.pure;bundle-version="[2012.0.0,2012.1.0)",
- isabelle.eclipse.core;bundle-version="1.1.0",
+ isabelle.eclipse.core;bundle-version="1.2.0",
  org.eclipse.core.databinding.observable;bundle-version="1.4.0",
  org.eclipse.core.expressions,
  org.eclipse.help
