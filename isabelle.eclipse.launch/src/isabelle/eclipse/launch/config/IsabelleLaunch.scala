@@ -6,9 +6,12 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 
 import LaunchConfigUtil.configValue
 import isabelle.eclipse.core.IsabelleCorePlugin
-import isabelle.eclipse.core.app.Isabelle
+import isabelle.eclipse.core.app.{Isabelle, IsabelleBuild}
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
-import isabelle.scala.SystemUtil
+
+// import helper methods
+import isabelle.eclipse.launch.config.IsabelleLaunch._
+
 
 /**
  * @author Andrius Velykis
@@ -52,7 +55,8 @@ object IsabelleLaunch {
 
   def availableSessions(isabellePath: String): Either[IStatus, List[String]] =
     try {
-      val sessions = SystemUtil.getLogics(isabellePath);
+      // FIXME additional session dirs
+      val sessions = IsabelleBuild.sessions(isabellePath, Nil)
       result(sessions)
     } catch {
       case ex: Exception =>
@@ -61,16 +65,16 @@ object IsabelleLaunch {
     
 }
 
-// import helper methods
-import isabelle.eclipse.launch.config.IsabelleLaunch._
-
 /**
  * @author Andrius Velykis
  */
 abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 
   @throws[CoreException]
-  override def launch(configuration: ILaunchConfiguration, mode: String, launch: ILaunch, monitor: IProgressMonitor) {
+  override def launch(configuration: ILaunchConfiguration,
+                      mode: String,
+                      launch: ILaunch,
+                      monitor: IProgressMonitor) {
     
     /**
      * Checks if cancelled and signals fail (Left), otherwise keeps the value result (Right)
