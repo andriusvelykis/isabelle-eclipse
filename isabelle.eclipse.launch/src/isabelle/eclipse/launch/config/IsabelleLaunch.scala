@@ -7,7 +7,7 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 import LaunchConfigUtil.configValue
 import isabelle.eclipse.core.IsabelleCorePlugin
 import isabelle.eclipse.core.app.Isabelle
-import isabelle.eclipse.launch.{IsabelleLaunchConstants, IsabelleLaunchPlugin}
+import isabelle.eclipse.launch.IsabelleLaunchPlugin
 import isabelle.scala.SystemUtil
 
 /**
@@ -137,7 +137,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
   private def selectedSession(configuration: ILaunchConfiguration,
                               isabellePath: String): Either[IStatus, String] = {
     
-    val sessionName = configValue(configuration, IsabelleLaunchConstants.ATTR_LOGIC, "")
+    val sessionName = configValue(configuration, IsabelleLaunchConstants.ATTR_SESSION, "")
 
     if (sessionName.isEmpty) {
       abort("Isabelle logic not specified")

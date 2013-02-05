@@ -7,7 +7,6 @@ import scala.util.Either
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.debug.core.ILaunchConfiguration
 
-import isabelle.eclipse.launch.IsabelleLaunchConstants
 import isabelle.eclipse.launch.config.IsabelleLaunch._
 import isabelle.eclipse.launch.config.LaunchConfigUtil._
 

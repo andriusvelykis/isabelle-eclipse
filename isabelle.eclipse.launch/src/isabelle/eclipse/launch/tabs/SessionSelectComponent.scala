@@ -15,8 +15,7 @@ import org.eclipse.swt.events.{SelectionAdapter, SelectionEvent}
 import org.eclipse.swt.widgets.{Button, Composite, Group}
 
 import AccessibleUtil.addControlAccessibleListener
-import isabelle.eclipse.launch.IsabelleLaunchConstants
-import isabelle.eclipse.launch.config.IsabelleLaunch
+import isabelle.eclipse.launch.config.{IsabelleLaunchConstants, IsabelleLaunch}
 import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, setConfigValue}
 
 /**
@@ -31,7 +30,7 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
                              isaPathValue: () => Option[String])
     extends LaunchComponent[Option[String]] {
 
-  def attributeName = IsabelleLaunchConstants.ATTR_LOGIC
+  def attributeName = IsabelleLaunchConstants.ATTR_SESSION
   
   private var sessionsViewer: CheckboxTableViewer = _
   
