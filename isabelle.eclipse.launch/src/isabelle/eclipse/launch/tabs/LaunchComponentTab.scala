@@ -9,7 +9,7 @@ import org.eclipse.jface.layout.GridLayoutFactory
 import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.Composite
 
-import isabelle.eclipse.launch.config.IsabelleLaunch.configValue
+import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
 
 /**
  * Launch configuration tab that consists of several components describing properties

@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.{Button, Composite, DirectoryDialog, Group, Text}
 
 import AccessibleUtil.addControlAccessibleListener
 import isabelle.eclipse.launch.IsabelleLaunchConstants
-import isabelle.eclipse.launch.config.IsabelleLaunch.{configValue, setConfigValue}
+import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, setConfigValue}
 
 
 /**

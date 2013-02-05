@@ -1,14 +1,14 @@
 package isabelle.eclipse.launch.config
 
 import org.eclipse.core.runtime.{CoreException, IProgressMonitor, IStatus, MultiStatus, Status}
-import org.eclipse.debug.core.{ILaunch, ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
+import org.eclipse.debug.core.{ILaunch, ILaunchConfiguration}
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 
+import LaunchConfigUtil.configValue
 import isabelle.eclipse.core.IsabelleCorePlugin
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.launch.{IsabelleLaunchConstants, IsabelleLaunchPlugin}
 import isabelle.scala.SystemUtil
-import scala.reflect.runtime.universe._
 
 /**
  * @author Andrius Velykis
@@ -50,43 +50,6 @@ object IsabelleLaunch {
 
   def result[T](value: T) = Right(value)
 
-  def configValue[T: TypeTag](configuration: ILaunchConfiguration,
-                              attributeName: String,
-                              defaultValue: T): T =
-    try {
-
-      val res = typeOf[T] match {
-        case t if t =:= typeOf[String] =>
-          configuration.getAttribute(attributeName, defaultValue.asInstanceOf[String])
-        case t if t =:= typeOf[Boolean] =>
-          configuration.getAttribute(attributeName, defaultValue.asInstanceOf[Boolean])
-        case t if t =:= typeOf[Int] =>
-          configuration.getAttribute(attributeName, defaultValue.asInstanceOf[Int])
-        case _ =>
-          throw new UnsupportedOperationException("unsupported config type")
-      }
-
-      res.asInstanceOf[T]
-
-    } catch {
-      case ce: CoreException => {
-        IsabelleLaunchPlugin.log("Error reading configuration", ce)
-        // return the default
-        defaultValue
-      }
-    }
-
-  def setConfigValue(configuration: ILaunchConfigurationWorkingCopy,
-                     attributeName: String,
-                     value: Option[String]) =
-    value match {
-      case Some(value) =>
-        configuration.setAttribute(attributeName, value)
-      case None =>
-        configuration.removeAttribute(attributeName)
-    }
-
-
   def availableSessions(isabellePath: String): Either[IStatus, List[String]] =
     try {
       val sessions = SystemUtil.getLogics(isabellePath);
@@ -98,7 +61,7 @@ object IsabelleLaunch {
     
 }
 
-
+// import helper methods
 import isabelle.eclipse.launch.config.IsabelleLaunch._
 
 /**

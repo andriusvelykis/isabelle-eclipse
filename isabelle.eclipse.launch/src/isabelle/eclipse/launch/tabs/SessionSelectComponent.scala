@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.{Button, Composite, Group}
 import AccessibleUtil.addControlAccessibleListener
 import isabelle.eclipse.launch.IsabelleLaunchConstants
 import isabelle.eclipse.launch.config.IsabelleLaunch
-import isabelle.eclipse.launch.config.IsabelleLaunch.{configValue, setConfigValue}
+import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, setConfigValue}
 
 /**
  * A launch configuration component to select an Isabelle session (logic) in the
