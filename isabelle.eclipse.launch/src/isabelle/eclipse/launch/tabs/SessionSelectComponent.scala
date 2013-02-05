@@ -55,7 +55,7 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
     sessionsViewer.getControl.setLayoutData(
         gridDataFill.hint(IDialogConstants.ENTRY_FIELD_WIDTH, 50).create)
     
-    sessionsViewer.setLabelProvider(new LogicLabelProvider)
+    sessionsViewer.setLabelProvider(new SessionLabelProvider)
     sessionsViewer.setContentProvider(new ArrayContentProvider)
     sessionsViewer.addCheckStateListener(new SingleCheckedListener(sessionsViewer))
     sessionsViewer.setInput(Array())
