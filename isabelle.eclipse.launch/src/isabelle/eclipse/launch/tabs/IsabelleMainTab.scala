@@ -16,9 +16,14 @@ class IsabelleMainTab(components: List[LaunchComponent[_]])
 
   override def getName = "Main"
 
-  lazy private val resourceManager =
-    new LocalResourceManager(JFaceResources.getResources, getControl)
+  // cannot access a Control here, so dispose manually in #dispose()
+  private val resourceManager = new LocalResourceManager(JFaceResources.getResources)
 
   override def getImage = resourceManager.createImageWithDefault(IsabelleLaunchImages.TAB_MAIN)
+  
+  override def dispose() {
+    resourceManager.dispose()
+    super.dispose()
+  }
 
 }
