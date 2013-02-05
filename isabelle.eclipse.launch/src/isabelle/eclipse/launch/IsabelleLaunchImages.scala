@@ -22,7 +22,7 @@ object IsabelleLaunchImages {
   lazy val TAB_MAIN = create("main_tab.gif")
   lazy val TAB_INSTALLATION = create("isabelle.png")
 
-  lazy val SESSION = create("logic_obj.png")
+  lazy val SESSION = create("logic_obj.gif")
 
   private def create(iconPath: String) = {
     try {
