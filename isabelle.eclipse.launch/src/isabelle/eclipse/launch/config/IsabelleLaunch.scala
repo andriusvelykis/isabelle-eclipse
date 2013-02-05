@@ -32,7 +32,7 @@ object IsabelleLaunch {
             code: Int = 0): Left[IStatus, S] = {
 
     val severity = IStatus.ERROR
-    val pluginId = IsabelleLaunchPlugin.PLUGIN_ID
+    val pluginId = IsabelleLaunchPlugin.plugin.pluginId
 
     val status = details match {
       case Some(detailMsg) => {

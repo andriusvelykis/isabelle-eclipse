@@ -1,8 +1,9 @@
 package isabelle.eclipse.launch;
 
-import static isabelle.eclipse.launch.IsabelleLaunchPlugin.PLUGIN_ID;
 
 public interface IsabelleLaunchConstants {
+  
+  public static final String PLUGIN_ID = IsabelleLaunchPlugin.plugin().pluginId();
 
 	/**
 	 * String attribute identifying the location of the installation. Default value

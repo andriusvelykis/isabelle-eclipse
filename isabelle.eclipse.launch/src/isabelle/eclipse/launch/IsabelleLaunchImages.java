@@ -15,7 +15,7 @@ public class IsabelleLaunchImages {
 
 	static {
 		String pathSuffix = "icons/"; //$NON-NLS-1$	
-		ICON_BASE_URL= IsabelleLaunchPlugin.getDefault().getBundle().getEntry(pathSuffix);
+		ICON_BASE_URL= IsabelleLaunchPlugin.plugin().getBundle().getEntry(pathSuffix);
 	}
 	
 	public static final String IMG_TAB_MAIN = ICON_BASE_URL + "main_tab.gif";
@@ -28,7 +28,7 @@ public class IsabelleLaunchImages {
 	 * or <code>null</code> if it does not exist.
 	 */
 	public static Image getImage(String path) {
-		ImageRegistry imageRegistry = IsabelleLaunchPlugin.getDefault().getImageRegistry();
+		ImageRegistry imageRegistry = IsabelleLaunchPlugin.plugin().getImageRegistry();
 		Image image = imageRegistry.get(path);
 		if (image == null) {
 			ImageDescriptor desc = ImageDescriptor.getMissingImageDescriptor();

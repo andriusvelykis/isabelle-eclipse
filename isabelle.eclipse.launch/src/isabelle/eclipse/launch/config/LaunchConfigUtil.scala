@@ -5,7 +5,7 @@ import scala.reflect.runtime.universe._
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
 
-import isabelle.eclipse.launch.IsabelleLaunchPlugin
+import isabelle.eclipse.launch.IsabelleLaunchPlugin.{error, log}
 
 /**
  * Utilities for launch configurations.
@@ -34,7 +34,7 @@ object LaunchConfigUtil {
 
     } catch {
       case ce: CoreException => {
-        IsabelleLaunchPlugin.log("Error reading configuration", ce)
+        log(error(Some(ce), Some("Error reading configuration")))
         // return the default
         defaultValue
       }
