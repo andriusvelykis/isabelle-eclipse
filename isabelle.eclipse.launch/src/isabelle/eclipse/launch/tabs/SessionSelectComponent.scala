@@ -3,6 +3,7 @@ package isabelle.eclipse.launch.tabs
 import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
 import org.eclipse.jface.dialogs.IDialogConstants
 import org.eclipse.jface.layout.{GridDataFactory, GridLayoutFactory}
+import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
 import org.eclipse.jface.viewers.{
   ArrayContentProvider,
   CheckStateChangedEvent,
@@ -54,8 +55,11 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
     
     sessionsViewer.getControl.setLayoutData(
         gridDataFill.hint(IDialogConstants.ENTRY_FIELD_WIDTH, 50).create)
+
+    val resourceManager = new LocalResourceManager(
+      JFaceResources.getResources, sessionsViewer.getControl)
     
-    sessionsViewer.setLabelProvider(new SessionLabelProvider)
+    sessionsViewer.setLabelProvider(new SessionLabelProvider(resourceManager))
     sessionsViewer.setContentProvider(new ArrayContentProvider)
     sessionsViewer.addCheckStateListener(new SingleCheckedListener(sessionsViewer))
     sessionsViewer.setInput(Array())

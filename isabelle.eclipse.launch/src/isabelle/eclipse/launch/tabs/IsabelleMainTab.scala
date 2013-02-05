@@ -1,5 +1,7 @@
 package isabelle.eclipse.launch.tabs
 
+import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
+
 import isabelle.eclipse.launch.IsabelleLaunchImages
 
 
@@ -13,7 +15,10 @@ class IsabelleMainTab(components: List[LaunchComponent[_]])
     extends LaunchComponentTab(components) {
 
   override def getName = "Main"
-  
-  override def getImage = IsabelleLaunchImages.getImage(IsabelleLaunchImages.IMG_TAB_MAIN)
-  
+
+  lazy private val resourceManager =
+    new LocalResourceManager(JFaceResources.getResources, getControl)
+
+  override def getImage = resourceManager.createImageWithDefault(IsabelleLaunchImages.TAB_MAIN)
+
 }
