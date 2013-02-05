@@ -15,4 +15,5 @@ Require-Bundle: org.eclipse.ui,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: AI4FM.org
-Import-Package: scala.reflect.runtime;version="2.10.0"
+Import-Package: scala.reflect.api;version="2.10.0",
+ scala.reflect.runtime;version="2.10.0"
