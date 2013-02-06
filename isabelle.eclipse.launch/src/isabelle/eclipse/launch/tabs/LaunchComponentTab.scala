@@ -20,7 +20,7 @@ import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
 abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
     extends AbstractLaunchConfigurationTab {
 
-  lazy val FIRST_EDIT = "editedByTab-" + getName
+  lazy val FIRST_EDIT = "editedByTab-" + (Option(getId) getOrElse getName)
   
   private var initializing = false
   private var userEdited = false

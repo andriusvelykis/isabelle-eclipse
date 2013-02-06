@@ -2,7 +2,7 @@ package isabelle.eclipse.launch.tabs
 
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
 
-import isabelle.eclipse.launch.IsabelleLaunchImages
+import isabelle.eclipse.launch.{IsabelleLaunchImages, IsabelleLaunchPlugin}
 
 
 /**
@@ -15,6 +15,8 @@ class IsabelleMainTab(components: List[LaunchComponent[_]])
     extends LaunchComponentTab(components) {
 
   override def getName = "Main"
+    
+  override def getId = IsabelleLaunchPlugin.plugin.pluginId + ".mainTab"
 
   // cannot access a Control here, so dispose manually in #dispose()
   private val resourceManager = new LocalResourceManager(JFaceResources.getResources)
