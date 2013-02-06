@@ -11,8 +11,7 @@ import org.eclipse.jface.viewers.{
   TreeViewer
 }
 import org.eclipse.swt.SWT
-import org.eclipse.swt.events.{SelectionAdapter, SelectionEvent}
-import org.eclipse.swt.widgets.{Button, Composite, Group}
+import org.eclipse.swt.widgets.{Composite, Group}
 import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 
 import AccessibleUtil.addControlAccessibleListener
@@ -53,24 +52,6 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
     val sessionsViewer = filteredSessionsViewer.getViewer
     addControlAccessibleListener(sessionsViewer.getControl, group.getText)
 
-    
-    val infoComposite = new Composite(group, SWT.NONE)
-    infoComposite.setLayout(GridLayoutFactory.fillDefaults.create)
-    infoComposite.setLayoutData(
-        GridDataFactory.swtDefaults.align(SWT.END, SWT.BEGINNING).grab(true, false).create)
-    
-    infoComposite.setFont(parent.getFont)
-    
-    val sessionsLogButton = new Button(infoComposite, SWT.PUSH)
-    sessionsLogButton.setFont(parent.getFont)
-    sessionsLogButton.setText("Show Log...")
-    sessionsLogButton.setLayoutData(GridDataFactory.swtDefaults.align(SWT.END, SWT.CENTER).create)
-    addControlAccessibleListener(sessionsLogButton, sessionsLogButton.getText)
-    
-    sessionsLogButton.addSelectionListener(new SelectionAdapter {
-      override def widgetSelected(e: SelectionEvent) = sessionsLogSelected()
-    })
-    
     
     // on config change in Isabelle path, update the session selection
     // (only do after UI initialisation)
@@ -167,15 +148,6 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
   private def configModified() {
     // notify listeners
     publish(selectedSession)
-  }
-
-  private def sessionsLogSelected() {
-    val logDialog =
-      new LogDialog(sessionCheck.viewer.getControl.getShell, "Logics Query Log",
-        // FIXME
-        "Querying Isabelle logics available in the indicated location.", "TODO", SWT.NONE)
-
-    logDialog.open()
   }
 
   /**
