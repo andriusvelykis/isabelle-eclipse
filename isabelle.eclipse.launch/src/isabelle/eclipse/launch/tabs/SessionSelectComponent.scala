@@ -5,18 +5,20 @@ import org.eclipse.jface.dialogs.IDialogConstants
 import org.eclipse.jface.layout.{GridDataFactory, GridLayoutFactory}
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
 import org.eclipse.jface.viewers.{
-  ArrayContentProvider,
   CheckStateChangedEvent,
-  CheckboxTableViewer,
-  ICheckStateListener
+  CheckboxTreeViewer,
+  ICheckStateListener,
+  TreeViewer
 }
 import org.eclipse.swt.SWT
 import org.eclipse.swt.events.{SelectionAdapter, SelectionEvent}
 import org.eclipse.swt.widgets.{Button, Composite, Group}
+import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 
 import AccessibleUtil.addControlAccessibleListener
-import isabelle.eclipse.launch.config.{IsabelleLaunchConstants, IsabelleLaunch}
+import isabelle.eclipse.launch.config.{IsabelleLaunch, IsabelleLaunchConstants}
 import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, setConfigValue}
+
 
 /**
  * A launch configuration component to select an Isabelle session (logic) in the
@@ -32,7 +34,7 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
 
   def attributeName = IsabelleLaunchConstants.ATTR_SESSION
   
-  private var sessionsViewer: CheckboxTableViewer = _
+  private var sessionCheck = new SingleCheckStateProvider[CheckboxTreeViewer]
   
   
   /**
@@ -43,31 +45,14 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
     val group = new Group(parent, SWT.NONE)
     group.setText("&Session:")
     
-    val gridDataFill = GridDataFactory.fillDefaults.grab(true, true)
-    
     group.setLayout(GridLayoutFactory.swtDefaults.create)
-    group.setLayoutData(gridDataFill.create)
+    group.setLayoutData(GridDataFactory.fillDefaults.grab(true, true).create)
     group.setFont(parent.getFont)
     
-    sessionsViewer = CheckboxTableViewer.newCheckList(group, 
-        SWT.CHECK | SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION)
-    
-    sessionsViewer.getControl.setLayoutData(
-        gridDataFill.hint(IDialogConstants.ENTRY_FIELD_WIDTH, 50).create)
-
-    val resourceManager = new LocalResourceManager(
-      JFaceResources.getResources, sessionsViewer.getControl)
-    
-    sessionsViewer.setLabelProvider(new SessionLabelProvider(resourceManager))
-    sessionsViewer.setContentProvider(new ArrayContentProvider)
-    sessionsViewer.addCheckStateListener(new SingleCheckedListener(sessionsViewer))
-    sessionsViewer.setInput(Array())
-    
-    sessionsViewer.addCheckStateListener(new ICheckStateListener {
-      override def checkStateChanged(event: CheckStateChangedEvent) = configModified()
-    })
-    
+    val filteredSessionsViewer = new SessionFilteredTree(group, SWT.BORDER)
+    val sessionsViewer = filteredSessionsViewer.getViewer
     addControlAccessibleListener(sessionsViewer.getControl, group.getText)
+
     
     val infoComposite = new Composite(group, SWT.NONE)
     infoComposite.setLayout(GridLayoutFactory.fillDefaults.create)
@@ -92,6 +77,31 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
     isaPathComponent.onConfigChanged(_ => isaPathChanged())
   }
   
+  private def createCheckboxTreeViewer(parent: Composite, style: Int): CheckboxTreeViewer = {
+    
+    val sessionsViewer = new CheckboxTreeViewer(parent, 
+        SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION | style)
+
+    sessionsViewer.getControl.setLayoutData(GridDataFactory.fillDefaults.
+      grab(true, true).hint(IDialogConstants.ENTRY_FIELD_WIDTH, 50).create)
+
+    val resourceManager = new LocalResourceManager(
+      JFaceResources.getResources, sessionsViewer.getControl)
+    
+    sessionsViewer.setLabelProvider(new SessionLabelProvider(resourceManager))
+    sessionsViewer.setContentProvider(new ArrayTreeContentProvider)
+    
+    sessionCheck.initViewer(sessionsViewer)
+    sessionsViewer.setCheckStateProvider(sessionCheck)
+    sessionsViewer.setInput(Array())
+    
+    sessionsViewer.addCheckStateListener(new ICheckStateListener {
+      override def checkStateChanged(event: CheckStateChangedEvent) = configModified()
+    })
+    
+    sessionsViewer
+  }
+  
   
   override def initializeFrom(configuration: ILaunchConfiguration) {
     val sessionName = configValue(configuration, attributeName, "")
@@ -102,13 +112,12 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
 
 
   private def selectedSession: Option[String] = {
-    val selectedSessions = sessionsViewer.getCheckedElements
+    val selectedSessions = sessionCheck.viewer.getCheckedElements
     selectedSessions.headOption map (_.toString)
   }
   
   private def selectedSession_= (value: Option[String]): Unit = {
-    val selection: Array[Object] = value.toArray
-    sessionsViewer.setCheckedElements(selection)
+    sessionCheck.checked = value
   }
   
   private def isaPathChanged() = reloadAvailableSessions()
@@ -122,7 +131,7 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
     
     val sessions = sessionsOpt getOrElse Nil
     
-    sessionsViewer.setInput(sessions.toArray)
+    sessionCheck.viewer.setInput(sessions.toArray)
     
     // TODO suggest some default value, e.g. HOL?
     if (sessions.size == 1) {
@@ -138,7 +147,7 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
   
   override def isValid(configuration: ILaunchConfiguration,
                        newConfig: Boolean): Option[Either[String, String]] =
-    if (sessionsViewer.getTable.getItemCount == 0) {
+    if (sessionCheck.viewer.getTree.getItemCount == 0) {
       Some(Left("There are no Isabelle logics available in the indicated location"))
 
     } else selectedSession match {
@@ -162,11 +171,21 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
 
   private def sessionsLogSelected() {
     val logDialog =
-      new LogDialog(sessionsViewer.getControl.getShell, "Logics Query Log",
+      new LogDialog(sessionCheck.viewer.getControl.getShell, "Logics Query Log",
         // FIXME
         "Querying Isabelle logics available in the indicated location.", "TODO", SWT.NONE)
 
     logDialog.open()
+  }
+
+  /**
+   * A FilteredTree with sessions checkbox tree viewer as main control
+   */
+  private class SessionFilteredTree(parent: Composite, treeStyle: Int)
+      extends FilteredTree(parent, treeStyle, new PatternFilter(), true) {
+
+    override protected def doCreateTreeViewer(parent: Composite, style: Int): TreeViewer =
+      createCheckboxTreeViewer(parent, style)
   }
   
 }
