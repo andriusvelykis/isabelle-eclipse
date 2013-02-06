@@ -20,11 +20,10 @@ import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
 abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
     extends AbstractLaunchConfigurationTab {
 
-  lazy val FIRST_EDIT = "editedByTab-" + Random.nextString(5);
+  lazy val FIRST_EDIT = "editedByTab-" + getName
   
   private var initializing = false
   private var userEdited = false
-  
   
   override def createControl(parent:Composite) {
     
