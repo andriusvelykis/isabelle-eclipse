@@ -43,8 +43,10 @@ abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
     components foreach (_.subscribeFun(_ => configModified()))
   }
   
-  def createPushButton(parent: Composite, label: String): Button =
+  override def createPushButton(parent: Composite, label: String): Button =
     createPushButton(parent, label, null)
+    
+  override def update() = updateLaunchConfigurationDialog()
 
   
   private def configModified() {

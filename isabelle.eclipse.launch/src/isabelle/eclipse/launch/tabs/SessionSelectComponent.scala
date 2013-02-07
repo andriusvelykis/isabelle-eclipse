@@ -1,5 +1,7 @@
 package isabelle.eclipse.launch.tabs
 
+import org.eclipse.core.runtime.{IPath, IProgressMonitor, IStatus, Status}
+import org.eclipse.core.runtime.jobs.{ISchedulingRule, Job}
 import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
 import org.eclipse.jface.dialogs.IDialogConstants
 import org.eclipse.jface.layout.{GridDataFactory, GridLayoutFactory}
@@ -10,8 +12,9 @@ import org.eclipse.jface.viewers.{
   ICheckStateListener,
   TreeViewer
 }
+import org.eclipse.jface.wizard.ProgressMonitorPart
 import org.eclipse.swt.SWT
-import org.eclipse.swt.widgets.{Composite, Group}
+import org.eclipse.swt.widgets.{Composite, Control, Group}
 import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 
 import AccessibleUtil.addControlAccessibleListener
@@ -36,12 +39,19 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
   def attributeName = IsabelleLaunchConstants.ATTR_SESSION
   
   private var sessionCheck = new SingleCheckStateProvider[CheckboxTreeViewer]
+  private var progressMonitorPart: ProgressMonitorPart = _
+  private var container: LaunchComponentContainer = _
+  
+  private var lastFinishedJob: Option[SessionLoadJob] = None
+  private var sessionLoadJob: Option[SessionLoadJob] = None
   
   
   /**
    * Creates the controls needed to select logic for the Isabelle installation.
    */
   override def createControl(parent: Composite, container: LaunchComponentContainer) {
+    
+    this.container = container
     
     val group = new Group(parent, SWT.NONE)
     group.setText("&Session:")
@@ -53,7 +63,17 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     val filteredSessionsViewer = new SessionFilteredTree(group, SWT.BORDER)
     val sessionsViewer = filteredSessionsViewer.getViewer
     addControlAccessibleListener(sessionsViewer.getControl, group.getText)
-
+    
+    
+    val monitorComposite = new Composite(group, SWT.NONE)
+    monitorComposite.setLayout(GridLayoutFactory.fillDefaults.numColumns(2).create)
+    monitorComposite.setLayoutData(GridDataFactory.fillDefaults.grab(true, false).create)
+    
+    progressMonitorPart = new ProgressMonitorPart(monitorComposite,
+        GridLayoutFactory.fillDefaults.create, false)
+    progressMonitorPart.setLayoutData(GridDataFactory.fillDefaults.grab(true, false).create)
+    progressMonitorPart.setFont(parent.getFont)
+    
     
     // on config change in Isabelle path, update the session selection
     // (only do after UI initialisation)
@@ -114,28 +134,97 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     // allow only valid session dirs to avoid crashing the session lookup
     val moreDirsSafe = moreDirs filter IsabelleBuild.isSessionDir
     
-    val sessionsOpt = isaPath flatMap (path =>
-      IsabelleLaunch.availableSessions(path, moreDirsSafe).right.toOption)
-    
-    val sessions = sessionsOpt getOrElse Nil
-    
-    sessionCheck.viewer.setInput(sessions.toArray)
-    
-    // TODO suggest some default value, e.g. HOL?
-    if (sessions.size == 1) {
-      selectedSession = sessions.headOption
+    isaPath match {
+      case None => {
+        sessionLoadJob = None
+        finishedLoadingSessions(None, None, false)
+      }
+      
+      case Some(path) => {
+        
+        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe))
+        if (lastFinishedJob == newLoadJob) {
+          // same job, avoid reloading
+          sessionLoadJob = None
+        } else {
+          progressMonitorPart.beginTask("Loading available sessions...", IProgressMonitor.UNKNOWN)
+          sessionLoadJob = Some(SessionLoadJob(path, moreDirsSafe))
+          sessionLoadJob.get.schedule()          
+        }
+      }
     }
   }
   
+  private case class SessionLoadJob(isaPath: String, moreDirs: Seq[IPath])
+    extends Job("Loading available sessions...") {
+    
+    // avoid parallel loads using the sync rule
+    setRule(syncLoadRule)
+    
+    override protected def run(monitor: IProgressMonitor): IStatus = {
+    
+      val sessionLoad = IsabelleLaunch.availableSessions(isaPath, moreDirs)
+
+      runInUI(sessionCheck.viewer.getControl) { () =>
+        finishedLoadingSessions(Some(this), sessionLoad.right.toOption, true)
+      }
+      
+      sessionLoad fold ( err => err, success => Status.OK_STATUS )
+    }
+  }
+  
+  lazy val syncLoadRule = new ISchedulingRule {
+    def contains(rule: ISchedulingRule) = rule == this
+    def isConflicting(rule: ISchedulingRule) = rule == this
+  }
+
+  private def runInUI(uiControl: Control)(doRun: () => Unit) {
+    if (!uiControl.isDisposed) {
+      uiControl.getDisplay.syncExec(new Runnable {
+        override def run() = doRun()
+      })
+    }
+  }
+
+  private def finishedLoadingSessions(loadJob: Option[SessionLoadJob],
+                                      sessionsOpt: Option[List[String]],
+                                      callback: Boolean) =
+    if (sessionLoadJob == loadJob && !sessionCheck.viewer.getControl.isDisposed) {
+      // correct loading job and config still open
+      
+      val sessions = sessionsOpt getOrElse Nil
+      
+      sessionCheck.viewer.setInput(sessions.toArray)
+      
+      if (selectedSession.isEmpty && sessions.size == 1) {
+        // TODO suggest some default value, e.g. HOL?
+        selectedSession = sessions.headOption
+      }
+      
+      sessionLoadJob = None
+      lastFinishedJob = loadJob
+      progressMonitorPart.done()
+      
+      if (callback) {
+        container.update()
+      }
+    }
+  
   
   override def performApply(configuration: ILaunchConfigurationWorkingCopy) {
+    // FIXME this gets called after initializeFrom, but before the reload job
+    // finishes, resulting in empty value being set
     setConfigValue(configuration, attributeName, selectedSession)
   }
 
   
   override def isValid(configuration: ILaunchConfiguration,
                        newConfig: Boolean): Option[Either[String, String]] =
-    if (sessionCheck.viewer.getTree.getItemCount == 0) {
+    if (sessionLoadJob.isDefined) {
+      // still have not finished the loading job, cannot validate
+      Some(Left("Loading available Isabelle logics for selection..."))
+      
+    } else if (sessionCheck.viewer.getTree.getItemCount == 0) {
       Some(Left("There are no Isabelle logics available in the indicated location"))
 
     } else selectedSession match {

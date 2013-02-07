@@ -12,5 +12,7 @@ import org.eclipse.swt.widgets.{Button, Composite}
 trait LaunchComponentContainer {
 
   def createPushButton(parent: Composite, label: String): Button
+  
+  def update()
 
 }
