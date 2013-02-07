@@ -21,6 +21,7 @@ object IsabelleLaunchImages {
 
   lazy val TAB_MAIN = create("main_tab.gif")
   lazy val TAB_INSTALLATION = create("isabelle.png")
+  lazy val TAB_SESSION_DIRS = create("session-dirs.gif")
 
   lazy val SESSION = create("logic_obj.gif")
 

@@ -3,7 +3,8 @@ package isabelle.eclipse.launch.config
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
 
-import org.eclipse.core.runtime.CoreException
+import org.eclipse.core.runtime.{CoreException, IPath, Path}
+import org.eclipse.core.variables.VariablesPlugin
 import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
 
 import isabelle.eclipse.launch.IsabelleLaunchPlugin.{error, log}
@@ -54,5 +55,30 @@ object LaunchConfigUtil {
       case None =>
         configuration.removeAttribute(attributeName)
     }
+
+  
+  def pathsConfigValue(configuration: ILaunchConfiguration, attributeName: String): Seq[IPath] = {
+    
+    val configVal = configValue(configuration, attributeName, List[String]())
+    configVal map resolvePath
+  }
+
+  def resolvePath(location: String): IPath = {
+    resolveWorkspacePath(location) getOrElse new Path(location)
+  }
+
+  private def resolveWorkspacePath(location: String): Option[IPath] = {
+    try {
+      val substitutedStr = VariablesPlugin.getDefault.getStringVariableManager.
+        performStringSubstitution(location)
+
+      Some(new Path(substitutedStr))
+    } catch {
+      case ce: CoreException => {
+        log(error(Some(ce)))
+        None
+      }
+    }
+  }
   
 }

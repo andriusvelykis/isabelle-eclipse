@@ -7,6 +7,7 @@ import org.eclipse.debug.ui.{
   ILaunchConfigurationTab
 }
 
+
 /**
  * Isabelle launch configuration tabs for MacOSX app bundle (.app) based Isabelle installation.
  * 
@@ -17,14 +18,22 @@ class AppBundleTabGroup extends AbstractLaunchConfigurationTabGroup {
   override def createTabs(dialog: ILaunchConfigurationDialog, mode: String) {
 
     val appBundleSelect = new AppBundleSelectComponent with ObservableValue[Option[String]] {
-      def value = selectedDirInAppBundle
+      override def value = selectedDirInAppBundle
     }
+    
+    val sessionDirs = new DirListComponent with ObservableValue[Seq[String]] {
+      override def value = selectedDirs
+    }
+    
     // use the selected directory directly as Isabelle path
-    val sessionSelect = new SessionSelectComponent(appBundleSelect)
+    val sessionSelect = new SessionSelectComponent(appBundleSelect, sessionDirs)
+    
+    
 
     val tabs = Array[ILaunchConfigurationTab](
       new IsabelleMainTab(List(appBundleSelect, sessionSelect)),
-      new CommonTab())
+      new SessionDirsTab(List(sessionDirs)),
+      new CommonTab)
 
     setTabs(tabs)
   }

@@ -16,19 +16,21 @@ import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 
 import AccessibleUtil.addControlAccessibleListener
 import ObservableUtil.NotifyPublisher
+import isabelle.eclipse.core.app.IsabelleBuild
 import isabelle.eclipse.launch.config.{IsabelleLaunch, IsabelleLaunchConstants}
-import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, setConfigValue}
+import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, resolvePath, setConfigValue}
 
 
 /**
  * A launch configuration component to select an Isabelle session (logic) in the
  * given Isabelle directory.
- * 
+ *
  * Depends on Isabelle directory selection component.
- * 
+ *
  * @author Andrius Velykis
  */
-class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]])
+class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
+                             sessionDirsObservable: ObservableValue[Seq[String]])
     extends LaunchComponent[Option[String]] {
 
   def attributeName = IsabelleLaunchConstants.ATTR_SESSION
@@ -55,7 +57,9 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]])
     
     // on config change in Isabelle path, update the session selection
     // (only do after UI initialisation)
-    isaPathObservable.subscribeFun(_ => isaPathChanged())
+    isaPathObservable.subscribeFun(_ => sessionLocsChanged())
+    // the same for session dirs change
+    sessionDirsObservable.subscribeFun(_ => sessionLocsChanged())
   }
   
   private def createCheckboxTreeViewer(parent: Composite, style: Int): CheckboxTreeViewer = {
@@ -101,14 +105,17 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]])
     sessionCheck.checked = value
   }
   
-  private def isaPathChanged() = reloadAvailableSessions()
+  private def sessionLocsChanged() = reloadAvailableSessions()
   
   private def reloadAvailableSessions() {
     
     val isaPath = isaPathObservable.value
-
+    val moreDirs = sessionDirsObservable.value map resolvePath
+    // allow only valid session dirs to avoid crashing the session lookup
+    val moreDirsSafe = moreDirs filter IsabelleBuild.isSessionDir
+    
     val sessionsOpt = isaPath flatMap (path =>
-      IsabelleLaunch.availableSessions(path).right.toOption)
+      IsabelleLaunch.availableSessions(path, moreDirsSafe).right.toOption)
     
     val sessions = sessionsOpt getOrElse Nil
     

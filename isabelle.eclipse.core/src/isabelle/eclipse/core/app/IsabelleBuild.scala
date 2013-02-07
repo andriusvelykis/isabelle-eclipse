@@ -1,9 +1,9 @@
 package isabelle.eclipse.core.app
 
-import isabelle.Build
-import isabelle.Options
-import isabelle.Path
-import isabelle.Isabelle_System
+import org.eclipse.core.runtime.IPath
+
+import isabelle.{Build, Isabelle_System, Options, Path}
+
 
 /**
  * @author Andrius Velykis
@@ -13,7 +13,13 @@ import isabelle.Isabelle_System
  */
 object IsabelleBuild {
 
-  def sessions(isabellePath: String, moreSessionDirs: List[String]): List[String] = {
+  /**
+   * Retrieves the list of sessions in the given Isabelle installation and additional
+   * session dirs.
+   * 
+   * All paths must be absolute in the filesystem.
+   */
+  def sessions(isabellePath: String, moreSessionDirs: Seq[IPath]): List[String] = {
     
     // Before resolving sessions, reinitialise Isabelle_System at the given path.
     // This will reset correct environment variables and paths for the given Isabelle dir. 
@@ -30,16 +36,22 @@ object IsabelleBuild {
   }
   
   
-  private def availableSessions(moreSessionDirs: List[String], options: Options): List[String] =
+  private def availableSessions(moreSessionDirs: Seq[IPath], options: Options): List[String] =
   {
-    val dirs = moreSessionDirs.map(pathStr => (false, pathForStr(pathStr)))
-    val session_tree = Build.find_sessions(options, dirs)
+    val dirs = moreSessionDirs.map(path => (false, isaPath(path)))
+    val session_tree = Build.find_sessions(options, dirs.toList)
     val (main_sessions, other_sessions) =
       session_tree.topological_order.partition(p => p._2.groups.contains("main"))
     main_sessions.map(_._1).sorted ::: other_sessions.map(_._1).sorted
   }
   
-  // TODO support Eclipse's paths and URIs? Support Eclipse variables before exploding?
-  private def pathForStr(str: String): Path = Path.explode(str)
+  private def isaPath(path: IPath): Path = Path.explode(path.toOSString)
+  
+  /**
+   * Checks if directory is a session dir: needs to have ROOT or ROOTs file at the top
+   */
+  def isSessionDir(path: IPath): Boolean = 
+    path.append("ROOT").toFile.isFile || path.append("ROOTS").toFile.isFile
+  
   
 }

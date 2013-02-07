@@ -140,7 +140,7 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
 
   protected def browseDir(): Option[String] = {
 
-    val dialog = new DirectoryDialog(shell, SWT.SAVE)
+    val dialog = new DirectoryDialog(shell, SWT.NONE)
     dialog.setMessage("Select a Isabelle installation directory:")
     selectedDir foreach dialog.setFilterPath
 

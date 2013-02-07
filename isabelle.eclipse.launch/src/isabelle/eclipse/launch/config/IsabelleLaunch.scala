@@ -1,15 +1,20 @@
 package isabelle.eclipse.launch.config
 
-import org.eclipse.core.runtime.{CoreException, IProgressMonitor, IStatus, MultiStatus, Status}
+import org.eclipse.core.runtime.{
+  CoreException,
+  IPath,
+  IProgressMonitor,
+  IStatus,
+  MultiStatus,
+  Status
+}
 import org.eclipse.debug.core.{ILaunch, ILaunchConfiguration}
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 
-import LaunchConfigUtil.configValue
+import LaunchConfigUtil.{configValue, pathsConfigValue}
 import isabelle.eclipse.core.IsabelleCorePlugin
 import isabelle.eclipse.core.app.{Isabelle, IsabelleBuild}
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
-
-// import helper methods
 import isabelle.eclipse.launch.config.IsabelleLaunch._
 
 
@@ -53,16 +58,16 @@ object IsabelleLaunch {
 
   def result[T](value: T) = Right(value)
 
-  def availableSessions(isabellePath: String): Either[IStatus, List[String]] =
+  def availableSessions(isabellePath: String,
+                        moreSessionDirs: Seq[IPath]): Either[IStatus, List[String]] =
     try {
-      // FIXME additional session dirs
-      val sessions = IsabelleBuild.sessions(isabellePath, Nil)
+      val sessions = IsabelleBuild.sessions(isabellePath, moreSessionDirs)
       result(sessions)
     } catch {
       case ex: Exception =>
-        abort("Unable to launch Isabelle at path: " + isabellePath, exception = Some(ex))
+        abort("Unable to initalize Isabelle at path: " + isabellePath, exception = Some(ex))
     }
-    
+
 }
 
 /**
@@ -123,7 +128,9 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       _ <- canceled.right
       isabellePath <- installationPath(configuration).right
       _ <- canceled.right
-      sessionName <- selectedSession(configuration, isabellePath).right
+      sessionDirs <- moreSessionDirs(configuration).right
+      _ <- canceled.right
+      sessionName <- selectedSession(configuration, isabellePath, sessionDirs).right
       _ <- canceled.right
       err <- sessionStartup(isabelle, isabellePath, sessionName).left
     } yield (err)
@@ -137,9 +144,24 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
    * Abstract method to allow for different configurations, e.g. dir or Mac .app
    */
   def installationPath(configuration: ILaunchConfiguration): Either[IStatus, String]
+  
+  
+  private def moreSessionDirs(configuration: ILaunchConfiguration): Either[IStatus, Seq[IPath]] = {
+    
+    val sessionPaths = pathsConfigValue(configuration, IsabelleLaunchConstants.ATTR_SESSION_DIRS)
+    
+    val invalidPath = sessionPaths find { path => !IsabelleBuild.isSessionDir(path) }
+    
+    invalidPath match {
+      case Some(path) => abort("Invalid Isabelle session directory (no session root): " + path)
+      case None => result(sessionPaths)
+    }
+  }
+  
 
   private def selectedSession(configuration: ILaunchConfiguration,
-                              isabellePath: String): Either[IStatus, String] = {
+                              isabellePath: String,
+                              moreSessionDirs: Seq[IPath]): Either[IStatus, String] = {
     
     val sessionName = configValue(configuration, IsabelleLaunchConstants.ATTR_SESSION, "")
 
@@ -147,7 +169,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       abort("Isabelle logic not specified")
     } else {
 
-      val sessions = availableSessions(isabellePath).right
+      val sessions = availableSessions(isabellePath, moreSessionDirs).right
 
       sessions flatMap (ss => if (!ss.contains(sessionName)) {
         abort("Invalid Isabelle session name specified")
