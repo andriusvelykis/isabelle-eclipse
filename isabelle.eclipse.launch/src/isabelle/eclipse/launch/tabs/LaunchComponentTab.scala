@@ -9,7 +9,9 @@ import org.eclipse.jface.layout.GridLayoutFactory
 import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.Composite
 
+import ObservableUtil.NotifyPublisher
 import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
+
 
 /**
  * Launch configuration tab that consists of several components describing properties
@@ -40,7 +42,7 @@ abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
     Dialog.applyDialogFont(parent)
 
     // add listener to each component change
-    components foreach (_.onConfigChanged(_ => configModified()))
+    components foreach (_.subscribeFun(_ => configModified()))
   }
 
   

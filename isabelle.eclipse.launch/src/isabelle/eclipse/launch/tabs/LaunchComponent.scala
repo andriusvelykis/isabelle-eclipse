@@ -21,12 +21,5 @@ trait LaunchComponent[R] extends Publisher[R] {
 
   def isValid(configuration: ILaunchConfiguration,
               newConfig: Boolean): Option[Either[String, String]]
-
-  
-  def onConfigChanged(sub: R => Unit ) {
-    subscribe(new this.Sub {
-      override def notify(pub: Pub, event: R) = sub(event)
-    })
-  }
   
 }

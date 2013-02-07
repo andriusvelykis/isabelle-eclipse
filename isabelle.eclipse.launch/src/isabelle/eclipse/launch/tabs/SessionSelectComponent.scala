@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.{Composite, Group}
 import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 
 import AccessibleUtil.addControlAccessibleListener
+import ObservableUtil.NotifyPublisher
 import isabelle.eclipse.launch.config.{IsabelleLaunch, IsabelleLaunchConstants}
 import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, setConfigValue}
 
@@ -27,8 +28,7 @@ import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, setConfigVa
  * 
  * @author Andrius Velykis
  */
-class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
-                             isaPathValue: () => Option[String])
+class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]])
     extends LaunchComponent[Option[String]] {
 
   def attributeName = IsabelleLaunchConstants.ATTR_SESSION
@@ -39,7 +39,7 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
   /**
    * Creates the controls needed to select logic for the Isabelle installation.
    */
-  override def createControl(parent: Composite) {
+  override def createControl(parent: Composite, container: LaunchComponentContainer) {
     
     val group = new Group(parent, SWT.NONE)
     group.setText("&Session:")
@@ -55,7 +55,7 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
     
     // on config change in Isabelle path, update the session selection
     // (only do after UI initialisation)
-    isaPathComponent.onConfigChanged(_ => isaPathChanged())
+    isaPathObservable.subscribeFun(_ => isaPathChanged())
   }
   
   private def createCheckboxTreeViewer(parent: Composite, style: Int): CheckboxTreeViewer = {
@@ -105,7 +105,7 @@ class SessionSelectComponent(isaPathComponent: LaunchComponent[Option[String]],
   
   private def reloadAvailableSessions() {
     
-    val isaPath = isaPathValue()
+    val isaPath = isaPathObservable.value
 
     val sessionsOpt = isaPath flatMap (path =>
       IsabelleLaunch.availableSessions(path).right.toOption)

@@ -16,11 +16,11 @@ class AppBundleTabGroup extends AbstractLaunchConfigurationTabGroup {
 
   override def createTabs(dialog: ILaunchConfigurationDialog, mode: String) {
 
-    val appBundleSelect = new AppBundleSelectComponent()
+    val appBundleSelect = new AppBundleSelectComponent with ObservableValue[Option[String]] {
+      def value = selectedDirInAppBundle
+    }
     // use the selected directory directly as Isabelle path
-    val sessionSelect = new SessionSelectComponent(
-      appBundleSelect,
-      () => appBundleSelect.selectedDirInAppBundle)
+    val sessionSelect = new SessionSelectComponent(appBundleSelect)
 
     val tabs = Array[ILaunchConfigurationTab](
       new IsabelleMainTab(List(appBundleSelect, sessionSelect)),
