@@ -38,7 +38,7 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
   /**
    * Creates the controls needed to edit the location attribute of an external tool
    */
-  override def createControl(parent: Composite) {
+  override def createControl(parent: Composite, container: LaunchComponentContainer) {
 
     val group = new Group(parent, SWT.NONE)
     group.setText(locationLabel)
@@ -60,9 +60,7 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
     buttonComposite.setLayoutData(GridDataFactory.swtDefaults.align(SWT.END, SWT.CENTER).create)
     buttonComposite.setFont(parent.getFont)
 
-    val fileLocationButton = new Button(buttonComposite, SWT.PUSH)
-    fileLocationButton.setFont(parent.getFont)
-    fileLocationButton.setText("Browse File System...")
+    val fileLocationButton = container.createPushButton(buttonComposite, "Browse File System...")
     fileLocationButton.setLayoutData(GridDataFactory.swtDefaults.align(SWT.END, SWT.CENTER).create)
     addControlAccessibleListener(fileLocationButton, group.getText + " " + fileLocationButton.getText)
 

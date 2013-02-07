@@ -1,13 +1,11 @@
 package isabelle.eclipse.launch.tabs
 
-import scala.util.Random
-
 import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab
 import org.eclipse.jface.dialogs.Dialog
 import org.eclipse.jface.layout.GridLayoutFactory
 import org.eclipse.swt.SWT
-import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.{Button, Composite}
 
 import ObservableUtil.NotifyPublisher
 import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
@@ -20,7 +18,7 @@ import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
  * @author Andrius Velykis
  */
 abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
-    extends AbstractLaunchConfigurationTab {
+    extends AbstractLaunchConfigurationTab with LaunchComponentContainer {
 
   lazy val FIRST_EDIT = "editedByTab-" + (Option(getId) getOrElse getName)
   
@@ -35,7 +33,7 @@ abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
     mainComposite.setFont(parent.getFont)
     mainComposite.setLayout(GridLayoutFactory.swtDefaults.create)
     
-    components foreach (_.createControl(mainComposite))
+    components foreach (_.createControl(mainComposite, this))
     
     createVerticalSpacer(mainComposite, 1)
     
@@ -44,6 +42,9 @@ abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
     // add listener to each component change
     components foreach (_.subscribeFun(_ => configModified()))
   }
+  
+  def createPushButton(parent: Composite, label: String): Button =
+    createPushButton(parent, label, null)
 
   
   private def configModified() {

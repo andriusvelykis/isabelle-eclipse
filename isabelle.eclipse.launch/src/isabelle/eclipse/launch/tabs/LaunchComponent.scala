@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Composite
  */
 trait LaunchComponent[R] extends Publisher[R] {
 
-  def createControl(parent: Composite)
+  def createControl(parent: Composite, container: LaunchComponentContainer)
   
   def initializeFrom(configuration: ILaunchConfiguration)
   
