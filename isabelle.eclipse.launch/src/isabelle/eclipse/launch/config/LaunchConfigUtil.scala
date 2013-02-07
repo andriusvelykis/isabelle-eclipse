@@ -1,11 +1,13 @@
 package isabelle.eclipse.launch.config
 
+import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
 
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
 
 import isabelle.eclipse.launch.IsabelleLaunchPlugin.{error, log}
+
 
 /**
  * Utilities for launch configurations.
@@ -26,6 +28,9 @@ object LaunchConfigUtil {
           configuration.getAttribute(attributeName, defaultValue.asInstanceOf[Boolean])
         case t if t =:= typeOf[Int] =>
           configuration.getAttribute(attributeName, defaultValue.asInstanceOf[Int])
+        case t if t <:< typeOf[List[String]] =>
+          configuration.getAttribute(attributeName,
+            defaultValue.asInstanceOf[List[String]].asJava).asScala.toList
         case _ =>
           throw new UnsupportedOperationException("unsupported config type")
       }
