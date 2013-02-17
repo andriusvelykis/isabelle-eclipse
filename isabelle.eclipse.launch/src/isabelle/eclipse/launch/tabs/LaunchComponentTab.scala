@@ -86,7 +86,8 @@ abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
     
     val newConfig = configValue(configuration, FIRST_EDIT, false)
     
-    val errStream = components.toStream map (_.isValid(configuration, newConfig)) flatten
+    val errValidationStream = components.toStream map (_.isValid(configuration, newConfig))
+    val errStream = errValidationStream.flatten
     
     errStream.headOption match {
       case Some(error) => {
