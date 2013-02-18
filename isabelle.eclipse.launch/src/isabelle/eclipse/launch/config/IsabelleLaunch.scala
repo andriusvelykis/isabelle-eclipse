@@ -76,7 +76,7 @@ object IsabelleLaunch {
     val launchMgr = DebugPlugin.getDefault.getLaunchManager
     
     try {
-      val environmentVars = launchMgr.getEnvironment(configuration)
+      val environmentVars = Option(launchMgr.getEnvironment(configuration)) getOrElse Array()
       // the environment map is read as an array of strings "key=value"
       val envMap = (environmentVars.toList map splitEnvVarString).flatten.toMap
       
