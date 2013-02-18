@@ -28,7 +28,7 @@ object IsabelleBuild {
     
     // TODO ensure that Isabelle is not running, since this may mess everything up
     // TODO allow Isabelle to be running if the same Isabelle path is used?
-    Isabelle_System.init(isabellePath)
+    Isabelle_System.init(isabellePath, envMap, true)
     
     // now can load options for the Isabelle system initialised above
     // TODO support custom external options?
