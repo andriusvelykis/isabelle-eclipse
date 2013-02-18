@@ -2,18 +2,17 @@ package isabelle.eclipse.launch.tabs
 
 import java.io.File
 
-import org.eclipse.core.databinding.observable.value.{IValueChangeListener, ValueChangeEvent}
 import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
-import org.eclipse.jface.databinding.swt.SWTObservables
 import org.eclipse.jface.dialogs.IDialogConstants
 import org.eclipse.jface.layout.{GridDataFactory, GridLayoutFactory}
 import org.eclipse.swt.SWT
-import org.eclipse.swt.events.{SelectionAdapter, SelectionEvent}
-import org.eclipse.swt.widgets.{Button, Composite, DirectoryDialog, Group, Text}
+import org.eclipse.swt.events.{ModifyEvent, ModifyListener, SelectionAdapter, SelectionEvent}
+import org.eclipse.swt.widgets.{Composite, DirectoryDialog, Group, Text}
 
-import AccessibleUtil.addControlAccessibleListener
 import isabelle.eclipse.launch.config.IsabelleLaunchConstants
 import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, setConfigValue}
+
+import AccessibleUtil.addControlAccessibleListener
 
 
 /**
@@ -26,6 +25,10 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
   def attributeName = IsabelleLaunchConstants.ATTR_LOCATION
   
   private var locationField: Text = _
+  
+  private var initializing = false
+  /** Helps listening to typing changes with delay */
+  private var typingDelayHelper = new TypingDelayHelper(1000)
 
   protected def locationLabel = "Isabelle location:"
 
@@ -68,20 +71,31 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
       override def widgetSelected(e: SelectionEvent) = browseSelected()
     })
 
-    // listen to location changes with delay
-    val delayedLocationValue =
-      SWTObservables.observeDelayedValue(1000,
-        SWTObservables.observeText(locationField, SWT.Modify))
-
-    delayedLocationValue.addValueChangeListener(new IValueChangeListener {
-      override def handleValueChange(event: ValueChangeEvent) = configModified()
+    locationField.addModifyListener(new ModifyListener {
+      def modifyText(e: ModifyEvent) = locationModified()
     })
+  }
+  
+  private def locationModified() {
+    if (!initializing) {
+      // schedule delayed event
+      typingDelayHelper.scheduleCallback(Some(locationField.getDisplay)) {
+        configModified()
+      }
+    }
+  }
+  
+  override def dispose() {
+    typingDelayHelper.stop()
+    super.dispose()
   }
 
   override def initializeFrom(configuration: ILaunchConfiguration) {
+    initializing = true
     val dir = configValue(configuration, attributeName, "")
 
     selectedDir = if (dir.isEmpty) None else Some(dir)
+    initializing = false
   }
 
   private def locationFieldChecked: Option[Text] = Option(locationField) filterNot (_.isDisposed)
