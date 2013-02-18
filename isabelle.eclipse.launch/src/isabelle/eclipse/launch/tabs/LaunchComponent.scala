@@ -22,4 +22,5 @@ trait LaunchComponent[R] extends Publisher[R] {
   def isValid(configuration: ILaunchConfiguration,
               newConfig: Boolean): Option[Either[String, String]]
   
+  def dispose() {}
 }

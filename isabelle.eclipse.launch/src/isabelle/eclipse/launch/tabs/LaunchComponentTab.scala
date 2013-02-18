@@ -99,6 +99,11 @@ abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
       case None => true
     }
   }
+  
+  override def dispose() {
+    components foreach (_.dispose())
+    super.dispose()
+  }
 
   override def activated(workingCopy: ILaunchConfigurationWorkingCopy) {}
   
