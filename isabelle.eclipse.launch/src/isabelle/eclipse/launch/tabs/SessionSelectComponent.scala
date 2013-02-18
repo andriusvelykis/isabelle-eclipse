@@ -73,6 +73,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
         GridLayoutFactory.fillDefaults.create, false)
     progressMonitorPart.setLayoutData(GridDataFactory.fillDefaults.grab(true, false).create)
     progressMonitorPart.setFont(parent.getFont)
+    monitorComposite.setVisible(false)
     
     
     // on config change in Isabelle path, update the session selection
@@ -147,6 +148,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
           sessionLoadJob = None
         } else {
           progressMonitorPart.beginTask("Loading available sessions...", IProgressMonitor.UNKNOWN)
+          progressMonitorPart.getParent.setVisible(true)
           sessionLoadJob = Some(SessionLoadJob(path, moreDirsSafe))
           sessionLoadJob.get.schedule()          
         }
@@ -211,6 +213,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       
       sessionLoadJob = None
       lastFinishedJob = loadJob
+      progressMonitorPart.getParent.setVisible(false)
       progressMonitorPart.done()
       
       if (callback) {
