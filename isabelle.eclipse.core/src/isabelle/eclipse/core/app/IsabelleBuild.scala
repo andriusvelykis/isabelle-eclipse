@@ -1,5 +1,7 @@
 package isabelle.eclipse.core.app
 
+import scala.util.{Success, Try}
+
 import org.eclipse.core.runtime.IPath
 
 import isabelle.{Build, Isabelle_System, Options, Path}
@@ -13,6 +15,34 @@ import isabelle.{Build, Isabelle_System, Options, Path}
  */
 object IsabelleBuild {
 
+  private var currentIsabelleInit: Option[IsabelleInitInfo] = None
+  
+  /**
+   * Initialises Isabelle system at the given path.
+   * 
+   * Does not re-initialise if a system is already init with the given installation path and
+   * environment options.
+   */
+  def init(isabellePath: String, envMap: Map[String, String] = Map()): Try[Unit] = {
+    
+    val newInit = Some(IsabelleInitInfo(isabellePath, envMap))
+    // check if already initialised, then do not reinit, since it can be an expensive operation
+    if (currentIsabelleInit != newInit) {
+      // different init info - force Isabelle system reinitialisation
+      currentIsabelleInit = newInit
+      
+      // TODO ensure that Isabelle is not running, since this may mess everything up
+      // TODO allow Isabelle to be running if the same Isabelle path is used?
+      
+      // wrap into Try, since exception can be thrown if the path is wrong, etc
+      Try(Isabelle_System.init(isabellePath, envMap, true))
+    } else {
+      Success()
+    }
+  }
+  
+  private case class IsabelleInitInfo(val path: String, val envMap: Map[String, String])
+  
   /**
    * Retrieves the list of sessions in the given Isabelle installation and additional
    * session dirs.
@@ -21,30 +51,31 @@ object IsabelleBuild {
    */
   def sessions(isabellePath: String,
                moreSessionDirs: Seq[IPath],
-               envMap: Map[String, String]): List[String] = {
-    
+               envMap: Map[String, String]): Try[List[String]] = {
+
     // Before resolving sessions, reinitialise Isabelle_System at the given path.
     // This will reset correct environment variables and paths for the given Isabelle dir. 
-    
-    // TODO ensure that Isabelle is not running, since this may mess everything up
-    // TODO allow Isabelle to be running if the same Isabelle path is used?
-    Isabelle_System.init(isabellePath, envMap, true)
-    
-    // now can load options for the Isabelle system initialised above
-    // TODO support custom external options?
-    val initOptions = Options.init()
-    
-    availableSessions(moreSessionDirs, initOptions)
+    init(isabellePath, envMap) flatMap { _ =>
+      
+      // now can load options for the Isabelle system initialised above
+      val initOptions = Options.init()
+      availableSessions(moreSessionDirs, initOptions)
+    }
   }
-  
-  
-  private def availableSessions(moreSessionDirs: Seq[IPath], options: Options): List[String] =
+
+  private def availableSessions(moreSessionDirs: Seq[IPath],
+                                options: Options): Try[List[String]] =
   {
     val dirs = moreSessionDirs.map(path => (false, isaPath(path)))
-    val session_tree = Build.find_sessions(options, dirs.toList)
-    val (main_sessions, other_sessions) =
-      session_tree.topological_order.partition(p => p._2.groups.contains("main"))
-    main_sessions.map(_._1).sorted ::: other_sessions.map(_._1).sorted
+    val session_tree = Try(Build.find_sessions(options, dirs.toList))
+  
+    // if session find was without issues, order them
+    session_tree map { tree =>
+      val (main_sessions, other_sessions) =
+        tree.topological_order.partition(p => p._2.groups.contains("main"))
+      main_sessions.map(_._1).sorted ::: other_sessions.map(_._1).sorted
+    }
+  
   }
   
   private def isaPath(path: IPath): Path = Path.explode(path.toOSString)

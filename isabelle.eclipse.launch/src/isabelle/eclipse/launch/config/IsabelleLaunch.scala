@@ -1,5 +1,7 @@
 package isabelle.eclipse.launch.config
 
+import scala.util.{Failure, Success}
+
 import org.eclipse.core.runtime.{
   CoreException,
   IPath,
@@ -60,14 +62,17 @@ object IsabelleLaunch {
 
   def availableSessions(isabellePath: String,
                         moreSessionDirs: Seq[IPath],
-                        envMap: Map[String, String]): Either[IStatus, List[String]] =
-    try {
-      val sessions = IsabelleBuild.sessions(isabellePath, moreSessionDirs, envMap)
-      result(sessions)
-    } catch {
-      case ex: Exception =>
-        abort("Unable to initalize Isabelle at path: " + isabellePath, exception = Some(ex))
+                        envMap: Map[String, String]): Either[IStatus, List[String]] = {
+    
+    val sessionsTry = IsabelleBuild.sessions(isabellePath, moreSessionDirs, envMap)
+
+    sessionsTry match {
+      case Success(sessions) => result(sessions)
+      case Failure(ex) => abort(
+        "Unable to initalize Isabelle at path: " + isabellePath,
+        exception = Some(ex))
     }
+  }
 
 
   def environmentMap(configuration: ILaunchConfiguration): 
