@@ -117,8 +117,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
 
 
   private def selectedSession: Option[String] = {
-    val selectedSessions = sessionCheck.viewer.getCheckedElements
-    selectedSessions.headOption map (_.toString)
+    sessionCheck.checked map (_.toString)
   }
   
   private def selectedSession_= (value: Option[String]): Unit = {
@@ -194,12 +193,21 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       
       val sessions = sessionsOpt getOrElse Nil
       
-      sessionCheck.viewer.setInput(sessions.toArray)
+      val currentSelection = selectedSession
       
-      if (selectedSession.isEmpty && sessions.size == 1) {
+      // if the previously selected session is available, keep the selection
+      // otherwise, reset it or select a sensible default
+      val newSelection = (selectedSession, sessions) match {
+        case (_, Nil) => None
+        case (Some(selected), ss) if ss.contains(selected) => Some(selected)
+        // if only one session available, select it
         // TODO suggest some default value, e.g. HOL?
-        selectedSession = sessions.headOption
+        case (None, first :: Nil) => Some(first)
+        case _ => None
       }
+      
+      sessionCheck.viewer.setInput(sessions.toArray)
+      selectedSession = newSelection
       
       sessionLoadJob = None
       lastFinishedJob = loadJob
