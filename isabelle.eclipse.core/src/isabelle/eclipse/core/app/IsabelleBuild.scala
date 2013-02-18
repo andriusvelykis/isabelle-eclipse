@@ -1,8 +1,10 @@
 package isabelle.eclipse.core.app
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
-import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.{CoreException, IPath}
+
+import isabelle.eclipse.core.IsabelleCorePlugin
 
 import isabelle.{Build, Isabelle_System, Options, Path}
 
@@ -31,11 +33,15 @@ object IsabelleBuild {
       // different init info - force Isabelle system reinitialisation
       currentIsabelleInit = newInit
       
-      // TODO ensure that Isabelle is not running, since this may mess everything up
-      // TODO allow Isabelle to be running if the same Isabelle path is used?
+      // ensure that Isabelle is not running, since this may mess everything up
+      if (IsabelleCorePlugin.getIsabelle.isRunning) {
+        Failure(new CoreException(IsabelleCorePlugin.error(
+            "Isabelle is running, cannot reinitialise!", null)))
+      } else {
+        // wrap into Try, since exception can be thrown if the path is wrong, etc
+        Try(Isabelle_System.init(isabellePath, envMap, true))        
+      }
       
-      // wrap into Try, since exception can be thrown if the path is wrong, etc
-      Try(Isabelle_System.init(isabellePath, envMap, true))
     } else {
       Success()
     }
