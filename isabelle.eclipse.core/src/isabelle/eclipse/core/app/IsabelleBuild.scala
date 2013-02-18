@@ -19,7 +19,9 @@ object IsabelleBuild {
    * 
    * All paths must be absolute in the filesystem.
    */
-  def sessions(isabellePath: String, moreSessionDirs: Seq[IPath]): List[String] = {
+  def sessions(isabellePath: String,
+               moreSessionDirs: Seq[IPath],
+               envMap: Map[String, String]): List[String] = {
     
     // Before resolving sessions, reinitialise Isabelle_System at the given path.
     // This will reset correct environment variables and paths for the given Isabelle dir. 

@@ -25,12 +25,15 @@ class RootDirTabGroup extends AbstractLaunchConfigurationTabGroup {
       override def value = selectedDirs
     }
     
+    val envTab = new IsabelleEnvironmentTab
+    
     // use the selected directory directly as Isabelle path
-    val sessionSelect = new SessionSelectComponent(dirSelect, sessionDirs)
+    val sessionSelect = new SessionSelectComponent(dirSelect, sessionDirs, envTab)
     
     val tabs = Array[ILaunchConfigurationTab](
       new IsabelleMainTab(List(dirSelect, sessionSelect)),
       new SessionDirsTab(List(sessionDirs)),
+      envTab,
       new CommonTab)
 
     setTabs(tabs)

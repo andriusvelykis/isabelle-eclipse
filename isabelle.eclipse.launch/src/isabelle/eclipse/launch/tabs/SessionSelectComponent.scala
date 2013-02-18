@@ -33,7 +33,8 @@ import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, resolvePath
  * @author Andrius Velykis
  */
 class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
-                             sessionDirsObservable: ObservableValue[Seq[String]])
+                             sessionDirsObservable: ObservableValue[Seq[String]],
+                             envMapObservable: ObservableValue[Map[String, String]])
     extends LaunchComponent[Option[String]] {
 
   def attributeName = IsabelleLaunchConstants.ATTR_SESSION
@@ -81,6 +82,8 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     isaPathObservable.subscribeFun(_ => sessionLocsChanged())
     // the same for session dirs change
     sessionDirsObservable.subscribeFun(_ => sessionLocsChanged())
+    
+    envMapObservable.subscribeFun(_ => sessionLocsChanged())
   }
   
   private def createCheckboxTreeViewer(parent: Composite, style: Int): CheckboxTreeViewer = {
@@ -111,7 +114,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
   
   override def initializeFrom(configuration: ILaunchConfiguration) {
     val sessionName = configValue(configuration, attributeName, "")
-    reloadAvailableSessions()
+    reloadAvailableSessions(Some(configuration))
     
     selectedSession = if (sessionName.isEmpty) None else Some(sessionName)
   }
@@ -127,12 +130,18 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
   
   private def sessionLocsChanged() = reloadAvailableSessions()
   
-  private def reloadAvailableSessions() {
+  private def reloadAvailableSessions(configuration: Option[ILaunchConfiguration] = None) {
     
     val isaPath = isaPathObservable.value
     val moreDirs = sessionDirsObservable.value map resolvePath
     // allow only valid session dirs to avoid crashing the session lookup
     val moreDirsSafe = moreDirs filter IsabelleBuild.isSessionDir
+    
+    // if there is a config available, read environment map from it, otherwise ask
+    // the observable (the observable may be uninitialised)
+    val configEnvMap = configuration.map(conf =>
+      IsabelleLaunch.environmentMap(conf).right.toOption).flatten
+    val envMap = configEnvMap getOrElse envMapObservable.value
     
     isaPath match {
       case None => {
@@ -142,21 +151,23 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       
       case Some(path) => {
         
-        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe))
+        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe, envMap))
         if (lastFinishedJob == newLoadJob) {
           // same job, avoid reloading
           sessionLoadJob = None
         } else {
           progressMonitorPart.beginTask("Loading available sessions...", IProgressMonitor.UNKNOWN)
           progressMonitorPart.getParent.setVisible(true)
-          sessionLoadJob = Some(SessionLoadJob(path, moreDirsSafe))
+          sessionLoadJob = newLoadJob
           sessionLoadJob.get.schedule()          
         }
       }
     }
   }
-  
-  private case class SessionLoadJob(isaPath: String, moreDirs: Seq[IPath])
+
+  private case class SessionLoadJob(isaPath: String,
+                                    moreDirs: Seq[IPath],
+                                    envMap: Map[String, String])
     extends Job("Loading available sessions...") {
     
     // avoid parallel loads using the sync rule
@@ -164,7 +175,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     
     override protected def run(monitor: IProgressMonitor): IStatus = {
     
-      val sessionLoad = IsabelleLaunch.availableSessions(isaPath, moreDirs)
+      val sessionLoad = IsabelleLaunch.availableSessions(isaPath, moreDirs, envMap)
 
       runInUI(sessionCheck.viewer.getControl) { () =>
         finishedLoadingSessions(Some(this), sessionLoad.right.toOption, true)

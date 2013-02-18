@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.{
   MultiStatus,
   Status
 }
-import org.eclipse.debug.core.{ILaunch, ILaunchConfiguration}
+import org.eclipse.debug.core.{DebugPlugin, ILaunch, ILaunchConfiguration}
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 
 import LaunchConfigUtil.{configValue, pathsConfigValue}
@@ -59,13 +59,39 @@ object IsabelleLaunch {
   def result[T](value: T) = Right(value)
 
   def availableSessions(isabellePath: String,
-                        moreSessionDirs: Seq[IPath]): Either[IStatus, List[String]] =
+                        moreSessionDirs: Seq[IPath],
+                        envMap: Map[String, String]): Either[IStatus, List[String]] =
     try {
-      val sessions = IsabelleBuild.sessions(isabellePath, moreSessionDirs)
+      val sessions = IsabelleBuild.sessions(isabellePath, moreSessionDirs, envMap)
       result(sessions)
     } catch {
       case ex: Exception =>
         abort("Unable to initalize Isabelle at path: " + isabellePath, exception = Some(ex))
+    }
+
+
+  def environmentMap(configuration: ILaunchConfiguration): 
+      Either[IStatus, Map[String, String]] = {
+    
+    val launchMgr = DebugPlugin.getDefault.getLaunchManager
+    
+    try {
+      val environmentVars = launchMgr.getEnvironment(configuration)
+      // the environment map is read as an array of strings "key=value"
+      val envMap = (environmentVars.toList map splitEnvVarString).flatten.toMap
+      
+      result(envMap)
+      
+    } catch {
+      case ce: CoreException => Left(ce.getStatus)
+    }
+  }
+  
+  private def splitEnvVarString(envVarStr: String): Option[(String, String)] =
+    envVarStr.split("=").toList match {
+      // restore separator within value, if needed
+      case key :: valueAndRest => Some(key, valueAndRest.mkString("="))
+      case _ => None
     }
 
 }
@@ -104,7 +130,10 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
     /**
      * Launches Isabelle with the given configuration and waits for it to initialise
      */
-    def sessionStartup(app: Isabelle, isabellePath: String, sessionName: String): Either[IStatus, Unit] = {
+    def sessionStartup(app: Isabelle,
+                       isabellePath: String,
+                       sessionName: String,
+                       envMap: Map[String, String]): Either[IStatus, Unit] = {
       
       monitor.beginTask("Launching " + configuration.getName() + "...", IProgressMonitor.UNKNOWN)
       
@@ -130,9 +159,11 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       _ <- canceled.right
       sessionDirs <- moreSessionDirs(configuration).right
       _ <- canceled.right
-      sessionName <- selectedSession(configuration, isabellePath, sessionDirs).right
+      envMap <- environmentMap(configuration).right
       _ <- canceled.right
-      err <- sessionStartup(isabelle, isabellePath, sessionName).left
+      sessionName <- selectedSession(configuration, isabellePath, sessionDirs, envMap).right
+      _ <- canceled.right
+      err <- sessionStartup(isabelle, isabellePath, sessionName, envMap).left
     } yield (err)
     
     launchErr.left foreach reportLaunchError
@@ -161,7 +192,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 
   private def selectedSession(configuration: ILaunchConfiguration,
                               isabellePath: String,
-                              moreSessionDirs: Seq[IPath]): Either[IStatus, String] = {
+                              moreSessionDirs: Seq[IPath],
+                              envMap: Map[String, String]): Either[IStatus, String] = {
     
     val sessionName = configValue(configuration, IsabelleLaunchConstants.ATTR_SESSION, "")
 
@@ -169,7 +201,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       abort("Isabelle logic not specified")
     } else {
 
-      val sessions = availableSessions(isabellePath, moreSessionDirs).right
+      val sessions = availableSessions(isabellePath, moreSessionDirs, envMap).right
 
       sessions flatMap (ss => if (!ss.contains(sessionName)) {
         abort("Invalid Isabelle session name specified")
@@ -178,6 +210,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       })
     }
   }
+
 
   private def reportLaunchError(errorStatus: IStatus) {
     // nothing to report if error status is ok, the request is simply canceled
