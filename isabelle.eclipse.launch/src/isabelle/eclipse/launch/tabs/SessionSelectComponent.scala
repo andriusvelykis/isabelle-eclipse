@@ -223,8 +223,6 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
   
   
   override def performApply(configuration: ILaunchConfigurationWorkingCopy) {
-    // FIXME this gets called after initializeFrom, but before the reload job
-    // finishes, resulting in empty value being set
     setConfigValue(configuration, attributeName, selectedSession)
   }
 
