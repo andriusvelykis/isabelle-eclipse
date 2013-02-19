@@ -31,7 +31,6 @@ object IsabelleBuild {
     // check if already initialised, then do not reinit, since it can be an expensive operation
     if (currentIsabelleInit != newInit) {
       // different init info - force Isabelle system reinitialisation
-      currentIsabelleInit = newInit
       
       // ensure that Isabelle is not running, since this may mess everything up
       if (IsabelleCorePlugin.getIsabelle.isRunning) {
@@ -39,7 +38,12 @@ object IsabelleBuild {
             "Isabelle is running, cannot reinitialise!", null)))
       } else {
         // wrap into Try, since exception can be thrown if the path is wrong, etc
-        Try(Isabelle_System.init(isabellePath, envMap, true))        
+        val initResult = Try(Isabelle_System.init(isabellePath, envMap, true))
+        
+        // if success, mark as current init
+        initResult foreach { _ => currentIsabelleInit = newInit }
+        
+        initResult
       }
       
     } else {
