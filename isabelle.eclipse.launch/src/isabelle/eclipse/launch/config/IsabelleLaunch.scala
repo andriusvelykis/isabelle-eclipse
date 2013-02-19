@@ -18,6 +18,7 @@ import isabelle.eclipse.core.IsabelleCorePlugin
 import isabelle.eclipse.core.app.{Isabelle, IsabelleBuild}
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
 import isabelle.eclipse.launch.config.IsabelleLaunch._
+import isabelle.Session
 
 
 /**
@@ -145,8 +146,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       val session = app.start(isabellePath, sessionName)
   
       // the session is started asynchronously, so we need to listen for it to finish.
-      val phase = PhaseTracker.waitForPhaseResult(session)
-      if (PhaseTracker.isFailedPhase(phase)) {
+      val phase = PhaseTracker.waitForPhaseResult(session, Set(Session.Failed, Session.Ready))
+      if (phase == Session.Failed) {
         val syslog = session.current_syslog()
         abort("Isabelle failed to initialise the session.", Some(syslog))
       } else {
