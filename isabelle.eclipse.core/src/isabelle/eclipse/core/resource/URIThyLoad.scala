@@ -2,6 +2,7 @@ package isabelle.eclipse.core.resource
 
 import java.net.{URI, URISyntaxException}
 
+import scala.language.implicitConversions
 import scala.util.{Failure, Success, Try}
 
 import org.eclipse.core.filebuffers.FileBuffers
