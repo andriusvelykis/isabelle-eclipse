@@ -19,6 +19,8 @@ object IsabelleBuild {
 
   private var currentIsabelleInit: Option[IsabelleInitInfo] = None
   
+  def isInit = currentIsabelleInit.isDefined
+  
   /**
    * Initialises Isabelle system at the given path.
    * 
@@ -96,5 +98,13 @@ object IsabelleBuild {
   def isSessionDir(path: IPath): Boolean = 
     path.append("ROOT").toFile.isFile || path.append("ROOTS").toFile.isFile
   
+  
+  def sessionContent(moreSessionDirs: Seq[IPath],
+      sessionName: String,
+      inlinedFiles: Boolean): Try[Build.Session_Content] = {
+    
+    val dirs = moreSessionDirs map isaPath
+    Try(Build.session_content(inlinedFiles, dirs.toList, sessionName).check_errors)
+  }
   
 }

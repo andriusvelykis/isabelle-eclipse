@@ -142,9 +142,20 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
                        envMap: Map[String, String]): Either[IStatus, Unit] = {
       
       monitor.beginTask("Launching " + configuration.getName() + "...", IProgressMonitor.UNKNOWN)
-      
-      val session = app.start(isabellePath, sessionName)
-  
+
+      val sessionTry = app.start(isabellePath, sessionName)
+
+      sessionTry match {
+
+        case Failure(ex) =>
+          abort("Isabelle initialisation failed: " + ex.getMessage, exception = Some(ex))
+
+        case Success(session) => waitForSessionStartup(session)
+      }
+    }
+    
+    def waitForSessionStartup(session: Session): Either[IStatus, Unit] = {
+
       // the session is started asynchronously, so we need to listen for it to finish.
       val phase = PhaseTracker.waitForPhaseResult(session, Set(Session.Failed, Session.Ready))
       if (phase == Session.Failed) {
