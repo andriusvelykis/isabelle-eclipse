@@ -51,6 +51,9 @@ object DocumentModel {
       rule == serialSubmitRule
   }
   
+  // TODO add as a configurable option
+  val flushDelay = 300
+  
 }
 
 class DocumentModel private (val session: Session, val document: IDocument, val name: Document.Node.Name) {
@@ -168,7 +171,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
     }
 
     def flush(delay: Long = 0) = flushJob.run(delay)
-    def flushDelayed() = flush(session.input_delay.ms)
+    def flushDelayed() = flush(DocumentModel.flushDelay)
 
     def +=(edit: Text.Edit) {
       
