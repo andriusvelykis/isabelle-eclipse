@@ -1,31 +1,22 @@
 package isabelle.eclipse.ui.editors
 
-import java.net.URI
-import java.net.URISyntaxException
+import java.net.{URI, URISyntaxException}
 
 import scala.actors.Actor._
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.eclipse.core.filesystem.EFS
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.jface.dialogs.MessageDialog
-import org.eclipse.jface.resource.JFaceResources
-import org.eclipse.jface.resource.LocalResourceManager
-import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.IRegion
-import org.eclipse.jface.text.Region
+import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
+import org.eclipse.jface.text.{IDocument, IRegion, Region}
 import org.eclipse.swt.widgets.Composite
-import org.eclipse.ui.IEditorInput
-import org.eclipse.ui.IEditorSite
-import org.eclipse.ui.PartInitException
+import org.eclipse.ui.{IEditorInput, IEditorSite, PartInitException}
 import org.eclipse.ui.contexts.IContextService
 import org.eclipse.ui.editors.text.TextEditor
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 
-import isabelle.Command
-import isabelle.Document
-import isabelle.Session
-import isabelle.Thy_Header
+import isabelle.{Command, Document, Session, Thy_Header, Thy_Info}
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
@@ -36,6 +27,7 @@ import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
 import isabelle.eclipse.ui.views.TheoryOutlinePage
+
 
 /** The editor for Isabelle theory files.
   * 
@@ -349,15 +341,16 @@ class TheoryEditor extends TextEditor {
 
     private def pendingDependencies(): List[Document.Node.Name] = {
 
-      val thyInfo = IsabelleCore.isabelle.thyInfo
+      val thyInfo = new Thy_Info(isabelleModel.session.thy_load)
 
       val currentName = isabelleModel.name
 
       // get the dependencies for this name and filter the duplicates as well as this editor
-      val dependencyNodes = thyInfo.dependencies(List(currentName)).map(_._1).distinct.filter(_ != currentName)
-
+      val dependencies = thyInfo.dependencies(true, List(currentName)).deps
+      val dependencyNodes = dependencies.map(_.name).distinct.filter(_ != currentName)
+      
       // get document models for each open editor and resolve their names
-      val loadedNodes = EditorUtil.getOpenEditors.map(
+      val loadedNodes = EditorUtil.getOpenEditors.asScala.map(
         editor => adapt(editor.getAdapter _)(classOf[DocumentModel])).flatten.map(_.name).toSet
 
       dependencyNodes.filterNot(loadedNodes.contains)
