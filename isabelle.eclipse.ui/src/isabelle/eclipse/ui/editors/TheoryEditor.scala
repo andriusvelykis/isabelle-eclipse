@@ -1,7 +1,6 @@
 package isabelle.eclipse.ui.editors
 
-import java.net.URI
-import java.net.URISyntaxException
+import java.net.{URI, URISyntaxException}
 
 import scala.actors.Actor._
 import scala.collection.JavaConversions._
@@ -9,24 +8,15 @@ import scala.collection.JavaConversions._
 import org.eclipse.core.filesystem.EFS
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.jface.dialogs.MessageDialog
-import org.eclipse.jface.resource.JFaceResources
-import org.eclipse.jface.resource.LocalResourceManager
-import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.IRegion
-import org.eclipse.jface.text.Region
+import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
+import org.eclipse.jface.text.{IDocument, IRegion, Region}
 import org.eclipse.swt.widgets.Composite
-import org.eclipse.ui.IEditorInput
-import org.eclipse.ui.IEditorSite
-import org.eclipse.ui.PartInitException
+import org.eclipse.ui.{IEditorInput, IEditorSite, PartInitException}
 import org.eclipse.ui.contexts.IContextService
 import org.eclipse.ui.editors.text.TextEditor
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 
-import isabelle.Command
-import isabelle.Document
-import isabelle.Session
-import isabelle.Thy_Header
-import isabelle.Thy_Info
+import isabelle.{Command, Document, Session, Thy_Header, Thy_Info}
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
