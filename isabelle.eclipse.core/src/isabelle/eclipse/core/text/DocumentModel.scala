@@ -18,6 +18,7 @@ import isabelle.Session
 import isabelle.Text
 import isabelle.Thy_Header
 import isabelle.eclipse.core.IsabelleCore
+import isabelle.eclipse.core.util.ConcurrentUtil.FunReadWriteLock
 import isabelle.eclipse.core.util.PostponeJob
 import org.eclipse.core.runtime.jobs.ISchedulingRule
 
@@ -123,7 +124,6 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
     private var lastPerspective: Text.Perspective = Text.Perspective.empty
 
     // functional lock based on Java read/write lock
-    import isabelle.eclipse.core.util.ConcurrentUtil.funLock
     private val lock = new ReentrantReadWriteLock()
     
     
