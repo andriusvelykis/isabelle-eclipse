@@ -137,19 +137,37 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
     /**
      * Launches Isabelle with the given configuration and waits for it to initialise
      */
-    def sessionBuild(isabellePath: String,
+    def sessionBuild(configuration: ILaunchConfiguration,
+                     isabellePath: String,
                      moreSessionDirs: Seq[IPath],
                      sessionName: String,
                      envMap: Map[String, String]): Either[IStatus, Unit] = {
 
-      monitor.beginTask("Launching " + configuration.getName() + "...", IProgressMonitor.UNKNOWN)
-      
-      val status = IsabelleBuildJob.syncExec(isabellePath, moreSessionDirs, sessionName, envMap)
-      
-      if (status.isOK) {
+      monitor.worked(3)
+
+      val runBuild = configValue(configuration, IsabelleLaunchConstants.ATTR_BUILD_RUN, true)
+
+      if (!runBuild) {
+        // skip build - return ok result
         result()
       } else {
-        Left(status)
+
+        monitor.subTask("Building Isabelle/" + sessionName)
+        
+        // run build: get other configuration options and then launch
+        val buildToSystem = configValue(configuration,
+          IsabelleLaunchConstants.ATTR_BUILD_TO_SYSTEM, true)
+
+        val status = IsabelleBuildJob.syncExec(
+          isabellePath, moreSessionDirs, sessionName, envMap,
+          buildToSystem)
+
+        if (status.isOK) {
+          result()
+        } else {
+          Left(status)
+        }
+
       }
     }
     
@@ -160,6 +178,9 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
                        isabellePath: String,
                        sessionName: String,
                        envMap: Map[String, String]): Either[IStatus, Unit] = {
+      
+      monitor.worked(3)
+      monitor.subTask("Starting Isabelle session")
       
       val sessionTry = app.start(isabellePath, sessionName)
 
@@ -176,6 +197,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
 
       // the session is started asynchronously, so we need to listen for it to finish.
       val phase = PhaseTracker.waitForPhaseResult(session, Set(Session.Failed, Session.Ready))
+      monitor.worked(3)
       if (phase == Session.Failed) {
         val syslog = session.current_syslog()
         abort("Isabelle failed to initialise the session.", Some(syslog))
@@ -184,6 +206,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
         result()
       }
     }
+    
+    monitor.subTask("Loading Isabelle launch configuration")
     
     // use Either to achieve fail-fast with error message
     val launchErr = for {
@@ -198,7 +222,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       _ <- canceled.right
       sessionName <- selectedSession(configuration, isabellePath, sessionDirs, envMap).right
       _ <- canceled.right
-      _ <- sessionBuild(isabellePath, sessionDirs, sessionName, envMap).right
+      _ <- sessionBuild(configuration, isabellePath, sessionDirs, sessionName, envMap).right
       _ <- canceled.right
       err <- sessionStartup(isabelle, isabellePath, sessionName, envMap).left
     } yield (err)

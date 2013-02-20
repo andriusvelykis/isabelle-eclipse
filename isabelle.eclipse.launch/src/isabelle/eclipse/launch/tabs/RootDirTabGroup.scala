@@ -34,6 +34,7 @@ class RootDirTabGroup extends AbstractLaunchConfigurationTabGroup {
       new IsabelleMainTab(List(dirSelect, sessionSelect)),
       new SessionDirsTab(List(sessionDirs)),
       envTab,
+      new IsabelleBuildTab,
       new CommonTab)
 
     setTabs(tabs)

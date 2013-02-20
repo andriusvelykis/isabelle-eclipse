@@ -36,6 +36,7 @@ class AppBundleTabGroup extends AbstractLaunchConfigurationTabGroup {
       new IsabelleMainTab(List(appBundleSelect, sessionSelect)),
       new SessionDirsTab(List(sessionDirs)),
       envTab,
+      new IsabelleBuildTab,
       new CommonTab)
 
     setTabs(tabs)

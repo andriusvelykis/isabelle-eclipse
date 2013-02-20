@@ -32,11 +32,15 @@ object IsabelleBuildJob {
   def syncExec(isabellePath: String,
                moreSessionDirs: Seq[IPath],
                sessionName: String,
-               envMap: Map[String, String]): IStatus = {
+               envMap: Map[String, String],
+               buildToSystem: Boolean = true): IStatus = {
 
     val buildPromise = Promise[IStatus]()
-    
-    val job = new IsabelleBuildJob(isabellePath, moreSessionDirs, sessionName, envMap) {
+
+    val job = new IsabelleBuildJob(
+      isabellePath, moreSessionDirs, sessionName, envMap,
+      buildToSystem) {
+      
       override protected def run(monitor: IProgressMonitor): IStatus = {
         val result = super.run(monitor)
         buildPromise.success(result)
@@ -63,17 +67,11 @@ object IsabelleBuildJob {
  * 
  * @author Andrius Velykis
  */
-
-
-/**
- * A job for building Isabelle sessions.
- *
- * @author Andrius Velykis
- */
 class IsabelleBuildJob(isabellePath: String,
                        moreSessionDirs: Seq[IPath],
                        sessionName: String,
-                       envMap: Map[String, String])
+                       envMap: Map[String, String],
+                       buildToSystem: Boolean = true)
     extends Job("Building Isabelle/" + sessionName) {
   
 //  setUser(true)
@@ -136,8 +134,9 @@ class IsabelleBuildJob(isabellePath: String,
         buildProgress,
         options,
         build_heap = true,
+        verbose = true,
         more_dirs = dirs.toList,
-        system_mode = true,
+        system_mode = buildToSystem,
         sessions = List(sessionName)))
     }
 
