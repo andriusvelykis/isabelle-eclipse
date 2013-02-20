@@ -26,7 +26,7 @@ import isabelle.Command
 import isabelle.Document
 import isabelle.Session
 import isabelle.Thy_Header
-import isabelle.eclipse.core.IsabelleCorePlugin
+import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
 import isabelle.eclipse.core.text.DocumentModel
@@ -111,7 +111,7 @@ class TheoryEditor extends TextEditor {
 
     if (init) {
       // connect & init state with the current session and the new document
-      IsabelleCorePlugin.getIsabelle.session.foreach(initState(_, input))
+      IsabelleCore.isabelle.session.foreach(initState(_, input))
     }
   }
 
@@ -119,7 +119,7 @@ class TheoryEditor extends TextEditor {
     super.createPartControl(parent)
 
     // add listener to the isabelle app to react to session init
-    val isabelle = IsabelleCorePlugin.getIsabelle
+    val isabelle = IsabelleCore.isabelle
     isabelle.systemEvents += systemListener
 
     // init state if session is already available
@@ -177,7 +177,7 @@ class TheoryEditor extends TextEditor {
 
   override def dispose() {
 
-    IsabelleCorePlugin.getIsabelle.systemEvents -= systemListener
+    IsabelleCore.isabelle.systemEvents -= systemListener
 
     // TODO review what happens if a second editor is opened for the same input
     disposeState()
@@ -327,7 +327,7 @@ class TheoryEditor extends TextEditor {
           } catch {
             case e: CoreException => {
               // cannot load parent - skip
-              IsabelleCorePlugin.log(e)
+              IsabelleUIPlugin.log(e.getMessage, e)
               None
             }
           }
@@ -349,7 +349,7 @@ class TheoryEditor extends TextEditor {
 
     private def pendingDependencies(): List[Document.Node.Name] = {
 
-      val thyInfo = IsabelleCorePlugin.getIsabelle.thyInfo
+      val thyInfo = IsabelleCore.isabelle.thyInfo
 
       val currentName = isabelleModel.name
 

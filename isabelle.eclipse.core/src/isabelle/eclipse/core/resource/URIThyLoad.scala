@@ -14,7 +14,7 @@ import org.eclipse.emf.common.CommonPlugin
 import org.eclipse.emf.common.util.{URI => EmfURI}
 
 import isabelle.{Document, Isabelle_System, Outer_Syntax, Path, Symbol, Thy_Header, Thy_Load}
-import isabelle.eclipse.core.IsabelleCorePlugin
+import isabelle.eclipse.core.internal.IsabelleCorePlugin.{error, log}
 
 
 /** A theory loader (and a companion object) that uses URIs to enable file-system operations. 
@@ -82,7 +82,7 @@ object URIThyLoad {
         base.resolve(sourceUri);
       } catch {
         case e: URISyntaxException => {
-          IsabelleCorePlugin.log(e);
+          log(error(Some(e)));
           // at the worst case, just append the path (expecting a directory here)
           erun.URIUtil.append(base, pathStr);
         }
@@ -185,7 +185,7 @@ class URIThyLoad(loaded_theories: Set[String] = Set.empty, base_syntax: Outer_Sy
       }
       
       case Failure(e) => {
-        IsabelleCorePlugin.log(e)
+        log(error(Some(e)))
         // in case of failure, perform default loading
         super.with_thy_text(name, f)
       }

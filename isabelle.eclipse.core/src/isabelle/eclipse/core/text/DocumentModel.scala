@@ -17,9 +17,9 @@ import isabelle.Exn
 import isabelle.Session
 import isabelle.Text
 import isabelle.Thy_Header
-import isabelle.eclipse.core.IsabelleCorePlugin
-import isabelle.eclipse.core.IsabelleCorePlugin.ISABELLE_SUBMIT
+import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.util.PostponeJob
+import org.eclipse.core.runtime.jobs.ISchedulingRule
 
 
 /** A model for the Isabelle text document.
@@ -35,6 +35,21 @@ object DocumentModel {
     model.init()
     model
   }
+
+  /**
+   * A rule to use in Job framework that ensures serial execution of jobs.
+   * Used for submitting content to the Isabelle prover backend.
+   */
+  val serialSubmitRule: ISchedulingRule = new ISchedulingRule {
+
+    override def isConflicting(rule: ISchedulingRule): Boolean =
+      rule == serialSubmitRule
+
+    // allow containment, e.g. can start another job with the rule from within a job
+    override def contains(rule: ISchedulingRule): Boolean =
+      rule == serialSubmitRule
+  }
+  
 }
 
 class DocumentModel private (val session: Session, val document: IDocument, val name: Document.Node.Name) {
@@ -45,7 +60,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
   private var pendingPerspective = false
 
   private def parseNodeHeader(): Document.Node_Header = Exn.capture {
-    IsabelleCorePlugin.getIsabelle.thyLoad.check_header(name, Thy_Header.read(document.get))
+    IsabelleCore.isabelle.thyLoad.check_header(name, Thy_Header.read(document.get))
   }
 
   /**
@@ -115,7 +130,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
     /** a job to perform edits in a separate (and delayed) thread */
     private val flushJob = new PostponeJob("Sending Changes to Prover", doFlush) {
       // set the submit rule
-      override def config(job: Job) = job.setRule(ISABELLE_SUBMIT)
+      override def config(job: Job) = job.setRule(DocumentModel.serialSubmitRule)
     }
     
     
@@ -241,9 +256,10 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
 
     val jobs = Job.getJobManager
 
-    jobs.beginRule(ISABELLE_SUBMIT, monitor)
+    val submitRule = DocumentModel.serialSubmitRule
+    jobs.beginRule(submitRule, monitor)
     f
-    jobs.endRule(ISABELLE_SUBMIT)
+    jobs.endRule(submitRule)
   }
   
 }

@@ -1,7 +1,9 @@
 package isabelle.eclipse.core.util
 
-import isabelle.eclipse.core.IsabelleCorePlugin
 import scala.actors.Actor
+
+import isabelle.eclipse.core.internal.IsabelleCorePlugin.{error, log}
+
 
 /** A convenience actor that logs all exceptions to plug-in log.
   *
@@ -21,6 +23,8 @@ object LoggingActor {
 
 trait LoggingActor extends Actor {
 
-  override def exceptionHandler: PartialFunction[Exception, Unit] = { case e: Exception => IsabelleCorePlugin.log(e) }
+  override def exceptionHandler: PartialFunction[Exception, Unit] = { 
+    case e: Exception => log(error(Some(e)))
+  }
   
 }
