@@ -17,7 +17,7 @@ import isabelle.Exn
 import isabelle.Session
 import isabelle.Text
 import isabelle.Thy_Header
-import isabelle.eclipse.core.IsabelleCorePlugin
+import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.util.PostponeJob
 import org.eclipse.core.runtime.jobs.ISchedulingRule
 
@@ -60,7 +60,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
   private var pendingPerspective = false
 
   private def parseNodeHeader(): Document.Node_Header = Exn.capture {
-    IsabelleCorePlugin.getIsabelle.thyLoad.check_header(name, Thy_Header.read(document.get))
+    IsabelleCore.isabelle.thyLoad.check_header(name, Thy_Header.read(document.get))
   }
 
   /**

@@ -4,9 +4,9 @@ import scala.util.{Failure, Success, Try}
 
 import org.eclipse.core.runtime.{CoreException, IPath}
 
-import isabelle.eclipse.core.IsabelleCorePlugin
-
 import isabelle.{Build, Isabelle_System, Options, Path}
+import isabelle.eclipse.core.IsabelleCore
+import isabelle.eclipse.core.internal.IsabelleCorePlugin.error
 
 
 /**
@@ -35,9 +35,8 @@ object IsabelleBuild {
       // different init info - force Isabelle system reinitialisation
       
       // ensure that Isabelle is not running, since this may mess everything up
-      if (IsabelleCorePlugin.getIsabelle.isRunning) {
-        Failure(new CoreException(IsabelleCorePlugin.error(
-            "Isabelle is running, cannot reinitialise!", null)))
+      if (IsabelleCore.isabelle.isRunning) {
+        Failure(new CoreException(error(msg = Some("Isabelle is running, cannot reinitialise!"))))
       } else {
         // wrap into Try, since exception can be thrown if the path is wrong, etc
         val initResult = Try(Isabelle_System.init(isabellePath, envMap, true))

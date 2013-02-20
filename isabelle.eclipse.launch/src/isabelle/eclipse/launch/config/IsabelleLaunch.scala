@@ -15,7 +15,7 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 
 import LaunchConfigUtil.{configValue, pathsConfigValue}
 import isabelle.Session
-import isabelle.eclipse.core.IsabelleCorePlugin
+import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.{Isabelle, IsabelleBuild}
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
 import isabelle.eclipse.launch.build.IsabelleBuildJob
@@ -124,7 +124,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
      * Checks if Isabelle app is not running at the moment and uses it if not
      */
     def isabelleNotRunning(): Either[IStatus, Isabelle] = {
-      val isabelle = IsabelleCorePlugin.getIsabelle
+      val isabelle = IsabelleCore.isabelle
       
       if (isabelle.isRunning) {
         // we only allow one prover instance
