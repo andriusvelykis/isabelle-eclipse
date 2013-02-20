@@ -14,11 +14,12 @@ import org.eclipse.debug.core.{DebugPlugin, ILaunch, ILaunchConfiguration}
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 
 import LaunchConfigUtil.{configValue, pathsConfigValue}
+import isabelle.Session
 import isabelle.eclipse.core.IsabelleCorePlugin
 import isabelle.eclipse.core.app.{Isabelle, IsabelleBuild}
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
+import isabelle.eclipse.launch.build.IsabelleBuildJob
 import isabelle.eclipse.launch.config.IsabelleLaunch._
-import isabelle.Session
 
 
 /**
@@ -117,7 +118,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
      * Checks if cancelled and signals fail (Left), otherwise keeps the value result (Right)
      */
     def canceled: Either[IStatus, Unit] =
-      if (monitor.isCanceled) Left(Status.OK_STATUS) else result()
+      if (monitor.isCanceled) Left(Status.CANCEL_STATUS) else result()
     
     /**
      * Checks if Isabelle app is not running at the moment and uses it if not
@@ -132,6 +133,25 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
         result(isabelle)
       }
     }
+
+    /**
+     * Launches Isabelle with the given configuration and waits for it to initialise
+     */
+    def sessionBuild(isabellePath: String,
+                     moreSessionDirs: Seq[IPath],
+                     sessionName: String,
+                     envMap: Map[String, String]): Either[IStatus, Unit] = {
+
+      monitor.beginTask("Launching " + configuration.getName() + "...", IProgressMonitor.UNKNOWN)
+      
+      val status = IsabelleBuildJob.syncExec(isabellePath, moreSessionDirs, sessionName, envMap)
+      
+      if (status.isOK) {
+        result()
+      } else {
+        Left(status)
+      }
+    }
     
     /**
      * Launches Isabelle with the given configuration and waits for it to initialise
@@ -141,8 +161,6 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
                        sessionName: String,
                        envMap: Map[String, String]): Either[IStatus, Unit] = {
       
-      monitor.beginTask("Launching " + configuration.getName() + "...", IProgressMonitor.UNKNOWN)
-
       val sessionTry = app.start(isabellePath, sessionName)
 
       sessionTry match {
@@ -179,6 +197,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       envMap <- environmentMap(configuration).right
       _ <- canceled.right
       sessionName <- selectedSession(configuration, isabellePath, sessionDirs, envMap).right
+      _ <- canceled.right
+      _ <- sessionBuild(isabellePath, sessionDirs, sessionName, envMap).right
       _ <- canceled.right
       err <- sessionStartup(isabelle, isabellePath, sessionName, envMap).left
     } yield (err)
