@@ -19,6 +19,8 @@ object IsabelleBuild {
 
   private var currentIsabelleInit: Option[IsabelleInitInfo] = None
   
+  def isInit = currentIsabelleInit.isDefined
+  
   /**
    * Initialises Isabelle system at the given path.
    * 
@@ -31,7 +33,6 @@ object IsabelleBuild {
     // check if already initialised, then do not reinit, since it can be an expensive operation
     if (currentIsabelleInit != newInit) {
       // different init info - force Isabelle system reinitialisation
-      currentIsabelleInit = newInit
       
       // ensure that Isabelle is not running, since this may mess everything up
       if (IsabelleCorePlugin.getIsabelle.isRunning) {
@@ -39,7 +40,12 @@ object IsabelleBuild {
             "Isabelle is running, cannot reinitialise!", null)))
       } else {
         // wrap into Try, since exception can be thrown if the path is wrong, etc
-        Try(Isabelle_System.init(isabellePath, envMap, true))        
+        val initResult = Try(Isabelle_System.init(isabellePath, envMap, true))
+        
+        // if success, mark as current init
+        initResult foreach { _ => currentIsabelleInit = newInit }
+        
+        initResult
       }
       
     } else {
@@ -72,7 +78,7 @@ object IsabelleBuild {
   private def availableSessions(moreSessionDirs: Seq[IPath],
                                 options: Options): Try[List[String]] =
   {
-    val dirs = moreSessionDirs.map(path => (false, isaPath(path)))
+    val dirs = resolvePaths(moreSessionDirs)
     val session_tree = Try(Build.find_sessions(options, dirs.toList))
   
     // if session find was without issues, order them
@@ -84,6 +90,9 @@ object IsabelleBuild {
   
   }
   
+  def resolvePaths(paths: Seq[IPath]): Seq[(Boolean, Path)] =
+    paths.map(path => (false, isaPath(path)))
+  
   private def isaPath(path: IPath): Path = Path.explode(path.toOSString)
   
   /**
@@ -92,5 +101,13 @@ object IsabelleBuild {
   def isSessionDir(path: IPath): Boolean = 
     path.append("ROOT").toFile.isFile || path.append("ROOTS").toFile.isFile
   
+  
+  def sessionContent(moreSessionDirs: Seq[IPath],
+      sessionName: String,
+      inlinedFiles: Boolean): Try[Build.Session_Content] = {
+    
+    val dirs = moreSessionDirs map isaPath
+    Try(Build.session_content(inlinedFiles, dirs.toList, sessionName).check_errors)
+  }
   
 }

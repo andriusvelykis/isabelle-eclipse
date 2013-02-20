@@ -27,6 +27,19 @@ object IsabelleLaunchConstants {
    */
   def ATTR_SESSION_DIRS = pluginId + ".ATTR_SESSION_DIRS"
 
+
+  /**
+   * Boolean attribute identifying whether to build Isabelle session before launch.
+   */
+  def ATTR_BUILD_RUN = pluginId + ".ATTR_BUILD_RUN"
+  
+  
+  /**
+   * Boolean attribute identifying where to place built Isabelle heap images
+   * (session-true, home folder-false)
+   */
+  def ATTR_BUILD_TO_SYSTEM = pluginId + ".ATTR_BUILD_TO_SYSTEM"
+
   
   /**
    * A property to save dialog settings for last external directory

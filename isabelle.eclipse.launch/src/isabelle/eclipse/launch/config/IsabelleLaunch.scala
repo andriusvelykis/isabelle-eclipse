@@ -14,9 +14,11 @@ import org.eclipse.debug.core.{DebugPlugin, ILaunch, ILaunchConfiguration}
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 
 import LaunchConfigUtil.{configValue, pathsConfigValue}
+import isabelle.Session
 import isabelle.eclipse.core.IsabelleCorePlugin
 import isabelle.eclipse.core.app.{Isabelle, IsabelleBuild}
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
+import isabelle.eclipse.launch.build.IsabelleBuildJob
 import isabelle.eclipse.launch.config.IsabelleLaunch._
 
 
@@ -116,7 +118,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
      * Checks if cancelled and signals fail (Left), otherwise keeps the value result (Right)
      */
     def canceled: Either[IStatus, Unit] =
-      if (monitor.isCanceled) Left(Status.OK_STATUS) else result()
+      if (monitor.isCanceled) Left(Status.CANCEL_STATUS) else result()
     
     /**
      * Checks if Isabelle app is not running at the moment and uses it if not
@@ -131,6 +133,43 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
         result(isabelle)
       }
     }
+
+    /**
+     * Launches Isabelle with the given configuration and waits for it to initialise
+     */
+    def sessionBuild(configuration: ILaunchConfiguration,
+                     isabellePath: String,
+                     moreSessionDirs: Seq[IPath],
+                     sessionName: String,
+                     envMap: Map[String, String]): Either[IStatus, Unit] = {
+
+      monitor.worked(3)
+
+      val runBuild = configValue(configuration, IsabelleLaunchConstants.ATTR_BUILD_RUN, true)
+
+      if (!runBuild) {
+        // skip build - return ok result
+        result()
+      } else {
+
+        monitor.subTask("Building Isabelle/" + sessionName)
+        
+        // run build: get other configuration options and then launch
+        val buildToSystem = configValue(configuration,
+          IsabelleLaunchConstants.ATTR_BUILD_TO_SYSTEM, true)
+
+        val status = IsabelleBuildJob.syncExec(
+          isabellePath, moreSessionDirs, sessionName, envMap,
+          buildToSystem)
+
+        if (status.isOK) {
+          result()
+        } else {
+          Left(status)
+        }
+
+      }
+    }
     
     /**
      * Launches Isabelle with the given configuration and waits for it to initialise
@@ -140,13 +179,26 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
                        sessionName: String,
                        envMap: Map[String, String]): Either[IStatus, Unit] = {
       
-      monitor.beginTask("Launching " + configuration.getName() + "...", IProgressMonitor.UNKNOWN)
+      monitor.worked(3)
+      monitor.subTask("Starting Isabelle session")
       
-      val session = app.start(isabellePath, sessionName)
-  
+      val sessionTry = app.start(isabellePath, sessionName)
+
+      sessionTry match {
+
+        case Failure(ex) =>
+          abort("Isabelle initialisation failed: " + ex.getMessage, exception = Some(ex))
+
+        case Success(session) => waitForSessionStartup(session)
+      }
+    }
+    
+    def waitForSessionStartup(session: Session): Either[IStatus, Unit] = {
+
       // the session is started asynchronously, so we need to listen for it to finish.
-      val phase = PhaseTracker.waitForPhaseResult(session)
-      if (PhaseTracker.isFailedPhase(phase)) {
+      val phase = PhaseTracker.waitForPhaseResult(session, Set(Session.Failed, Session.Ready))
+      monitor.worked(3)
+      if (phase == Session.Failed) {
         val syslog = session.current_syslog()
         abort("Isabelle failed to initialise the session.", Some(syslog))
       } else {
@@ -154,6 +206,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
         result()
       }
     }
+    
+    monitor.subTask("Loading Isabelle launch configuration")
     
     // use Either to achieve fail-fast with error message
     val launchErr = for {
@@ -167,6 +221,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       envMap <- environmentMap(configuration).right
       _ <- canceled.right
       sessionName <- selectedSession(configuration, isabellePath, sessionDirs, envMap).right
+      _ <- canceled.right
+      _ <- sessionBuild(configuration, isabellePath, sessionDirs, sessionName, envMap).right
       _ <- canceled.right
       err <- sessionStartup(isabelle, isabellePath, sessionName, envMap).left
     } yield (err)

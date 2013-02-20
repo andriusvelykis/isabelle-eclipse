@@ -133,15 +133,21 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
   private def reloadAvailableSessions(configuration: Option[ILaunchConfiguration] = None) {
     
     val isaPath = isaPathObservable.value
-    val moreDirs = sessionDirsObservable.value map resolvePath
-    // allow only valid session dirs to avoid crashing the session lookup
-    val moreDirsSafe = moreDirs filter IsabelleBuild.isSessionDir
     
     // if there is a config available, read environment map from it, otherwise ask
     // the observable (the observable may be uninitialised)
     val configEnvMap = configuration.map(conf =>
       IsabelleLaunch.environmentMap(conf).right.toOption).flatten
     val envMap = configEnvMap getOrElse envMapObservable.value
+    
+    // same for more dirs (observable may be uninitialised)
+    val configMoreDirs = configuration.map(conf =>
+      configValue(conf, IsabelleLaunchConstants.ATTR_SESSION_DIRS, List[String]()))
+    val moreDirs = configMoreDirs getOrElse sessionDirsObservable.value
+    val resolvedDirs = moreDirs map resolvePath
+    // allow only valid session dirs to avoid crashing the session lookup
+    val moreDirsSafe = resolvedDirs filter IsabelleBuild.isSessionDir
+    
     
     isaPath match {
       case None => {

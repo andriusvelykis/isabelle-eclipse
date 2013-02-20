@@ -13,6 +13,10 @@ trait LaunchComponentContainer {
 
   def createPushButton(parent: Composite, label: String): Button
   
+  def createRadioButton(parent: Composite, label: String): Button
+  
+  def createCheckButton(parent: Composite, label: String): Button
+  
   def update()
 
 }
