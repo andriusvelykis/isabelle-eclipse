@@ -46,6 +46,12 @@ abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
   override def createPushButton(parent: Composite, label: String): Button =
     createPushButton(parent, label, null)
     
+  override def createRadioButton(parent: Composite, label: String): Button =
+    super.createRadioButton(parent, label)
+    
+  override def createCheckButton(parent: Composite, label: String): Button =
+    super.createCheckButton(parent, label)
+    
   override def update() = updateLaunchConfigurationDialog()
 
   
