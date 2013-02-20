@@ -5,7 +5,6 @@ import isabelle.eclipse.core.app.Isabelle;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.osgi.framework.BundleContext;
 
 public class IsabelleCorePlugin extends Plugin {
@@ -17,20 +16,6 @@ public class IsabelleCorePlugin extends Plugin {
 	private static IsabelleCorePlugin plugin;
 	
 	private Isabelle isabelle;
-	
-	public static final ISchedulingRule ISABELLE_SUBMIT = new ISchedulingRule() {
-		
-		@Override
-		public boolean isConflicting(ISchedulingRule rule) {
-			return rule == ISABELLE_SUBMIT;
-		}
-		
-		@Override
-		public boolean contains(ISchedulingRule rule) {
-			// allow containment, e.g. can start another job with the rule from within a job
-			return rule == ISABELLE_SUBMIT;
-		}
-	};
 	
 	/**
 	 * The constructor
