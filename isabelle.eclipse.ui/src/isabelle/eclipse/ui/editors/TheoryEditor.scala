@@ -3,7 +3,7 @@ package isabelle.eclipse.ui.editors
 import java.net.{URI, URISyntaxException}
 
 import scala.actors.Actor._
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.eclipse.core.filesystem.EFS
 import org.eclipse.core.runtime.CoreException
@@ -350,7 +350,7 @@ class TheoryEditor extends TextEditor {
       val dependencyNodes = dependencies.map(_.name).distinct.filter(_ != currentName)
       
       // get document models for each open editor and resolve their names
-      val loadedNodes = EditorUtil.getOpenEditors.map(
+      val loadedNodes = EditorUtil.getOpenEditors.asScala.map(
         editor => adapt(editor.getAdapter _)(classOf[DocumentModel])).flatten.map(_.name).toSet
 
       dependencyNodes.filterNot(loadedNodes.contains)
