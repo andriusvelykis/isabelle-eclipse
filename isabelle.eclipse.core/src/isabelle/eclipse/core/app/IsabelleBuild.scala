@@ -78,7 +78,7 @@ object IsabelleBuild {
   private def availableSessions(moreSessionDirs: Seq[IPath],
                                 options: Options): Try[List[String]] =
   {
-    val dirs = moreSessionDirs.map(path => (false, isaPath(path)))
+    val dirs = resolvePaths(moreSessionDirs)
     val session_tree = Try(Build.find_sessions(options, dirs.toList))
   
     // if session find was without issues, order them
@@ -89,6 +89,9 @@ object IsabelleBuild {
     }
   
   }
+  
+  def resolvePaths(paths: Seq[IPath]): Seq[(Boolean, Path)] =
+    paths.map(path => (false, isaPath(path)))
   
   private def isaPath(path: IPath): Path = Path.explode(path.toOSString)
   
