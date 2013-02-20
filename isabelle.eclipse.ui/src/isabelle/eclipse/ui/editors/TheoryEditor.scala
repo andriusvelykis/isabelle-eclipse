@@ -26,6 +26,7 @@ import isabelle.Command
 import isabelle.Document
 import isabelle.Session
 import isabelle.Thy_Header
+import isabelle.Thy_Info
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
@@ -36,6 +37,7 @@ import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
 import isabelle.eclipse.ui.views.TheoryOutlinePage
+
 
 /** The editor for Isabelle theory files.
   * 
@@ -349,13 +351,14 @@ class TheoryEditor extends TextEditor {
 
     private def pendingDependencies(): List[Document.Node.Name] = {
 
-      val thyInfo = IsabelleCore.isabelle.thyInfo
+      val thyInfo = new Thy_Info(isabelleModel.session.thy_load)
 
       val currentName = isabelleModel.name
 
       // get the dependencies for this name and filter the duplicates as well as this editor
-      val dependencyNodes = thyInfo.dependencies(List(currentName)).map(_._1).distinct.filter(_ != currentName)
-
+      val dependencies = thyInfo.dependencies(true, List(currentName)).deps
+      val dependencyNodes = dependencies.map(_.name).distinct.filter(_ != currentName)
+      
       // get document models for each open editor and resolve their names
       val loadedNodes = EditorUtil.getOpenEditors.map(
         editor => adapt(editor.getAdapter _)(classOf[DocumentModel])).flatten.map(_.name).toSet

@@ -29,7 +29,6 @@ class Isabelle {
   // event bus to subscribe to system events, e.g. init/session load
   val systemEvents = new Event_Bus[IsabelleSystemEvent]
   
-  lazy val thyInfo: Thy_Info = new Thy_Info(thyLoad)
   
   /** checks whether the system is initialised (session may not be started yet, but symbols may be available) */
   def isInit = IsabelleBuild.isInit
