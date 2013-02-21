@@ -5,12 +5,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import scala.collection.mutable.ListBuffer
 
 import org.eclipse.core.runtime.{IProgressMonitor, NullProgressMonitor, Status}
-import org.eclipse.core.runtime.jobs.{ISchedulingRule, Job}
+import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.text.{DocumentEvent, IDocument, IDocumentListener}
 
 import isabelle.{Document, Session, Text}
+import isabelle.eclipse.core.util.{PostponeJob, SerialSchedulingRule}
 import isabelle.eclipse.core.util.ConcurrentUtil.FunReadWriteLock
-import isabelle.eclipse.core.util.PostponeJob
 
 
 /** A model for the Isabelle text document.
@@ -31,15 +31,7 @@ object DocumentModel {
    * A rule to use in Job framework that ensures serial execution of jobs.
    * Used for submitting content to the Isabelle prover backend.
    */
-  val serialSubmitRule: ISchedulingRule = new ISchedulingRule {
-
-    override def isConflicting(rule: ISchedulingRule): Boolean =
-      rule == serialSubmitRule
-
-    // allow containment, e.g. can start another job with the rule from within a job
-    override def contains(rule: ISchedulingRule): Boolean =
-      rule == serialSubmitRule
-  }
+  val serialSubmitRule = new SerialSchedulingRule
   
   // TODO add as a configurable option
   val flushDelay = 300
