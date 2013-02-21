@@ -278,6 +278,7 @@ class TheoryEditor extends TextEditor {
     def init() {
       
       isabelleModel.session.commands_changed += sessionActor
+      markers.init()
       
       initPerspective()
 
@@ -285,8 +286,8 @@ class TheoryEditor extends TextEditor {
     }
 
     def dispose() {
-      isabelleModel.session.commands_changed -= sessionActor
       markers.dispose()
+      isabelleModel.session.commands_changed -= sessionActor
       disposePerspective()
     }
 
