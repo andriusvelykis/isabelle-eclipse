@@ -1,15 +1,12 @@
 package isabelle.eclipse.ui.text
 
 import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.rules.IToken
-import org.eclipse.jface.text.rules.Token
+import org.eclipse.jface.text.rules.{IToken, Token}
 
+import isabelle.{Markup, Text, XML}
 import isabelle.Document.Snapshot
-import isabelle.Isabelle_Markup
-import isabelle.Markup
-import isabelle.Text
-import isabelle.XML
 import isabelle.eclipse.ui.editors.TheoryEditor
+import isabelle.eclipse.ui.preferences.IsabelleMarkupToSyntaxClass
 
 
 /** A markup scanner that retrieves markup information from document snapshot. 
@@ -31,11 +28,16 @@ class IsabelleMarkupScanner(val editor: TheoryEditor) extends AbstractTokenStrea
 
       case Some(snapshot) => {
         // create markup stream to get tokens
+        val range = Text.Range(offset, offset + length)
+        val markups = IsabelleMarkupToSyntaxClass.markups
+        
         val markupInfos =
           snapshot.cumulate_markup[Option[IToken]](
-            Text.Range(offset, offset + length), None, None,
+            range, None, Some(markups), _ =>
             {
-              case (_, MarkupName(markup)) => Some(getToken(markup))
+              // need additional check if the markup is valid, otherwise we get clashing markups
+              // for the same range and some colours are not defined
+              case (_, MarkupName(markup)) if (markups.contains(markup)) => Some(getToken(markup))
             })
         
         // map markup infos to TokenInfo stream 
@@ -46,7 +48,7 @@ class IsabelleMarkupScanner(val editor: TheoryEditor) extends AbstractTokenStrea
   private object MarkupName {
     def unapply(info: Any): Option[String] =
       info match {
-        case Text.Info(_, XML.Elem(Isabelle_Markup.Entity(kind, _), _)) => Some(kind)
+//        case Text.Info(_, XML.Elem(Markup.Entity(kind, _), _)) => Some(kind)
         case Text.Info(_, XML.Elem(Markup(m, _), _)) => Some(m)
         case _ => None
       }

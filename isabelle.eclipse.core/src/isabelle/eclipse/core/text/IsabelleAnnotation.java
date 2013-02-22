@@ -7,7 +7,7 @@ package isabelle.eclipse.core.text;
  */
 public enum IsabelleAnnotation {
 	MARKUP_BAD,
-	MARKUP_HILITE,
+	MARKUP_INTENSIFY,
 	MARKUP_TOKEN_RANGE,
 	MESSAGE_ERROR,
 	MESSAGE_LEGACY,

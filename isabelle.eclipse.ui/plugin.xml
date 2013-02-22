@@ -145,21 +145,21 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.ui.annotation.markup.hilite"
-            colorPreferenceKey="markupHiliteColor"
+            annotationType="isabelle.eclipse.ui.annotation.markup.intensify"
+            colorPreferenceKey="markupIntensifyColor"
             colorPreferenceValue="255,235,194"
-            highlightPreferenceKey="markupHiliteHighlighting"
+            highlightPreferenceKey="markupIntensifyHighlighting"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
             label="Isabelle Highlight Markup"
-            overviewRulerPreferenceKey="markupHiliteInOverviewRuler"
+            overviewRulerPreferenceKey="markupIntensifyInOverviewRuler"
             overviewRulerPreferenceValue="true"
             presentationLayer="2"
-            textPreferenceKey="markupHiliteIndication"
+            textPreferenceKey="markupIntensifyIndication"
             textPreferenceValue="false"
-            textStylePreferenceKey="markupHiliteTextStyle"
+            textStylePreferenceKey="markupIntensifyTextStyle"
             textStylePreferenceValue="NONE"
-            verticalRulerPreferenceKey="markupHiliteInVerticalRuler"
+            verticalRulerPreferenceKey="markupIntensifyInVerticalRuler"
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
@@ -282,7 +282,7 @@
             name="isabelle.eclipse.ui.annotation.markup.bad">
       </type>
       <type
-            name="isabelle.eclipse.ui.annotation.markup.hilite">
+            name="isabelle.eclipse.ui.annotation.markup.intensify">
       </type>
       <type
             name="isabelle.eclipse.ui.annotation.markup.token">

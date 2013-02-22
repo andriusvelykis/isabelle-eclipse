@@ -33,7 +33,7 @@ public class IsabelleAnnotationConstants {
 	
 	// TODO foreground colours, Isabelle_Markup.foreground? Or actually syntax colours?
 	private static final String ANNOTATION_BAD = "isabelle.eclipse.ui.annotation.markup.bad";
-	private static final String ANNOTATION_HILITE = "isabelle.eclipse.ui.annotation.markup.hilite";
+	private static final String ANNOTATION_INTENSIFY = "isabelle.eclipse.ui.annotation.markup.intensify";
 	private static final String ANNOTATION_TOKEN = "isabelle.eclipse.ui.annotation.markup.token";
 	
 	private static final String ANNOTATION_OUTDATED = "isabelle.eclipse.ui.annotation.cmd.outdated";
@@ -84,7 +84,7 @@ public class IsabelleAnnotationConstants {
 	private static String getAnnotationKey(IsabelleAnnotation type) {
 		switch (type) {
 		case MARKUP_BAD: return ANNOTATION_BAD;
-		case MARKUP_HILITE: return ANNOTATION_HILITE;
+		case MARKUP_INTENSIFY: return ANNOTATION_INTENSIFY;
 		case MARKUP_TOKEN_RANGE: return ANNOTATION_TOKEN;
 		case MESSAGE_ERROR: return ANNOTATION_ERROR;
 		case MESSAGE_LEGACY: return ANNOTATION_LEGACY;

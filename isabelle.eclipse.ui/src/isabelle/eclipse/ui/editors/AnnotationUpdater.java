@@ -58,10 +58,10 @@ public class AnnotationUpdater {
 	private final IResource markerResource;
 	
 	public AnnotationUpdater(IAnnotationModelExtension baseAnnotationModel, IDocument document,
-			IResource markerResource) {
+			Option<IResource> markerResource) {
 		this.baseAnnotationModel = baseAnnotationModel;
 		this.document = document;
-		this.markerResource = markerResource;
+		this.markerResource = markerResource.isDefined() ? markerResource.get() : null;
 	}
 	
 	/**
