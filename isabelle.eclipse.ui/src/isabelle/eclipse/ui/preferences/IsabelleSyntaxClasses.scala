@@ -47,7 +47,8 @@ object IsabelleSyntaxClasses {
       LITERAL, DELIMITER, TYPE, FREE, SKOLEM, BOUND, VAR, DYN_FACT, ANTIQ, 
       ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT)
 
-  val COLOUR_SUFFIX = ".colour"
+  val COLOR_SUFFIX = ".color"
+  val BACKGROUND_COLOR_SUFFIX = ".bgColor"
   val BOLD_SUFFIX = ".bold"
   val ITALIC_SUFFIX = ".italic"
   val STRIKETHROUGH_SUFFIX = ".strikethrough"

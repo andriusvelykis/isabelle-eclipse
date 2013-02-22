@@ -22,13 +22,16 @@ class ColourPreferenceInitializer extends AbstractPreferenceInitializer {
   
   private def setDefaultsForSyntaxClass(
     syntaxClass: IsabelleSyntaxClass,
-    colour: RGB,
+    foreground: RGB,
+    background: Option[RGB] = None,
     bold: Boolean = false,
     italic: Boolean = false,
     strikethrough: Boolean = false,
     underline: Boolean = false)(implicit prefs: IPreferenceStore) =
     {
-      prefs.setDefault(syntaxClass.colourKey, StringConverter.asString(colour))
+      prefs.setDefault(syntaxClass.foregroundKey, StringConverter.asString(foreground))
+      background foreach (bg =>
+        prefs.setDefault(syntaxClass.backgroundKey, StringConverter.asString(bg)))
       prefs.setDefault(syntaxClass.boldKey, bold)
       prefs.setDefault(syntaxClass.italicKey, italic)
       prefs.setDefault(syntaxClass.strikethroughKey, strikethrough)
