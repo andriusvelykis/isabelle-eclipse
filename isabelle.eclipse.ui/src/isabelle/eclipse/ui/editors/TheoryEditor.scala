@@ -26,7 +26,7 @@ import isabelle.eclipse.core.util.LoggingActor
 import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
-import isabelle.eclipse.ui.views.TheoryOutlinePage
+import isabelle.eclipse.ui.views.outline.TheoryOutlinePage
 
 
 /** The editor for Isabelle theory files.
