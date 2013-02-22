@@ -1,13 +1,13 @@
 package isabelle.eclipse.ui.preferences
 
-import isabelle.eclipse.ui.preferences.IsabelleSyntaxClasses._
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer
-import org.eclipse.swt.graphics.RGB
 import org.eclipse.jface.preference.IPreferenceStore
 import org.eclipse.jface.resource.StringConverter
-import org.eclipse.ui.editors.text.EditorsUI
+import org.eclipse.swt.graphics.RGB
+
 import isabelle.eclipse.ui.IsabelleUIPlugin
-import org.eclipse.swt.graphics.Color
+import isabelle.eclipse.ui.preferences.IsabelleSyntaxClasses._
+
 
 /** Initialises preferences for syntax colours (and styles).
   * The syntax styles are defined in {@link IsabelleSyntaxClasses}.
@@ -49,7 +49,8 @@ class ColourPreferenceInitializer extends AbstractPreferenceInitializer {
     setDefaultsForSyntaxClass(COMMENT, new RGB(204, 0, 0))
     setDefaultsForSyntaxClass(VERBATIM, black)
     setDefaultsForSyntaxClass(STRING, black)
-    setDefaultsForSyntaxClass(KEYWORD, keyword2, bold = true)
+    setDefaultsForSyntaxClass(KEYWORD, keyword1, bold = true)
+    setDefaultsForSyntaxClass(KEYWORD2, keyword2, bold = true)
     setDefaultsForSyntaxClass(OPERATOR, black, bold = true)
     setDefaultsForSyntaxClass(LITERAL, keyword1)
     setDefaultsForSyntaxClass(DELIMITER, black)
@@ -60,14 +61,12 @@ class ColourPreferenceInitializer extends AbstractPreferenceInitializer {
     setDefaultsForSyntaxClass(VAR, new RGB(0, 0, 155))
     setDefaultsForSyntaxClass(INNER_STRING, chocolate)
     setDefaultsForSyntaxClass(INNER_COMMENT, darkRed)
-    setDefaultsForSyntaxClass(INNER_COMMENT, darkRed)
     setDefaultsForSyntaxClass(DYN_FACT, new RGB(123, 164, 40))
     setDefaultsForSyntaxClass(ANTIQ, blue)
     setDefaultsForSyntaxClass(ML_KEYWORD, keyword1, bold = true)
     setDefaultsForSyntaxClass(ML_NUMERAL, red)
     setDefaultsForSyntaxClass(ML_STRING, chocolate)
     setDefaultsForSyntaxClass(ML_COMMENT, darkRed)
-    setDefaultsForSyntaxClass(ML_BAD, new RGB(255, 106, 106))
     
     setDefaultsForSyntaxClass(CMD, keyword1, bold = true)
     setDefaultsForSyntaxClass(CMD_SCRIPT, new RGB(2, 185, 2))

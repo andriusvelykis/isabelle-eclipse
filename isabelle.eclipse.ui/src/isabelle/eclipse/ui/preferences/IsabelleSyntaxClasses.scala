@@ -1,7 +1,8 @@
 package isabelle.eclipse.ui.preferences
 
-import isabelle.eclipse.ui.editors.IsabellePartitions
 import isabelle.Outer_Syntax
+import isabelle.eclipse.ui.editors.IsabellePartitions
+
 
 /** Definitions of Isabelle syntax classes and translations from 
   * Isabelle markup/tokens/etc (objects below).
@@ -19,6 +20,7 @@ object IsabelleSyntaxClasses {
   val STRING = IsabelleSyntaxClass("Strings", "syntax.string")
   val INNER_STRING = IsabelleSyntaxClass("Inner Strings", "syntax.innerString")
   val KEYWORD = IsabelleSyntaxClass("Keywords", "syntax.keyword")
+  val KEYWORD2 = IsabelleSyntaxClass("Keywords 2", "syntax.keyword2")
   val OPERATOR = IsabelleSyntaxClass("Operators", "syntax.op")
   val LITERAL = IsabelleSyntaxClass("Literals", "syntax.literal")
   val DELIMITER = IsabelleSyntaxClass("Delimiters", "syntax.delimiter")
@@ -39,11 +41,11 @@ object IsabelleSyntaxClasses {
   val ML_NUMERAL = IsabelleSyntaxClass("ML Numerals", "syntax.ml.num")
   val ML_STRING = IsabelleSyntaxClass("ML Strings", "syntax.ml.string")
   val ML_COMMENT = IsabelleSyntaxClass("ML Comments", "syntax.ml.comment")
-  val ML_BAD = IsabelleSyntaxClass("ML Malformed Text", "syntax.ml.bad")
   
-  val ALL_SYNTAX_CLASSES = List(DEFAULT, COMMENT, INNER_COMMENT, VERBATIM, STRING, INNER_STRING, KEYWORD,
+  val ALL_SYNTAX_CLASSES = List(DEFAULT, COMMENT, INNER_COMMENT, VERBATIM, STRING, INNER_STRING,
+      KEYWORD, KEYWORD2,
       LITERAL, DELIMITER, TYPE, FREE, SKOLEM, BOUND, VAR, DYN_FACT, ANTIQ, 
-      ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT, ML_BAD)
+      ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT)
 
   val COLOUR_SUFFIX = ".colour"
   val BOLD_SUFFIX = ".bold"
@@ -93,29 +95,36 @@ object IsabelleTokenToSyntaxClass {
 
 object IsabelleMarkupToSyntaxClass {
 
-  import isabelle.Isabelle_Markup._
+  import isabelle.Markup._
 
-  def apply(markupType: String): IsabelleSyntaxClass = markupType match {
-    case STRING | ALTSTRING => IsabelleSyntaxClasses.STRING
-    case VERBATIM => IsabelleSyntaxClasses.VERBATIM
-    case LITERAL => IsabelleSyntaxClasses.LITERAL
-    case DELIMITER => IsabelleSyntaxClasses.DELIMITER
-    case TFREE | TVAR => IsabelleSyntaxClasses.TYPE
-    case FREE => IsabelleSyntaxClasses.FREE
-    case SKOLEM => IsabelleSyntaxClasses.SKOLEM
-    case BOUND => IsabelleSyntaxClasses.BOUND
-    case VAR => IsabelleSyntaxClasses.VAR
-    case INNER_STRING => IsabelleSyntaxClasses.INNER_STRING
-    case INNER_COMMENT => IsabelleSyntaxClasses.INNER_COMMENT
-    case DYNAMIC_FACT => IsabelleSyntaxClasses.DYN_FACT
-    case ANTIQ => IsabelleSyntaxClasses.ANTIQ
-    case ML_KEYWORD => IsabelleSyntaxClasses.ML_KEYWORD
-    case ML_DELIMITER => IsabelleSyntaxClasses.DELIMITER
-    case ML_NUMERAL => IsabelleSyntaxClasses.ML_NUMERAL
-    case ML_CHAR | ML_STRING => IsabelleSyntaxClasses.ML_STRING
-    case ML_COMMENT => IsabelleSyntaxClasses.ML_COMMENT
-    case ML_MALFORMED => IsabelleSyntaxClasses.ML_BAD
-    case _ => IsabelleSyntaxClasses.UNDEFINED
-  }
+  val markupClasses: Map[String, IsabelleSyntaxClass] = Map(
+    KEYWORD1 -> IsabelleSyntaxClasses.KEYWORD,
+    KEYWORD2 -> IsabelleSyntaxClasses.KEYWORD2,
+    STRING -> IsabelleSyntaxClasses.STRING,
+    ALTSTRING -> IsabelleSyntaxClasses.STRING,
+    VERBATIM -> IsabelleSyntaxClasses.VERBATIM,
+    LITERAL -> IsabelleSyntaxClasses.LITERAL,
+    DELIMITER -> IsabelleSyntaxClasses.DELIMITER,
+    TFREE -> IsabelleSyntaxClasses.TYPE,
+    TVAR -> IsabelleSyntaxClasses.TYPE,
+    FREE -> IsabelleSyntaxClasses.FREE,
+    SKOLEM -> IsabelleSyntaxClasses.SKOLEM,
+    BOUND -> IsabelleSyntaxClasses.BOUND,
+    VAR -> IsabelleSyntaxClasses.VAR,
+    INNER_STRING -> IsabelleSyntaxClasses.INNER_STRING,
+    INNER_COMMENT -> IsabelleSyntaxClasses.INNER_COMMENT,
+    DYNAMIC_FACT -> IsabelleSyntaxClasses.DYN_FACT,
+    ANTIQ -> IsabelleSyntaxClasses.ANTIQ,
+    ML_KEYWORD -> IsabelleSyntaxClasses.ML_KEYWORD,
+    ML_DELIMITER -> IsabelleSyntaxClasses.DELIMITER,
+    ML_NUMERAL -> IsabelleSyntaxClasses.ML_NUMERAL,
+    ML_CHAR -> IsabelleSyntaxClasses.ML_STRING,
+    ML_STRING -> IsabelleSyntaxClasses.ML_STRING,
+    ML_COMMENT -> IsabelleSyntaxClasses.ML_COMMENT
+    ).withDefaultValue(IsabelleSyntaxClasses.UNDEFINED)
+  
+  val markups = markupClasses.keySet
+
+  def apply(markupType: String): IsabelleSyntaxClass = markupClasses(markupType)
 }
 
