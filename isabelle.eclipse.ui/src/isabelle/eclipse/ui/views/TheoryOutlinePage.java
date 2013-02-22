@@ -198,7 +198,8 @@ public class TheoryOutlinePage extends ContentOutlinePage {
 
 		@Override
 		public Image getImage(Object element) {
-			return IsabelleImages.getImage(IsabelleImages.IMG_OUTLINE_ITEM);
+		  return null;
+//			return IsabelleImages.getImage(IsabelleImages.IMG_OUTLINE_ITEM);
 		}
 
 		@Override

@@ -365,7 +365,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
   private class ToggleShowTraceAction extends ToggleAction("Show Trace", "Show Proof Trace", propShowTrace, showTrace) {
-    setImageDescriptor(IsabelleImages.getImageDescriptor(IsabelleImages.IMG_SHOW_TRACE))
+    setImageDescriptor(IsabelleImages.SHOW_TRACE)
 //    setDisabledImageDescriptor(null)
 
     override def handleValueChanged(show: Boolean) {
