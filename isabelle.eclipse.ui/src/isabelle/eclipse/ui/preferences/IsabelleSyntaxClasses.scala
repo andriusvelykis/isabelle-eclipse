@@ -74,24 +74,36 @@ object IsabelleTokenToSyntaxClass {
   import isabelle.Token.Kind._
   import isabelle.Keyword._
 
+  val commandClasses: Map[String, IsabelleSyntaxClass] = Map(
+    THY_END -> IsabelleSyntaxClasses.KEYWORD2,
+    THY_SCRIPT -> IsabelleSyntaxClasses.CMD_SCRIPT,
+    PRF_SCRIPT -> IsabelleSyntaxClasses.CMD_SCRIPT,
+    PRF_ASM -> IsabelleSyntaxClasses.CMD_GOAL,
+    PRF_ASM_GOAL -> IsabelleSyntaxClasses.CMD_GOAL
+  ).withDefaultValue(IsabelleSyntaxClasses.CMD)
+
+  val tokenClasses: Map[Value, IsabelleSyntaxClass] = Map(
+    KEYWORD -> IsabelleSyntaxClasses.KEYWORD2,
+//    IDENT -> IsabelleSyntaxClasses.VAR,
+//    LONG_IDENT -> IsabelleSyntaxClasses.VAR,
+//    SYM_IDENT -> IsabelleSyntaxClasses.VAR,
+//    VAR -> IsabelleSyntaxClasses.VAR,
+//    TYPE_IDENT -> IsabelleSyntaxClasses.TYPE,
+//    TYPE_VAR -> IsabelleSyntaxClasses.TYPE,
+    NAT -> IsabelleSyntaxClasses.UNDEFINED,
+    FLOAT -> IsabelleSyntaxClasses.UNDEFINED,
+    STRING -> IsabelleSyntaxClasses.STRING,
+    ALT_STRING -> IsabelleSyntaxClasses.STRING,
+    VERBATIM -> IsabelleSyntaxClasses.VERBATIM,
+    SPACE -> IsabelleSyntaxClasses.UNDEFINED,
+    COMMENT -> IsabelleSyntaxClasses.COMMENT//,
+//    ERROR -> IsabelleSyntaxClasses.UNDEFINED
+  ).withDefaultValue(IsabelleSyntaxClasses.UNDEFINED)
+
   def apply(syntax: Outer_Syntax, token: isabelle.Token): IsabelleSyntaxClass =
-    if (token.is_command)
-      syntax.keyword_kind(token.content).getOrElse("") match {
-//        case THY_END => IsabelleSyntaxClasses.CLASS
-        case THY_SCRIPT | PRF_SCRIPT => IsabelleSyntaxClasses.CMD_SCRIPT
-        case PRF_ASM | PRF_ASM_GOAL => IsabelleSyntaxClasses.CMD_GOAL
-        case _ => IsabelleSyntaxClasses.CMD
-      }
+    if (token.is_command) commandClasses(syntax.keyword_kind(token.content).getOrElse(""))
     else if (token.is_operator) IsabelleSyntaxClasses.OPERATOR
-    else token.kind match {
-      case COMMAND | KEYWORD => IsabelleSyntaxClasses.KEYWORD
-//      case IDENT | LONG_IDENT | SYM_IDENT | VAR => IsabelleSyntaxClasses.VAR
-//      case TYPE_IDENT | TYPE_VAR => IsabelleSyntaxClasses.TYPE
-      case STRING | ALT_STRING => IsabelleSyntaxClasses.STRING
-      case VERBATIM => IsabelleSyntaxClasses.VERBATIM
-      case COMMENT => IsabelleSyntaxClasses.COMMENT
-      case NAT | FLOAT | SPACE | UNPARSED | _ => IsabelleSyntaxClasses.UNDEFINED
-    }
+    else tokenClasses(token.kind)
 }
 
 object IsabelleMarkupToSyntaxClass {

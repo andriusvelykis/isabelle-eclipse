@@ -48,10 +48,12 @@ class ColourPreferenceInitializer extends AbstractPreferenceInitializer {
     val darkRed = new RGB(139, 0, 0)
     val keyword1 = new RGB(0, 102, 153)
     val keyword2 = new RGB(0, 153, 102)
+    val keyword3 = new RGB(43, 157, 255)
+    val quoted = new RGB(240, 240, 240)
     
     setDefaultsForSyntaxClass(COMMENT, new RGB(204, 0, 0))
-    setDefaultsForSyntaxClass(VERBATIM, black)
-    setDefaultsForSyntaxClass(STRING, black)
+    setDefaultsForSyntaxClass(VERBATIM, black, Some(quoted))
+    setDefaultsForSyntaxClass(STRING, black, Some(quoted))
     setDefaultsForSyntaxClass(KEYWORD, keyword1, bold = true)
     setDefaultsForSyntaxClass(KEYWORD2, keyword2, bold = true)
     setDefaultsForSyntaxClass(OPERATOR, black, bold = true)
@@ -72,8 +74,8 @@ class ColourPreferenceInitializer extends AbstractPreferenceInitializer {
     setDefaultsForSyntaxClass(ML_COMMENT, darkRed)
     
     setDefaultsForSyntaxClass(CMD, keyword1, bold = true)
-    setDefaultsForSyntaxClass(CMD_SCRIPT, new RGB(2, 185, 2))
-    setDefaultsForSyntaxClass(CMD_GOAL, keyword2, bold = true)
+    setDefaultsForSyntaxClass(CMD_SCRIPT, new RGB(246, 52, 36))
+    setDefaultsForSyntaxClass(CMD_GOAL, keyword3, bold = true)
   }
 
 }
