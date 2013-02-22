@@ -29,6 +29,7 @@ import isabelle.eclipse.ui.text.SingleTokenScanner
 import isabelle.eclipse.ui.preferences.IsabellePartitionToSyntaxClass
 import isabelle.eclipse.ui.preferences.IsabelleMarkupToSyntaxClass
 import isabelle.eclipse.ui.preferences.IsabelleTokenToSyntaxClass
+import isabelle.eclipse.ui.text.TokenUtil
 
 
 /** @author Andrius Velykis */
@@ -108,7 +109,7 @@ class IsabelleTheoryConfiguration(val editor: TheoryEditor, val resourceManager:
 
   /** Joins the scanners in a chained composite scanner */
   private def join(top: ITokenScanner, bottom: ITokenScanner): ITokenScanner =
-    new ChainedTokenScanner(top, bottom)
+    new ChainedTokenScanner(top, bottom, TokenUtil.Merge.mergeTextTokens)
 
   /** Creates a single-token partition scanner which provides tokens for different partition types */
   private def partitionScanner(partition: String): ITokenScanner =
