@@ -5,7 +5,7 @@ import scala.util.Try
 
 import org.eclipse.core.runtime.IPath
 
-import isabelle.{Event_Bus, Session}
+import isabelle.{Event_Bus, Outer_Syntax, Session}
 import isabelle.eclipse.core.resource.URIThyLoad
 
 
@@ -35,7 +35,13 @@ class Isabelle {
   
   private var currentSession: Option[Session] = None
   /** Retrieves the current session - may not be available if Isabelle has not been started */
-  def session() = currentSession
+  def session = currentSession
+
+  def recentSyntax(): Option[Outer_Syntax] = session flatMap { s =>
+    if (s.recent_syntax == Outer_Syntax.empty) None
+    else Some(s.recent_syntax)
+  }
+  
   
   /** Running if session is available and ready */
   def isRunning = session.map(_.phase == Session.Ready).getOrElse(false)

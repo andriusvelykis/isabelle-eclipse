@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.CoreException
 import org.eclipse.jface.dialogs.MessageDialog
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
 import org.eclipse.jface.text.{IDocument, IRegion, Region}
+import org.eclipse.jface.viewers.{ISelectionChangedListener, SelectionChangedEvent}
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.{IEditorInput, IEditorSite, PartInitException}
 import org.eclipse.ui.contexts.IContextService
@@ -26,7 +27,7 @@ import isabelle.eclipse.core.util.LoggingActor
 import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
-import isabelle.eclipse.ui.views.TheoryOutlinePage
+import isabelle.eclipse.ui.views.outline.TheoryOutlinePage
 
 
 /** The editor for Isabelle theory files.
@@ -55,7 +56,13 @@ class TheoryEditor extends TextEditor {
   private var state: Option[State] = None
   private var init = false;
 
-  val outlinePage = new TheoryOutlinePage(this)
+  val outlinePage = new TheoryOutlinePage(this, getSourceViewer)
+  // listen to outline page selection changes and highlight the selection in editor
+  outlinePage.addSelectionChangedListener(new ISelectionChangedListener {
+    override def selectionChanged(event: SelectionChangedEvent) =
+      outlinePage.selectedRegionInEditor foreach (r => selectInEditor(r, r))
+  })
+
 
   private val systemListener = LoggingActor {
     loop {

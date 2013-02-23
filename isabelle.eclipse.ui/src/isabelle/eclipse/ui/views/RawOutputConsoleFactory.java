@@ -18,7 +18,7 @@ public class RawOutputConsoleFactory extends SingletonConsoleFactory {
 	}
 
 	private ImageDescriptor getConsoleImage() {
-		return IsabelleImages.getImageDescriptor(IsabelleImages.IMG_RAW_OUTPUT_CONSOLE);
+		return IsabelleImages.RAW_OUTPUT_CONSOLE();
 	}
 
 
