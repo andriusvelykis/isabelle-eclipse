@@ -14,7 +14,7 @@ import isabelle.eclipse.ui.preferences.IsabelleSyntaxClasses._
   *
   * @author Andrius Velykis
   */
-class ColourPreferenceInitializer extends AbstractPreferenceInitializer {
+object ColourPreferenceInitializer {
 
   def initializeDefaultPreferences() {
     setDefaultsForSyntaxClasses(IsabelleUIPlugin.getPreferences())

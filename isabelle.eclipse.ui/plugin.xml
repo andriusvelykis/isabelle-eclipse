@@ -406,7 +406,7 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="isabelle.eclipse.ui.preferences.ColourPreferenceInitializer">
+            class="isabelle.eclipse.ui.preferences.IsabelleUIPreferenceInitializer">
       </initializer>
    </extension>
 
