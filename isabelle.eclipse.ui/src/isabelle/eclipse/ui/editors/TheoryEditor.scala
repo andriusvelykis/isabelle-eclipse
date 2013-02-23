@@ -55,7 +55,7 @@ class TheoryEditor extends TextEditor {
   private var state: Option[State] = None
   private var init = false;
 
-  val outlinePage = new TheoryOutlinePage(this)
+  val outlinePage = new TheoryOutlinePage(this, getSourceViewer)
 
   private val systemListener = LoggingActor {
     loop {

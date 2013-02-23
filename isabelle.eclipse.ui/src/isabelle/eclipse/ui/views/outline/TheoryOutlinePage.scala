@@ -3,6 +3,7 @@ package isabelle.eclipse.ui.views.outline
 import org.eclipse.core.runtime.{IProgressMonitor, IStatus, Status}
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
+import org.eclipse.jface.text.{DocumentEvent, IDocumentListener, ITextViewer}
 import org.eclipse.swt.widgets.{Composite, Control}
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage
 
@@ -12,24 +13,35 @@ import isabelle.Thy_Syntax.Structure
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.text.DocumentModel
 import isabelle.eclipse.ui.editors.TheoryEditor
-import isabelle.eclipse.ui.util.SWTUtil
+import isabelle.eclipse.ui.text.DocumentListenerSupport
+import isabelle.eclipse.ui.util.{SWTUtil, TypingDelayHelper}
 import isabelle.eclipse.ui.views.SessionStatusMessageArea
 
 
 /**
  * Outline page for Isabelle theory files.
- * 
+ *
  * Supports both structured tree and raw markup tree.
- * 
+ *
  * @author Andrius Velykis
  */
-class TheoryOutlinePage(editor: TheoryEditor) extends ContentOutlinePage {
+class TheoryOutlinePage(editor: TheoryEditor,
+                        editorViewer: => ITextViewer) extends ContentOutlinePage {
 
   private var rawTree = false
   
   private val sessionStatusArea = new SessionStatusMessageArea
   private var control: Control = _
   
+  private val delayHelper = new TypingDelayHelper
+  private val documentListener = new DocumentListenerSupport(new IDocumentListener {
+    
+    override def documentAboutToBeChanged(event: DocumentEvent) {}
+    override def documentChanged(event: DocumentEvent) = if (!rawTree) {
+      // notify with delay
+      controlSafe foreach (c => delayHelper.scheduleCallback(Some(c.getDisplay))(reload))
+    }
+  })
   
   // just so that it is not null
   @volatile private var updateJob = new OutlineParseJob(rawTree)
@@ -62,14 +74,19 @@ class TheoryOutlinePage(editor: TheoryEditor) extends ContentOutlinePage {
     super.createControl(contentArea)
     
     val viewer = getTreeViewer
-    
     viewer.setAutoExpandLevel(2)
+    
+    documentListener.init(editorViewer)
     reload()
   }
   
   override def getControl(): Control = control
   
+  private def controlSafe(): Option[Control] = Option(getControl) filterNot (_.isDisposed)
+  
   override def dispose() {
+    documentListener.dispose()
+    delayHelper.stop()
     sessionStatusArea.dispose()
     super.dispose()
   }
@@ -126,6 +143,8 @@ class TheoryOutlinePage(editor: TheoryEditor) extends ContentOutlinePage {
 
 
   private class OutlineParseJob(rawTree: Boolean) extends Job("Creating theory outline tree") {
+    // low priority job
+    setPriority(Job.DECORATE)
 
     override def run(monitor: IProgressMonitor): IStatus = {
 
