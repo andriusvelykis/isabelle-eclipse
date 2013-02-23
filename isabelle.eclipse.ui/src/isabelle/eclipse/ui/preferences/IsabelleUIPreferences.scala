@@ -28,6 +28,8 @@ object IsabelleUIPreferences {
   def getBoolean(key: String, default: Boolean) =
     Platform.getPreferencesService.getBoolean(pluginId, key, default, null)
   
+  /** Preference indicating whether to show Raw outline tree */
+  val OUTLINE_RAW_TREE = pluginId + ".outlineRawTree"
   
 }
 
@@ -42,6 +44,8 @@ class IsabelleUIPreferenceInitializer extends AbstractPreferenceInitializer {
     
     val prefDefaults = prefNode(DefaultScope.INSTANCE)
     
+    // do not show raw outline tree by default
+    prefDefaults.putBoolean(OUTLINE_RAW_TREE, false)
     
     ColourPreferenceInitializer.initializeDefaultPreferences()
   }

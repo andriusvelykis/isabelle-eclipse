@@ -4,9 +4,12 @@ import scala.actors.Actor._
 
 import org.eclipse.core.runtime.{IProgressMonitor, IStatus, Status}
 import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.jface.action.Action
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
 import org.eclipse.jface.text.{DocumentEvent, IDocumentListener, ITextViewer}
+import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.{Composite, Control}
+import org.eclipse.ui.IActionBars
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage
 
 import isabelle.{Outer_Syntax, Session}
@@ -15,7 +18,9 @@ import isabelle.Thy_Syntax.Structure
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.text.DocumentModel
 import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
+import isabelle.eclipse.ui.IsabelleImages
 import isabelle.eclipse.ui.editors.TheoryEditor
+import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
 import isabelle.eclipse.ui.text.DocumentListenerSupport
 import isabelle.eclipse.ui.util.{SWTUtil, TypingDelayHelper}
 import isabelle.eclipse.ui.views.SessionStatusMessageArea
@@ -100,9 +105,17 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
     val viewer = getTreeViewer
     viewer.setAutoExpandLevel(2)
     
+    // register actions
+    registerToolbarActions(getSite.getActionBars)
+    
     documentListener.init(editorViewer)
     initSessionEvents()
     reload()
+  }
+  
+  private def registerToolbarActions(actionBars: IActionBars) {
+    val toolBarManager = actionBars.getToolBarManager
+    toolBarManager.add(new RawTreeAction)
   }
   
   override def getControl(): Control = control
@@ -198,6 +211,32 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
       }
 
       status getOrElse Status.CANCEL_STATUS
+    }
+  }
+
+  private class RawTreeAction extends Action("Show Raw Tree", SWT.TOGGLE) {
+
+    setToolTipText("Show Raw Tree")
+//    setDescription("?")
+    setImageDescriptor(IsabelleImages.RAW_TREE)
+
+    {
+      val prefRawTree = IsabelleUIPreferences.getBoolean(prefKey, false)
+      setRawTree(prefRawTree, true)
+    }
+
+    def prefKey = IsabelleUIPreferences.OUTLINE_RAW_TREE
+
+    override def run() {
+      setRawTree(!rawTree)
+      reload()
+    }
+
+    def setRawTree(isRaw: Boolean, init: Boolean = false) {
+      rawTree = isRaw
+      setChecked(isRaw)
+
+      IsabelleUIPreferences.prefs.putBoolean(prefKey, isRaw)
     }
   }
   
