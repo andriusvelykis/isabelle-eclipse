@@ -1,5 +1,7 @@
 package isabelle.eclipse.ui.views.outline
 
+import scala.actors.Actor._
+
 import org.eclipse.core.runtime.{IProgressMonitor, IStatus, Status}
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
@@ -7,11 +9,12 @@ import org.eclipse.jface.text.{DocumentEvent, IDocumentListener, ITextViewer}
 import org.eclipse.swt.widgets.{Composite, Control}
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage
 
+import isabelle.{Outer_Syntax, Session}
 import isabelle.Document.Snapshot
-import isabelle.Outer_Syntax
 import isabelle.Thy_Syntax.Structure
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.text.DocumentModel
+import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
 import isabelle.eclipse.ui.editors.TheoryEditor
 import isabelle.eclipse.ui.text.DocumentListenerSupport
 import isabelle.eclipse.ui.util.{SWTUtil, TypingDelayHelper}
@@ -25,10 +28,10 @@ import isabelle.eclipse.ui.views.SessionStatusMessageArea
  *
  * @author Andrius Velykis
  */
-class TheoryOutlinePage(editor: TheoryEditor,
-                        editorViewer: => ITextViewer) extends ContentOutlinePage {
+class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
+    extends ContentOutlinePage with SessionEvents {
 
-  private var rawTree = false
+  private var rawTree = true
   
   private val sessionStatusArea = new SessionStatusMessageArea
   private var control: Control = _
@@ -37,11 +40,29 @@ class TheoryOutlinePage(editor: TheoryEditor,
   private val documentListener = new DocumentListenerSupport(new IDocumentListener {
     
     override def documentAboutToBeChanged(event: DocumentEvent) {}
-    override def documentChanged(event: DocumentEvent) = if (!rawTree) {
-      // notify with delay
-      controlSafe foreach (c => delayHelper.scheduleCallback(Some(c.getDisplay))(reload))
-    }
+    override def documentChanged(event: DocumentEvent) = 
+      if (!rawTree) reloadWithDelay()
   })
+  
+  
+  // the actor to react to session events (for Raw tree)
+  override protected val sessionActor = LoggingActor {
+    loop {
+      react {
+        case changed: Session.Commands_Changed if (rawTree) => 
+          editor.isabelleModel foreach { model =>
+            // avoid updating Raw tree if commands are from a different document
+            if (changed.nodes contains model.name) {
+              reloadWithDelay()
+            }
+          }
+        }
+      }
+    }
+
+  // subscribe to commands change session events (for Raw tree)
+  override protected def sessionEvents(session: Session) = List(session.commands_changed)
+  
   
   // just so that it is not null
   @volatile private var updateJob = new OutlineParseJob(rawTree)
@@ -66,6 +87,9 @@ class TheoryOutlinePage(editor: TheoryEditor,
     updateJob = newJob
   }
   
+  def reloadWithDelay() =
+    controlSafe foreach (c => delayHelper.scheduleCallback(Some(c.getDisplay))(reload))
+  
   override def createControl(parent: Composite) {
     
     val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent, sessionStatusArea)
@@ -77,6 +101,7 @@ class TheoryOutlinePage(editor: TheoryEditor,
     viewer.setAutoExpandLevel(2)
     
     documentListener.init(editorViewer)
+    initSessionEvents()
     reload()
   }
   
@@ -85,6 +110,7 @@ class TheoryOutlinePage(editor: TheoryEditor,
   private def controlSafe(): Option[Control] = Option(getControl) filterNot (_.isDisposed)
   
   override def dispose() {
+    disposeSessionEvents()
     documentListener.dispose()
     delayHelper.stop()
     sessionStatusArea.dispose()
@@ -161,12 +187,6 @@ class TheoryOutlinePage(editor: TheoryEditor,
 
           case _ => None
         }
-
-      // need to sleep, otherwise markup information may not yet be available
-      // TODO listen to markup changes
-      if (rawTree) {
-        Thread.sleep(2000)
-      }
 
       val status = for {
         _ <- isCanceled
