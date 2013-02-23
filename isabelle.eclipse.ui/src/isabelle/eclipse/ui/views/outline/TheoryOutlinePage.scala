@@ -6,7 +6,8 @@ import org.eclipse.core.runtime.{IProgressMonitor, IStatus, Status}
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.action.Action
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
-import org.eclipse.jface.text.{DocumentEvent, IDocumentListener, ITextViewer}
+import org.eclipse.jface.text.{DocumentEvent, IDocumentListener, IRegion, ITextViewer, Region}
+import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.{Composite, Control}
 import org.eclipse.ui.IActionBars
@@ -178,6 +179,16 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
         }
       }
     }
+  }
+
+
+  def selectedRegionInEditor: Option[IRegion] = getSelection match {
+    case ss: IStructuredSelection => ss.getFirstElement match {
+      case struct: TheoryStructureEntry => Some(new Region(struct.offset, struct.entry.length))
+      case raw: TheoryRawEntry => Some(new Region(raw.range.start, raw.range.stop - raw.range.start))
+      case _ => None
+    }
+    case _ => None
   }
 
 
