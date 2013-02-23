@@ -1,8 +1,5 @@
 package isabelle.eclipse.ui.editors
 
-import java.util.Map
-
-import org.eclipse.core.runtime.IAdaptable
 import org.eclipse.jface.resource.ResourceManager
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.presentation.{IPresentationReconciler, PresentationReconciler}
@@ -113,15 +110,5 @@ class IsabelleTheoryViewerConfiguration(editor: TheoryEditor,
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }
-
-  override def getHyperlinkDetectorTargets(sourceViewer: ISourceViewer): Map[String, IAdaptable] = {
-
-    val targets = super.getHyperlinkDetectorTargets(sourceViewer).asInstanceOf[Map[String, IAdaptable]]
-
-    // mark the editor as valid target for Isabelle Theory hyperlink detectors
-    // (attaches the detector to the editor)
-    targets.put(ISABELLE_THEORY_HYPERLINK_TARGET, editor);
-    targets;
-  }
 
 }

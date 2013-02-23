@@ -1,9 +1,12 @@
 package isabelle.eclipse.ui.editors
 
+import org.eclipse.core.runtime.IAdaptable
 import org.eclipse.jface.resource.ResourceManager
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.contentassist.{ContentAssistant, IContentAssistant}
 import org.eclipse.jface.text.source.ISourceViewer
+
+import java.{util => ju}
 
 
 /** @author Andrius Velykis */
@@ -24,6 +27,17 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor, resourceManager: Resourc
     
     ca.setInformationControlCreator(getInformationControlCreator(sourceViewer))
     ca
+  }
+
+
+  override def getHyperlinkDetectorTargets(sourceViewer: ISourceViewer): ju.Map[String, IAdaptable] = {
+
+    val targets = super.getHyperlinkDetectorTargets(sourceViewer).asInstanceOf[ju.Map[String, IAdaptable]]
+
+    // mark the editor as valid target for Isabelle Theory hyperlink detectors
+    // (attaches the detector to the editor)
+    targets.put(ISABELLE_THEORY_HYPERLINK_TARGET, editor);
+    targets;
   }
 
 }
