@@ -3,7 +3,7 @@ package isabelle.eclipse.ui.views.outline
 import org.eclipse.core.runtime.{IProgressMonitor, IStatus, Status}
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
-import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.{Composite, Control}
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage
 
 import isabelle.Document.Snapshot
@@ -13,6 +13,7 @@ import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.text.DocumentModel
 import isabelle.eclipse.ui.editors.TheoryEditor
 import isabelle.eclipse.ui.util.SWTUtil
+import isabelle.eclipse.ui.views.SessionStatusMessageArea
 
 
 /**
@@ -25,6 +26,10 @@ import isabelle.eclipse.ui.util.SWTUtil
 class TheoryOutlinePage(editor: TheoryEditor) extends ContentOutlinePage {
 
   private var rawTree = false
+  
+  private val sessionStatusArea = new SessionStatusMessageArea
+  private var control: Control = _
+  
   
   // just so that it is not null
   @volatile private var updateJob = new OutlineParseJob(rawTree)
@@ -51,12 +56,22 @@ class TheoryOutlinePage(editor: TheoryEditor) extends ContentOutlinePage {
   
   override def createControl(parent: Composite) {
     
-    super.createControl(parent)
+    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent, sessionStatusArea)
+    this.control = control
+    
+    super.createControl(contentArea)
     
     val viewer = getTreeViewer
     
     viewer.setAutoExpandLevel(2)
     reload()
+  }
+  
+  override def getControl(): Control = control
+  
+  override def dispose() {
+    sessionStatusArea.dispose()
+    super.dispose()
   }
 
   private def parseTheoryStructure(syntax: Outer_Syntax,
