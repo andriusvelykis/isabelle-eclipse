@@ -9,8 +9,6 @@ import isabelle.Symbol;
 import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.ui.IsabelleImages;
 
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -37,12 +35,9 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
     private final TheoryEditor editor;
     private final ResourceManager resourceManager;
     
-	public IsabelleContentAssistProcessor(TheoryEditor editor) {
+	public IsabelleContentAssistProcessor(TheoryEditor editor, ResourceManager resourceMgr) {
 		this.editor = editor;
-		
-		// TODO better control for resource manager?
-		this.resourceManager = new LocalResourceManager(
-		  JFaceResources.getResources(), editor.getSite().getShell());
+		this.resourceManager = resourceMgr;
 	}
 
 	@Override
