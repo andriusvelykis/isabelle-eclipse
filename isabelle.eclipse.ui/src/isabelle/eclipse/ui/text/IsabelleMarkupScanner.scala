@@ -5,19 +5,16 @@ import org.eclipse.jface.text.rules.{IToken, Token}
 
 import isabelle.{Markup, Text, XML}
 import isabelle.Document.Snapshot
-import isabelle.eclipse.ui.editors.TheoryEditor
 import isabelle.eclipse.ui.preferences.IsabelleMarkupToSyntaxClass
 
 
-/** A markup scanner that retrieves markup information from document snapshot. 
-  * Requires Isabelle Session to be loaded, which is retrieved via the editor.
-  * 
-  * @author Andrius Velykis
-  */
-class IsabelleMarkupScanner(val editor: TheoryEditor) extends AbstractTokenStreamScanner {
+/**
+ * A markup scanner that retrieves markup information from document snapshot.
+ *
+ * @author Andrius Velykis
+ */
+class IsabelleMarkupScanner(snapshot: => Option[Snapshot]) extends AbstractTokenStreamScanner {
 
-  private def snapshot: Option[Snapshot] = editor.isabelleModel.map(_.snapshot)
-  
   protected def tokenStream(document: IDocument, offset: Int, length: Int): Stream[TokenInfo] =
     snapshot match {
       case None => {

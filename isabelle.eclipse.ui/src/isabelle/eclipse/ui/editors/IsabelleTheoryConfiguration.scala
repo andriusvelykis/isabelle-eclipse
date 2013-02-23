@@ -11,7 +11,10 @@ import java.{util => ju}
 
 /** @author Andrius Velykis */
 class IsabelleTheoryConfiguration(editor: TheoryEditor, resourceManager: ResourceManager)
-  extends IsabelleTheoryViewerConfiguration(editor, resourceManager) {
+    extends IsabelleTheoryViewerConfiguration(
+      editor.isabelleModel map (_.session),
+      editor.isabelleModel map (_.snapshot),
+      resourceManager) {
 
   override def getContentAssistant(sourceViewer: ISourceViewer): IContentAssistant = {
 

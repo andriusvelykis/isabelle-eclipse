@@ -8,7 +8,8 @@ import org.eclipse.jface.text.source.ISourceViewer
 import org.eclipse.ui.editors.text.{EditorsUI, TextSourceViewerConfiguration}
 import org.eclipse.ui.texteditor.ChainedPreferenceStore
 
-import isabelle.Outer_Syntax
+import isabelle.{Outer_Syntax, Session}
+import isabelle.Document.Snapshot
 import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.preferences.{
   IsabelleMarkupToSyntaxClass,
@@ -26,7 +27,8 @@ import isabelle.eclipse.ui.text.{
 
 
 /** @author Andrius Velykis */
-class IsabelleTheoryViewerConfiguration(editor: TheoryEditor,
+class IsabelleTheoryViewerConfiguration(session: => Option[Session],
+                                        snapshot: => Option[Snapshot],
                                         resourceManager: ResourceManager)
   extends TextSourceViewerConfiguration(new ChainedPreferenceStore(Array(
       // chain the preference store to get default editor preference values as well as Isabelle-specific
@@ -99,14 +101,14 @@ class IsabelleTheoryViewerConfiguration(editor: TheoryEditor,
 
   /** Creates a scanner for Isabelle tokens */
   private def tokenScanner(): ITokenScanner =
-    new IsabelleTokenScanner(editor) with IsabelleScanner {
+    new IsabelleTokenScanner(session) with IsabelleScanner {
       override def getToken(syntax: Outer_Syntax, token: isabelle.Token) =
         getToken(IsabelleTokenToSyntaxClass(syntax, token))
     }
   
   /** Creates a scanner for Isabelle markup information */
   private def markupScanner(): ITokenScanner =
-    new IsabelleMarkupScanner(editor) with IsabelleScanner {
+    new IsabelleMarkupScanner(snapshot) with IsabelleScanner {
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }
