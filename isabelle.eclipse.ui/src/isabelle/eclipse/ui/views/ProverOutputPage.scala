@@ -13,8 +13,7 @@ import org.eclipse.jface.text.Document
 import org.eclipse.jface.text.source.AnnotationModel
 import org.eclipse.jface.viewers.{IPostSelectionProvider, ISelectionChangedListener, SelectionChangedEvent}
 import org.eclipse.swt.SWT
-import org.eclipse.swt.layout.FillLayout
-import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.{Composite, Control}
 import org.eclipse.ui.{IActionBars, ISharedImages, IWorkbenchCommandConstants, PlatformUI}
 import org.eclipse.ui.handlers.IHandlerService
 import org.eclipse.ui.part.{IPageSite, Page}
@@ -75,7 +74,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   // subscribe to commands change session events
   override protected def sessionEvents(session: Session) = List(session.commands_changed)
 
-  private var mainComposite: Composite = _
+  private var control: Control = _
   private var outputViewer: IsabelleTheorySourceViewer = _
 
   // get the preferences value for showing the trace
@@ -94,11 +93,12 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   private lazy val inlineCss = getCssPaths.flatMap(readResource(_)).mkString("\n\n")
 
   override def createControl(parent: Composite) {
-    mainComposite = new Composite(parent, SWT.NONE)
-    mainComposite.setLayout(new FillLayout())
+    
+    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent)
+    this.control = control
     
     outputViewer = createSourceViewer(
-        mainComposite,
+        contentArea,
         editor.isabelleModel map (_.session),
         currentResultsSnapshot)
 
@@ -144,7 +144,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
 
-  override def getControl() = mainComposite
+  override def getControl() = control
 
   override def setFocus() = outputViewer.getControl.setFocus
 
@@ -290,7 +290,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   private def setContent(resultsText: String, snapshot: Snapshot) {
     // set the input in the UI thread
-    SWTUtil.asyncExec(Some(mainComposite.getDisplay)) {
+    SWTUtil.asyncExec(Some(control.getDisplay)) {
       if (!outputViewer.getControl.isDisposed) {
         
         this.currentResultsSnapshot = Some(snapshot)
