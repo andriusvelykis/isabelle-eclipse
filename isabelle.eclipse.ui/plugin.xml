@@ -336,18 +336,6 @@
             </with>
          </activeWhen>
       </handler>
-      <handler
-            class="isabelle.eclipse.ui.actions.OutputViewSelectAllHandler"
-            commandId="org.eclipse.ui.edit.selectAll">
-         <activeWhen>
-            <with
-                  variable="activePartId">
-               <equals
-                     value="isabelle.eclipse.ui.proverOutputView">
-               </equals>
-            </with>
-         </activeWhen>
-      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
