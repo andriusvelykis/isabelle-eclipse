@@ -1,6 +1,7 @@
 package isabelle.eclipse.ui.util
 
-import org.eclipse.swt.widgets.Display
+import org.eclipse.swt.events.{DisposeEvent, DisposeListener}
+import org.eclipse.swt.widgets.{Display, Widget}
 import org.eclipse.ui.IWorkbenchPart
 
 
@@ -32,6 +33,20 @@ object SWTUtil {
 
     val display = part.getSite.getWorkbenchWindow.getWorkbench.getDisplay
     asyncExec(Some(display))(f)
+  }
+
+
+  implicit class Disposable(control: Widget) {
+    def onDispose(f: => Unit) {
+
+      control.addDisposeListener(new DisposeListener {
+        override def widgetDisposed(e: DisposeEvent) {
+          f
+          control.removeDisposeListener(this)
+        }
+      })
+
+    }
   }
 
 }

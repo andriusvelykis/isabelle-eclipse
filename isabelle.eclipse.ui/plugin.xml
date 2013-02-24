@@ -127,6 +127,29 @@
             colorPreferenceValue="244,200,45">
       </specification>
       <specification
+            annotationType="isabelle.eclipse.ui.annotation.tracing"
+            textPreferenceKey="tracingMessage"
+            presentationLayer="4"
+            showInNextPrevDropdownToolbarAction="true"
+            textPreferenceValue="true"
+            label="Tracing Messages"
+            colorPreferenceKey="tracingMessageColor"
+            showInNextPrevDropdownToolbarActionKey="showTracingInNextPrevDropdownToolbarAction"
+            isGoToNextNavigationTargetKey="isTracingGoToNextNavigationTarget"
+            isGoToNextNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="isTracingGoToPreviousNavigationTarget"
+            isGoToPreviousNavigationTarget="true"
+            textStylePreferenceKey="tracingTextStyle"
+			textStylePreferenceValue="NONE"             
+            overviewRulerPreferenceKey="tracingMessageInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            verticalRulerPreferenceKey="tracingMessageInVerticalRuler"
+            verticalRulerPreferenceValue="false"
+            highlightPreferenceKey="tracingMessageHighlighting"
+            highlightPreferenceValue="true"
+            colorPreferenceValue="240,248,255">
+      </specification>
+      <specification
             annotationType="isabelle.eclipse.ui.annotation.markup.bad"
             colorPreferenceKey="markupBadColor"
             colorPreferenceValue="255,204,204"
@@ -279,6 +302,9 @@
             markerSeverity="1">
       </type>
       <type
+            name="isabelle.eclipse.ui.annotation.tracing">
+      </type>
+      <type
             name="isabelle.eclipse.ui.annotation.markup.bad">
       </type>
       <type
@@ -332,18 +358,6 @@
                   variable="activePartId">
                <equals
                      value="isabelle.eclipse.ui.theoryEditor">
-               </equals>
-            </with>
-         </activeWhen>
-      </handler>
-      <handler
-            class="isabelle.eclipse.ui.actions.OutputViewSelectAllHandler"
-            commandId="org.eclipse.ui.edit.selectAll">
-         <activeWhen>
-            <with
-                  variable="activePartId">
-               <equals
-                     value="isabelle.eclipse.ui.proverOutputView">
                </equals>
             </with>
          </activeWhen>

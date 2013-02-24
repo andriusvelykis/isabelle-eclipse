@@ -12,6 +12,7 @@ import isabelle.Session
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.util.SessionEvents
 import isabelle.eclipse.ui.util.SWTUtil
+import isabelle.eclipse.ui.util.SWTUtil.Disposable
 
 
 /**
@@ -45,6 +46,9 @@ class SessionStatusMessageArea extends SessionEvents {
     
     val separator = new Label(main, SWT.SEPARATOR | SWT.HORIZONTAL)
     separator.setLayoutData(GridDataFactory.fillDefaults.span(2, 1).grab(true, false).create)
+    
+    // hook dispose listener
+    main onDispose dispose()
     
     initSessionEvents()
   }
@@ -102,8 +106,10 @@ class SessionStatusMessageArea extends SessionEvents {
 
 object SessionStatusMessageArea {
   
-  def wrapPart(parent: Composite, statusArea: SessionStatusMessageArea): (Control, Composite) = {
+  def wrapPart(parent: Composite): (Control, Composite) = {
 
+    val statusArea = new SessionStatusMessageArea
+    
     val main = new Composite(parent, SWT.NONE)
     main.setLayout(GridLayoutFactory.fillDefaults.create)
     

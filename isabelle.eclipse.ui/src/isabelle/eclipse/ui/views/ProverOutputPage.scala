@@ -1,45 +1,31 @@
 package isabelle.eclipse.ui.views
 
-import isabelle.Command
-import isabelle.Isabelle_Markup
-import isabelle.Markup
-import isabelle.Session
-import isabelle.XML
-import isabelle.eclipse.core.util.SessionEvents
-import isabelle.eclipse.core.util.LoggingActor
-import isabelle.eclipse.ui.IsabelleImages
-import isabelle.eclipse.ui.IsabelleUIPlugin
-import isabelle.eclipse.ui.editors.TheoryEditor
 import java.io.IOException
 import java.net.URL
-import org.eclipse.core.runtime.FileLocator
-import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.core.runtime.IStatus
-import org.eclipse.core.runtime.Platform
-import org.eclipse.core.runtime.Status
-import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.jface.action.Action
-import org.eclipse.jface.action.IAction
-import org.eclipse.jface.action.GroupMarker
-import org.eclipse.jface.commands.ActionHandler
-import org.eclipse.jface.viewers.ISelectionChangedListener
-import org.eclipse.jface.viewers.IPostSelectionProvider
-import org.eclipse.jface.viewers.SelectionChangedEvent
-import org.eclipse.swt.SWT
-import org.eclipse.swt.browser.Browser
-import org.eclipse.swt.browser.LocationAdapter
-import org.eclipse.swt.browser.LocationEvent
-import org.eclipse.swt.layout.FillLayout
-import org.eclipse.swt.widgets.Composite
-import org.eclipse.ui.IActionBars
-import org.eclipse.ui.ISharedImages
-import org.eclipse.ui.IWorkbenchCommandConstants
-import org.eclipse.ui.PlatformUI
-import org.eclipse.ui.handlers.IHandlerService
-import org.eclipse.ui.part.IPageSite
-import org.eclipse.ui.part.Page
-import org.osgi.framework.Bundle
+
 import scala.actors.Actor._
+
+import org.eclipse.core.runtime.{FileLocator, IProgressMonitor, IStatus, Platform, Status}
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.jface.action.{Action, GroupMarker, IAction}
+import org.eclipse.jface.commands.ActionHandler
+import org.eclipse.jface.text.Document
+import org.eclipse.jface.text.source.AnnotationModel
+import org.eclipse.jface.viewers.{IPostSelectionProvider, ISelectionChangedListener, SelectionChangedEvent}
+import org.eclipse.swt.SWT
+import org.eclipse.swt.widgets.{Composite, Control}
+import org.eclipse.ui.{IActionBars, ISharedImages, IWorkbenchCommandConstants, PlatformUI}
+import org.eclipse.ui.handlers.IHandlerService
+import org.eclipse.ui.part.{IPageSite, Page}
+import org.osgi.framework.Bundle
+
+import isabelle.{Future, Linear_Set, Pretty, Protocol, Session, Text, XML}
+import isabelle.Command
+import isabelle.Document.Snapshot
+import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
+import isabelle.eclipse.ui.{IsabelleImages, IsabelleUIPlugin}
+import isabelle.eclipse.ui.editors.{IsabellePartitions, IsabelleTheorySourceViewer, TheoryEditor}
+import isabelle.eclipse.ui.util.SWTUtil
 
 
 /**
@@ -88,13 +74,15 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   // subscribe to commands change session events
   override protected def sessionEvents(session: Session) = List(session.commands_changed)
 
-  private var mainComposite: Composite = _
-  private var outputArea: Browser = _
+  private var control: Control = _
+  private var outputViewer: IsabelleTheorySourceViewer = _
 
   // get the preferences value for showing the trace
   private var showTrace = prefs.getBoolean(propShowTrace)
   private var followSelection = prefs.getBoolean(propLinkEditor)
-  private var currentCommand: Option[Command] = None
+  
+  @volatile private var currentCommand: Option[Command] = None
+  @volatile private var currentResultsSnapshot: Option[Snapshot] = None
 
   private var updateJob: Job = new UpdateOutputJob(_ => None);
 
@@ -105,22 +93,27 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   private lazy val inlineCss = getCssPaths.flatMap(readResource(_)).mkString("\n\n")
 
   override def createControl(parent: Composite) {
-    mainComposite = new Composite(parent, SWT.NONE)
-    mainComposite.setLayout(new FillLayout())
-
-    outputArea = new Browser(mainComposite, SWT.NONE)
     
+    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent)
+    this.control = control
+    
+    outputViewer = createSourceViewer(
+        contentArea,
+        editor.isabelleModel map (_.session),
+        currentResultsSnapshot)
+
+
     // add listener to hyperlink selection
     // the results can have hyperlinks, e.g. "sendback" to replace the command with some text, used in 'sledgehammer' resutls
-    outputArea.addLocationListener(new LocationAdapter {
-      override def changing(event: LocationEvent) {
-        event.location match {
-          // handle sendback
-          case ProverOutputHtml.SendbackLink(content) => doSendback(content)
-          case _ => // do nothing
-        }
-      }
-    })
+//    outputArea.addLocationListener(new LocationAdapter {
+//      override def changing(event: LocationEvent) {
+//        event.location match {
+//          // handle sendback
+//          case ProverOutputHtml.SendbackLink(content) => doSendback(content)
+//          case _ => // do nothing
+//        }
+//      }
+//    })
 
     // init session event listeners
     initSessionEvents()
@@ -131,9 +124,29 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     updateOutputAtCaret()
   }
 
-  override def getControl() = mainComposite
+  private def createSourceViewer(parent: Composite,
+                                 session: => Option[Session],
+                                 snapshot: => Option[Snapshot]): IsabelleTheorySourceViewer = {
 
-  override def setFocus() = outputArea.setFocus
+    val styles = SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | /*SWT.BORDER | */ SWT.FULL_SELECTION
+
+    val viewer = IsabelleTheorySourceViewer(parent, session, snapshot, styles)
+    viewer.setEditable(false)
+
+    val document = new Document with IsabellePartitions
+    val annotationModel = new AnnotationModel
+    annotationModel.connect(document)
+    
+    viewer.setDocument(document, annotationModel)
+    viewer.showAnnotations(true)
+
+    viewer
+  }
+
+
+  override def getControl() = control
+
+  override def setFocus() = outputViewer.getControl.setFocus
 
   override def init(pageSite: IPageSite) {
     super.init(pageSite)
@@ -170,7 +183,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
     removeEditorListener(editorListener)
     disposeSessionEvents()
-
+    
     super.dispose()
   }
 
@@ -196,30 +209,58 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     editor.isabelleModel flatMap { _.snapshot.node.command_at(offset).map(_._1) }
   }
 
-  private def renderOutput(cmd: Command, monitor: IProgressMonitor): Option[String] = {
+  private def renderOutput(cmd: Command, monitor: IProgressMonitor): Option[(String, Snapshot)] = {
 
     // TODO do not output when invisible?
-    // FIXME handle "sendback" in output_dockable.scala
 
-    // get all command results except tracing
     editor.isabelleModel match {
       case None => { System.out.println("Isabelle model not available"); None }
       case Some(model) => {
         // model is available - get the results and render them
         val snapshot = model.snapshot
+        
+        val cmdState = snapshot.state.command_state(snapshot.version, cmd)
+        val resultsMarkup = commandStateMarkup(cmdState)
+        
+        // TODO compare resultsMarkup with current before rendering to avoid replacement?
 
-        val filteredResults =
-          snapshot.state.command_state(snapshot.version, cmd).results.iterator.map(_._2) filter {
-            // FIXME not scalable
-            case XML.Elem(Markup(Isabelle_Markup.TRACING, _), _) => showTrace
-            case _ => true
-          }
-
-        val htmlPage = ProverOutputHtml.renderHtmlPage(filteredResults.toList, Nil, inlineCss, "IsabelleText", 12)
-        Some(htmlPage)
+        val separateMessagesMarkup = Pretty.separate(resultsMarkup)
+        // TODO implement formatting based on view size
+        val outputWidth = 100
+        val formattedMarkup = Pretty.formatted(separateMessagesMarkup, outputWidth)//, Pretty_UI.font_metric(fm))
+        
+        val (text, state) = renderDocument(snapshot, cmdState.results, formattedMarkup)
+        Some(text, state)
       }
     }
   }
+  
+  
+  private def commandStateMarkup(st: Command.State): List[XML.Tree] =
+    st.results.entries.map(_._2).filterNot(Protocol.is_result(_)).toList
+
+  private def renderDocument(base_snapshot: isabelle.Document.Snapshot, base_results: Command.Results,
+    formatted_body: XML.Body): (String, isabelle.Document.Snapshot) = {
+
+    val command = Command.rich_text(isabelle.Document.new_id(), base_results, formatted_body)
+    val node_name = command.node_name
+    val edits: List[isabelle.Document.Edit_Text] =
+      List(node_name -> isabelle.Document.Node.Edits(List(Text.Edit.insert(0, command.source))))
+
+    val state0 = base_snapshot.state.define_command(command)
+    val version0 = base_snapshot.version
+    val nodes0 = version0.nodes
+
+    val nodes1 = nodes0 + (node_name -> nodes0(node_name).update_commands(Linear_Set(command)))
+    val version1 = isabelle.Document.Version.make(version0.syntax, nodes1)
+    val state1 =
+      state0.continue_history(Future.value(version0), edits, Future.value(version1))._2
+        .define_version(version1, state0.the_assignment(version0))
+        .assign(version1.id, List(command.id -> Some(isabelle.Document.new_id())))._2
+
+    (command.source, state1.snapshot())
+  }
+  
 
   private def getCssPaths(): List[URL] = {
     val bundle = Platform.getBundle(IsabelleUIPlugin.PLUGIN_ID)
@@ -247,39 +288,19 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     }
   }
 
-  private def setContent(htmlPage: String) {
+  private def setContent(resultsText: String, snapshot: Snapshot) {
     // set the input in the UI thread
-    uiExec {
-      if (!outputArea.isDisposed()) {
+    SWTUtil.asyncExec(Some(control.getDisplay)) {
+      if (!outputViewer.getControl.isDisposed) {
         
-        val currentPage = outputArea.getText()
-        if (currentPage != htmlPage) {
-          // avoid flashing the output if it is the same
-          outputArea.setText(htmlPage);
-        }
+        this.currentResultsSnapshot = Some(snapshot)
+        outputViewer.getDocument.set(resultsText)
+        outputViewer.updateAnnotations()
       }
     }
   }
 
-  private def uiExec(f: => Unit) {
-    outputArea.getDisplay.asyncExec(new Runnable {
-      override def run() { f }
-    })
-  }
 
-  // TODO implement for IE: http://www.quirksmode.org/dom/range_intro.html, http://help.dottoro.com/ljumcfud.php
-  private def selectAllJavascript = "window.getSelection().selectAllChildren(document.body);"
-
-  def selectAllText() {
-    if (outputArea != null) {
-      outputArea.execute(selectAllJavascript);
-    }
-  }
-
-  def copySelectionToClipboard() {
-    // do nothing at the moment - allow browser copy facilities to work
-  }
-  
   /** Reads the target resource URL contents */
   private def readResource(url: URL): Option[String] = {
     try {
@@ -358,7 +379,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
       }
 
       // set the result if available
-      result foreach setContent
+      result foreach Function.tupled(setContent)
 
       Status.OK_STATUS
     }

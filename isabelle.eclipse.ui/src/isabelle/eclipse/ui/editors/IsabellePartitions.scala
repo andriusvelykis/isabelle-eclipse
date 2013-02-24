@@ -1,20 +1,20 @@
 package isabelle.eclipse.ui.editors
 
-import org.eclipse.jface.text.rules.IPartitionTokenScanner
-import org.eclipse.jface.text.rules.RuleBasedPartitionScanner
-import org.eclipse.jface.text.rules.IToken
-import org.eclipse.jface.text.rules.Token
-import org.eclipse.jface.text.rules.IPredicateRule
-import org.eclipse.jface.text.rules.MultiLineRule
-import org.eclipse.jface.text.rules.SingleLineRule
-import org.eclipse.jface.text.rules.IWordDetector
-import org.eclipse.jface.text.rules.WordRule
-import org.eclipse.jface.text.rules.WordPatternRule
+import org.eclipse.jface.text.{IDocument, IDocumentExtension3, IDocumentPartitioner}
+import org.eclipse.jface.text.rules.{
+  FastPartitioner,
+  IPartitionTokenScanner,
+  IWordDetector,
+  MultiLineRule,
+  RuleBasedPartitionScanner,
+  Token
+}
 
-/* Definition of Isabelle partitioning and its partitions.
- * <p>
+
+/**
+ * Definition of Isabelle partitioning and its partitions.
+ * 
  * Also provides static factory methods to create partition scanners for theory/session modes.
- * </p>
  * 
  * @author Andrius Velykis
  */
@@ -81,5 +81,25 @@ object IsabellePartitions {
 //    
 //    THEORY_KEYWORDS map (word => new WordPatternRule(wordDetector, word, word, keyword))
 //  }
-  
 }
+
+
+/**
+ * A mixin trait to attach Isabelle partitioner to a document
+ * 
+ * @author Andrius Velykis
+ */
+trait IsabellePartitions {
+
+  self: IDocument with IDocumentExtension3 =>
+
+  // create document partitioner: cannot do it via documentSetup extension point,
+  // because the IsabelleDocument is created on top of the base document
+  val partitioner: IDocumentPartitioner = new FastPartitioner(
+    IsabellePartitions.createTheoryScanner(), IsabellePartitions.contentTypes)
+
+  setDocumentPartitioner(IsabellePartitions.ISABELLE_PARTITIONING, partitioner)
+  partitioner.connect(this)
+
+}
+

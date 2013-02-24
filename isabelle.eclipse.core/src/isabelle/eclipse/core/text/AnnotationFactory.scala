@@ -58,6 +58,14 @@ object AnnotationFactory {
               case (((Some(status), annType), Text.Info(_, XML.Elem(markup, _))))
                 if (Protocol.command_status_markup(markup.name)) =>
                   (Some(Protocol.command_status(status, markup)), annType)
+              case (_, Text.Info(_, XML.Elem(Markup(Markup.WRITELN_MESSAGE, _), _))) =>
+                (None, Some(IsabelleAnnotation.MESSAGE_WRITELN))
+              case (_, Text.Info(_, XML.Elem(Markup(Markup.WARNING_MESSAGE, _), _))) =>
+                (None, Some(IsabelleAnnotation.MESSAGE_WARNING))
+              case (_, Text.Info(_, XML.Elem(Markup(Markup.ERROR_MESSAGE, _), _))) =>
+                (None, Some(IsabelleAnnotation.MESSAGE_ERROR))
+              case (_, Text.Info(_, XML.Elem(Markup(Markup.TRACING_MESSAGE, _), _))) =>
+                (None, Some(IsabelleAnnotation.MESSAGE_TRACING))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.BAD, _), _))) =>
                 (None, Some(IsabelleAnnotation.MARKUP_BAD))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.INTENSIFY, _), _))) =>
