@@ -39,7 +39,6 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
 
   private var rawTree = true
   
-  private val sessionStatusArea = new SessionStatusMessageArea
   private var control: Control = _
   
   private val delayHelper = new TypingDelayHelper
@@ -98,7 +97,7 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
   
   override def createControl(parent: Composite) {
     
-    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent, sessionStatusArea)
+    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent)
     this.control = control
     
     super.createControl(contentArea)
@@ -127,7 +126,6 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
     disposeSessionEvents()
     documentListener.dispose()
     delayHelper.stop()
-    sessionStatusArea.dispose()
     super.dispose()
   }
 
