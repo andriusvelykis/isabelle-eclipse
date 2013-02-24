@@ -64,8 +64,8 @@ object AnnotationFactory {
                 (None, Some(IsabelleAnnotation.MESSAGE_WARNING))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.ERROR_MESSAGE, _), _))) =>
                 (None, Some(IsabelleAnnotation.MESSAGE_ERROR))
-//              case (_, Text.Info(_, XML.Elem(Markup(Markup.TRACING_MESSAGE, _), _))) =>
-//                (None, Some(IsabelleAnnotation.MESSAGE_TRACING))
+              case (_, Text.Info(_, XML.Elem(Markup(Markup.TRACING_MESSAGE, _), _))) =>
+                (None, Some(IsabelleAnnotation.MESSAGE_TRACING))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.BAD, _), _))) =>
                 (None, Some(IsabelleAnnotation.MARKUP_BAD))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.INTENSIFY, _), _))) =>

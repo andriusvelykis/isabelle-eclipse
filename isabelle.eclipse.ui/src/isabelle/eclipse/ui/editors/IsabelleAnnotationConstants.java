@@ -30,6 +30,7 @@ public class IsabelleAnnotationConstants {
 	// TODO add custom legacy annotation
 	private static final String ANNOTATION_LEGACY = "isabelle.eclipse.ui.annotation.legacy";
 	private static final String ANNOTATION_INFO = "isabelle.eclipse.ui.annotation.info";
+	private static final String ANNOTATION_TRACING = "isabelle.eclipse.ui.annotation.tracing";
 	
 	// TODO foreground colours, Isabelle_Markup.foreground? Or actually syntax colours?
 	private static final String ANNOTATION_BAD = "isabelle.eclipse.ui.annotation.markup.bad";
@@ -90,6 +91,7 @@ public class IsabelleAnnotationConstants {
 		case MESSAGE_LEGACY: return ANNOTATION_LEGACY;
 		case MESSAGE_WARNING: return ANNOTATION_WARNING;
 		case MESSAGE_WRITELN: return ANNOTATION_INFO;
+		case MESSAGE_TRACING: return ANNOTATION_TRACING;
 		case STATUS_OUTDATED: return ANNOTATION_OUTDATED;
 		case STATUS_UNFINISHED: return ANNOTATION_UNFINISHED;
 		case STATUS_UNPROCESSED: return ANNOTATION_UNPROCESSED;
