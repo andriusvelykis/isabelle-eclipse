@@ -37,6 +37,8 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
 
   /** The hyperlink detector target ID, as defined in plugin.xml */
   val ISABELLE_THEORY_HYPERLINK_TARGET = "isabelle.eclipse.ui.theoryEditor"
+    
+  def preferenceStore() = fPreferenceStore
   
   override def getConfiguredDocumentPartitioning(sourceViewer: ISourceViewer) = 
     IsabellePartitions.ISABELLE_PARTITIONING
