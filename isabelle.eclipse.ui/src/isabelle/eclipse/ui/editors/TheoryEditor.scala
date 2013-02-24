@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.CoreException
 import org.eclipse.jface.dialogs.MessageDialog
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
 import org.eclipse.jface.text.{IDocument, IRegion, Region}
+import org.eclipse.jface.text.source.IAnnotationModel
 import org.eclipse.jface.viewers.{ISelectionChangedListener, SelectionChangedEvent}
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.{IEditorInput, IEditorSite, PartInitException}
@@ -164,6 +165,9 @@ class TheoryEditor extends TextEditor {
   }
 
   def document: IDocument = getDocumentProvider.getDocument(getEditorInput)
+  
+  private[editors] def annotationModel: Option[IAnnotationModel] = 
+    Option(getDocumentProvider.getAnnotationModel(getEditorInput))
 
   def isabelleModel: Option[DocumentModel] = state.map(_.isabelleModel)
 
