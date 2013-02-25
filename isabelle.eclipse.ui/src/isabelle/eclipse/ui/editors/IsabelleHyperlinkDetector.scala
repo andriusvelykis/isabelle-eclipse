@@ -103,7 +103,7 @@ class IsabelleHyperlinkDetector(
         val targetRegion = toRegion(new Text.Range(offset, end))
         // the relative path may be a workspace file (platform: URI), so resolve it to file URI
         val resolvedUri = URIThyLoad.resolvePlatformUri(uri)
-        new TextHyperlink(page, linkRegion, resolvedUri, name.orNull, targetRegion, targetRegion)
+        new TextHyperlink(page, linkRegion, name, resolvedUri, targetRegion, targetRegion)
       }
       case CommandLink(command, rangeInCmd, name) => {
         // create command hyperlink, which determines the target editor/location from the command
