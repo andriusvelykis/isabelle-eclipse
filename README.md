@@ -19,9 +19,9 @@ Use the _Update Manager_ in Eclipse to download the plug-ins. Note that this upd
 
 ### Requirements
 
--   **Isabelle 2012**
+-   **Isabelle 2013**
 
-    Isabelle/Eclipse works with Isabelle 2012 **only** at the moment. The Isabelle/Scala layer currently provides no easy backwards compatibility.
+    Isabelle/Eclipse works with Isabelle 2013 **only** at the moment. The Isabelle/Scala layer currently provides no easy backwards compatibility.
     
 -   **Eclipse 3.7 (Indigo) or 4.2 (Juno)**
 
