@@ -408,16 +408,6 @@
       </target>
    </extension>
    <extension
-         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
-      <hyperlinkDetector
-            activate="true"
-            class="isabelle.eclipse.ui.editors.IsabelleHyperlinkDetector"
-            id="isabelle.eclipse.ui.isabelleHyperlinkDetector"
-            name="Isabelle Definition"
-            targetId="isabelle.eclipse.ui.theoryEditor">
-      </hyperlinkDetector>
-   </extension>
-   <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
             class="isabelle.eclipse.ui.preferences.IsabelleUIPreferenceInitializer">

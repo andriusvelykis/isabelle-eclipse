@@ -2,6 +2,7 @@ package isabelle.eclipse.ui.editors
 
 import org.eclipse.jface.resource.ResourceManager
 import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector
 import org.eclipse.jface.text.presentation.{IPresentationReconciler, PresentationReconciler}
 import org.eclipse.jface.text.rules.{DefaultDamagerRepairer, ITokenScanner}
 import org.eclipse.jface.text.source.ISourceViewer
@@ -114,5 +115,14 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }
+
+
+  override def getHyperlinkDetectors(sourceViewer: ISourceViewer): Array[IHyperlinkDetector] = {
+    
+    val detectors = Option(super.getHyperlinkDetectors(sourceViewer)) getOrElse Array()
+    val isabelleHyperlinks = new IsabelleHyperlinkDetector(snapshot)
+    
+    Array(isabelleHyperlinks) ++ detectors
+  }
 
 }
