@@ -32,6 +32,8 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor, resourceManager: Resourc
     ca
   }
 
+  /** The hyperlink detector target ID, as defined in plugin.xml */
+  val ISABELLE_THEORY_HYPERLINK_TARGET = "isabelle.eclipse.ui.theoryEditor"
 
   override def getHyperlinkDetectorTargets(sourceViewer: ISourceViewer): ju.Map[String, IAdaptable] = {
 
@@ -39,8 +41,8 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor, resourceManager: Resourc
 
     // mark the editor as valid target for Isabelle Theory hyperlink detectors
     // (attaches the detector to the editor)
-    targets.put(ISABELLE_THEORY_HYPERLINK_TARGET, editor);
-    targets;
+    targets.put(ISABELLE_THEORY_HYPERLINK_TARGET, editor)
+    targets
   }
 
 }
