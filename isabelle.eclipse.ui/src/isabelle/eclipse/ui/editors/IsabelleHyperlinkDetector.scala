@@ -107,7 +107,7 @@ class IsabelleHyperlinkDetector(
       }
       case CommandLink(command, rangeInCmd, name) => {
         // create command hyperlink, which determines the target editor/location from the command
-        new IsabelleHyperlink(page, linkRegion, command, toRegion(rangeInCmd), name.orNull)
+        new IsabelleCommandHyperlink(page, linkRegion, name, command, Some(toRegion(rangeInCmd)))
       }
     }
   }
