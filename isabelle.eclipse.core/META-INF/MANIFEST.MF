@@ -19,6 +19,5 @@ Export-Package: isabelle.eclipse.core,
  isabelle.eclipse.core.app,
  isabelle.eclipse.core.resource,
  isabelle.eclipse.core.text,
- isabelle.eclipse.core.util,
- isabelle.scala
+ isabelle.eclipse.core.util
 Bundle-Vendor: AI4FM.org
