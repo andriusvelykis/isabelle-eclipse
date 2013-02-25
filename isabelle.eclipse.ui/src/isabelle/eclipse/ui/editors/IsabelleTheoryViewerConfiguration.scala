@@ -36,8 +36,6 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
       IsabelleUIPlugin.getPreferences(),
       EditorsUI.getPreferenceStore()))) {
 
-  /** The hyperlink detector target ID, as defined in plugin.xml */
-  val ISABELLE_THEORY_HYPERLINK_TARGET = "isabelle.eclipse.ui.theoryEditor"
     
   def preferenceStore() = fPreferenceStore
   
