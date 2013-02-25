@@ -68,11 +68,7 @@ object URIThyLoad {
     val path = source_path.expand
 
     if (path.is_absolute) {
-      // path is absolute file system path - use Isabelle's libraries
-      // to resolve (e.g. it has some cygwin considerations)
-      val platformPath = Isabelle_System.platform_path(path);
-      // encode as file system URI
-      efs.URIUtil.toURI(platformPath)
+      isabellePathUri(path)
     } else {
       // assume relative URI and resolve it against the base URI
       val pathStr = path.implode 
@@ -119,6 +115,18 @@ object URIThyLoad {
     val uri = EmfURI.createPlatformResourceURI(path.toString(), true)
     URI.create(uri.toString())
   }
+
+  /**
+   * Retrieves URI of the Isabelle Path representing a file system path
+   */
+  def isabellePathUri(path: Path): URI = {
+    // path is absolute file system path - use Isabelle's libraries
+    // to resolve (e.g. it has some cygwin considerations)
+    val platformPath = Isabelle_System.platform_path(path)
+    // encode as file system URI
+    efs.URIUtil.toURI(platformPath)
+  }
+  
 }
 
 class URIThyLoad(loaded_theories: Set[String] = Set.empty, base_syntax: Outer_Syntax)

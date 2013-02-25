@@ -250,10 +250,10 @@ class TheoryEditor extends TextEditor {
     commandStart.map(new Region(_, command.length)) foreach { cmdRange =>
       {
         val rangeInCommand = regionInCommand.map(range =>
-          new Region(cmdRange.getOffset + command.decode(range.getOffset), range.getLength))
+          new Region(cmdRange.getOffset + range.getOffset, range.getLength))
 
         // reveal & select
-        selectInEditor(cmdRange, rangeInCommand.getOrElse(cmdRange))
+        selectInEditor(rangeInCommand.getOrElse(cmdRange), cmdRange)
       }
     }
   }
