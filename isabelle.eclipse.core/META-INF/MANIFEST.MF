@@ -5,7 +5,6 @@ Bundle-SymbolicName: isabelle.eclipse.core;singleton:=true
 Bundle-Version: 1.2.0.qualifier
 Bundle-Activator: isabelle.eclipse.core.internal.IsabelleCorePlugin
 Require-Bundle: org.eclipse.core.runtime,
- org.scala-ide.scala.library;bundle-version="2.10.0",
  isabelle.pure;bundle-version="[2013.0.1,2013.1.0)",
  org.eclipse.core.filesystem;bundle-version="1.0.0",
  org.eclipse.text,
@@ -21,3 +20,14 @@ Export-Package: isabelle.eclipse.core,
  isabelle.eclipse.core.text,
  isabelle.eclipse.core.util
 Bundle-Vendor: AI4FM.org
+Import-Package: scala;version="2.10.0",
+ scala.actors;version="2.10.0",
+ scala.annotation;version="2.10.0",
+ scala.collection;version="2.10.0",
+ scala.collection.convert;version="2.10.0",
+ scala.collection.generic;version="2.10.0",
+ scala.collection.immutable;version="2.10.0",
+ scala.collection.mutable;version="2.10.0",
+ scala.math;version="2.10.0",
+ scala.runtime;version="2.10.0",
+ scala.util;version="2.10.0"
