@@ -16,7 +16,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor;bundle-version="3.6.1",
  isabelle.pure;bundle-version="[2013.0.1,2013.1.0)",
  isabelle.eclipse.core;bundle-version="1.2.0",
- org.eclipse.core.databinding.observable;bundle-version="1.4.0",
  org.eclipse.core.expressions,
  org.eclipse.help
 Bundle-ActivationPolicy: lazy
