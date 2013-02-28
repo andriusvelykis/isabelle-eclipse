@@ -13,4 +13,26 @@
   <name>Isabelle/Eclipse PDE target definition</name>
 
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>lt.velykis.maven</groupId>
+        <artifactId>pde-target-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+          <execution>
+            <id>pde-target</id>
+            <goals>
+              <goal>add-pom-dependencies</goal>
+            </goals>
+            <configuration>
+              <baseDefinition>${project.basedir}/isabelle.eclipse.target.target</baseDefinition>
+              <outputFile>${project.build.directory}/isabelle.eclipse-pde.target</outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
