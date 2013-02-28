@@ -11,6 +11,7 @@
 
   <modules>
     <module>isabelle-scala</module>
+    <module>isabelle.eclipse.target</module>
     <module>isabelle.eclipse.core</module>
     <module>isabelle.eclipse.launch</module>
     <module>isabelle.eclipse.ui</module>
@@ -43,14 +44,7 @@
       <version>${scala.version}</version>
     </dependency>
   </dependencies>
-  
-  <repositories>
-    <repository>
-       <id>eclipse-indigo</id>
-       <layout>p2</layout>
-       <url>http://download.eclipse.org/releases/indigo</url>
-    </repository>
-  </repositories>
+
 
   <build>
     <sourceDirectory>${basedir}/src</sourceDirectory>
@@ -69,6 +63,13 @@
         <version>${tycho.version}</version>
         <configuration>
           <pomDependencies>consider</pomDependencies>
+          <target>
+            <artifact>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>isabelle.eclipse.target</artifactId>
+              <version>${project.version}</version>
+            </artifact>
+          </target>
           <environments>
             <environment>
               <os>linux</os>
