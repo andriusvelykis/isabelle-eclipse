@@ -20,6 +20,7 @@ import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 import AccessibleUtil.addControlAccessibleListener
 import ObservableUtil.NotifyPublisher
 import isabelle.eclipse.core.app.IsabelleBuild
+import isabelle.eclipse.launch.IsabelleLaunchPlugin
 import isabelle.eclipse.launch.config.{IsabelleLaunch, IsabelleLaunchConstants}
 import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, resolvePath, setConfigValue}
 
@@ -45,6 +46,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
   
   private var lastFinishedJob: Option[SessionLoadJob] = None
   private var sessionLoadJob: Option[SessionLoadJob] = None
+  private var lastLoadError: Option[IStatus] = None
   
   
   /**
@@ -152,7 +154,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     isaPath match {
       case None => {
         sessionLoadJob = None
-        finishedLoadingSessions(None, None, false)
+        finishedLoadingSessions(None, Right(Nil), false)
       }
       
       case Some(path) => {
@@ -184,10 +186,14 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       val sessionLoad = IsabelleLaunch.availableSessions(isaPath, moreDirs, envMap)
 
       runInUI(sessionCheck.viewer.getControl) { () =>
-        finishedLoadingSessions(Some(this), sessionLoad.right.toOption, true)
+        finishedLoadingSessions(Some(this), sessionLoad, true)
       }
-      
-      sessionLoad fold ( err => err, success => Status.OK_STATUS )
+
+      // always return OK to avoid jarring error messages in UI - the error is reported
+      // by logging here and in #finishedLoadingSessions() then #isValid()
+//      sessionLoad fold ( err => err, success => Status.OK_STATUS )
+      sessionLoad.left foreach IsabelleLaunchPlugin.log
+      Status.OK_STATUS
     }
   }
   
@@ -205,12 +211,12 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
   }
 
   private def finishedLoadingSessions(loadJob: Option[SessionLoadJob],
-                                      sessionsOpt: Option[List[String]],
+                                      sessionsEither: Either[IStatus, List[String]],
                                       callback: Boolean) =
     if (sessionLoadJob == loadJob && !sessionCheck.viewer.getControl.isDisposed) {
       // correct loading job and config still open
       
-      val sessions = sessionsOpt getOrElse Nil
+      val sessions = sessionsEither.right getOrElse Nil
       
       val currentSelection = selectedSession
       
@@ -230,6 +236,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       
       sessionLoadJob = None
       lastFinishedJob = loadJob
+      lastLoadError = sessionsEither.left.toOption
       progressMonitorPart.getParent.setVisible(false)
       progressMonitorPart.done()
       
@@ -250,6 +257,9 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       // still have not finished the loading job, cannot validate
       Some(Left("Loading available Isabelle logics for selection..."))
       
+    } else if (lastLoadError.isDefined) {
+      Some(Left(lastLoadError.get.getMessage))
+
     } else if (sessionCheck.viewer.getTree.getItemCount == 0) {
       Some(Left("There are no Isabelle logics available in the indicated location"))
 
