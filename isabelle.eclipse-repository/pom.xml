@@ -11,5 +11,67 @@
   <packaging>eclipse-repository</packaging>
 
   <name>Isabelle/Eclipse p2 Repository</name>
+
+
+  <profiles>
+    <profile>
+      <!-- A special profile to regenerate composite p2 repository for Isabelle/Eclipse releases.
+           This should be done when the repositories change, e.g. a new release is added - it will
+           generate a composite repository.
+
+           Running the script requires having an Eclipse installation. Run it with the following
+           command:
+
+           mvn generate-sources -P generate-composite-repo -N -Declipse.dir=ECLIPSE_DIR -Dtycho.mode=maven
+
+           -->
+      <id>generate-composite-repo</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <p2exec.dir>${project.basedir}/composite-repo</p2exec.dir>
+        <repo.targetDir>${project.build.directory}/composite-repo/</repo.targetDir>
+        <repo.targetDir.2012>${repo.targetDir}isabelle2012/</repo.targetDir.2012>
+        <repo.name>Isabelle/Eclipse Releases</repo.name>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.7</version>
+            <executions>
+              <execution>
+                <id>generate-isabelle2012</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <tasks>
+                    <delete dir="${repo.targetDir.2012}"/>
+                    <mkdir dir="${repo.targetDir.2012}"/>
+                    <fail unless="eclipse.dir">Eclipse path property 'eclipse.dir' not set. Indicate path to Eclipse directory using -Declipse.dir=ECLIPSE_DIR</fail>
+                    <exec executable="${p2exec.dir}/comp-repo.sh"
+                          dir="${p2exec.dir}">
+                      <arg value="${repo.targetDir.2012}"/>
+                      <arg value="--eclipse"/>
+                      <arg value="${eclipse.dir}"/>
+                      <arg value="--name"/>
+                      <arg value="${repo.name}"/>
+                      <arg value="add"/>
+                      <!-- 1.0.0 release for Isabelle 2012 (relative path) -->
+                      <arg value="1.0.0"/>
+                    </exec>
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   
 </project>
