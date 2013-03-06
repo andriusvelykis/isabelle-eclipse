@@ -11,7 +11,7 @@ in a single update site
 
 To run the script, use Maven build in repository project directory with the following command:
 
-    mvn generate-sources -P generate-composite-repo -N -Declipse.dir=ECLIPSE_DIR
+    mvn generate-sources -P generate-composite-repo -N -Declipse.dir=ECLIPSE_DIR -Dtycho.mode=maven
 
 
 ## Running the script standalone
