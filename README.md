@@ -26,6 +26,13 @@ Use the _Update Manager_ in Eclipse to download the plug-ins. Note that this upd
 -   **Eclipse 3.7 (Indigo) or 4.2 (Juno)**
 
     Isabelle/Eclipse should work with any Eclipse distribution (e.g. Eclipse Classic or just the minimal Platform Runtime). The required Scala library is currently distributed together with the plug-ins.
+
+## Previous versions
+
+An older version of Isabelle/Eclipse plug-ins is available for Isabelle 2012. Get them from the update site:
+
+[http://www.ai4fm.org/isabelle-eclipse/download/isabelle2012/releases/](http://www.ai4fm.org/isabelle-eclipse/download/isabelle2012/releases/)
+
     
 ## Contributing
 
