@@ -33,7 +33,7 @@ class RadioFlagComponent(attributeName: String,
 
     group = new Group(parent, SWT.NONE)
     group.setText(groupTitle)
-    group.setLayout(GridLayoutFactory.fillDefaults.numColumns(2).create)
+    group.setLayout(GridLayoutFactory.swtDefaults.numColumns(2).create)
     group.setLayoutData(GridDataFactory.fillDefaults.grab(true, false).create)
     group.setFont(parent.getFont)
     
