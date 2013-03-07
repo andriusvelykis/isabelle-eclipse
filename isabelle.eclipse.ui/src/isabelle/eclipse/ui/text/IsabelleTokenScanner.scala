@@ -1,25 +1,22 @@
 package isabelle.eclipse.ui.text
 
 import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.rules.IToken
-import org.eclipse.jface.text.rules.Token
+import org.eclipse.jface.text.rules.{IToken, Token}
 
-import isabelle.Outer_Syntax
-import isabelle.Scan
-import isabelle.Session
-import isabelle.eclipse.ui.editors.TheoryEditor
+import isabelle.{Outer_Syntax, Scan, Session}
 
-/** A token scanner that utilises Isabelle/Scala tokeniser. Requires Isabelle Session to be loaded,
-  * which is retrieved via the editor.
-  * 
-  * @author Andrius Velykis
-  */
-class IsabelleTokenScanner(val editor: TheoryEditor) extends AbstractTokenStreamScanner {
 
-  private def syntax: Option[Outer_Syntax] = {
-    val session = editor.isabelleModel.map(_.session).filter(_.is_ready)
-    session.map(_.recent_syntax)
-  }
+/**
+ * A token scanner that utilises Isabelle/Scala tokeniser.
+ *
+ * Requires Isabelle Session to be loaded.
+ *
+ * @author Andrius Velykis
+ */
+class IsabelleTokenScanner(session: => Option[Session]) extends AbstractTokenStreamScanner {
+
+  private def syntax: Option[Outer_Syntax] =
+    session filter (_.is_ready) map (_.recent_syntax)
 
   protected def tokenStream(document: IDocument, offset: Int, length: Int): Stream[TokenInfo] =
     syntax match {

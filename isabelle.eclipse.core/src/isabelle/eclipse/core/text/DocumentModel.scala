@@ -4,22 +4,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 
 import scala.collection.mutable.ListBuffer
 
-import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.core.runtime.NullProgressMonitor
-import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.{IProgressMonitor, NullProgressMonitor, Status}
 import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.jface.text.DocumentEvent
-import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.IDocumentListener
+import org.eclipse.jface.text.{DocumentEvent, IDocument, IDocumentListener}
 
-import isabelle.Document
-import isabelle.Exn
-import isabelle.Session
-import isabelle.Text
-import isabelle.Thy_Header
-import isabelle.eclipse.core.IsabelleCorePlugin
-import isabelle.eclipse.core.IsabelleCorePlugin.ISABELLE_SUBMIT
-import isabelle.eclipse.core.util.PostponeJob
+import isabelle.{Document, Session, Text}
+import isabelle.eclipse.core.util.{PostponeJob, SerialSchedulingRule}
+import isabelle.eclipse.core.util.ConcurrentUtil.FunReadWriteLock
 
 
 /** A model for the Isabelle text document.
@@ -35,6 +26,16 @@ object DocumentModel {
     model.init()
     model
   }
+
+  /**
+   * A rule to use in Job framework that ensures serial execution of jobs.
+   * Used for submitting content to the Isabelle prover backend.
+   */
+  val serialSubmitRule = new SerialSchedulingRule
+  
+  // TODO add as a configurable option
+  val flushDelay = 300
+  
 }
 
 class DocumentModel private (val session: Session, val document: IDocument, val name: Document.Node.Name) {
@@ -44,9 +45,8 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
   
   private var pendingPerspective = false
 
-  private def parseNodeHeader(): Document.Node_Header = Exn.capture {
-    IsabelleCorePlugin.getIsabelle.thyLoad.check_header(name, Thy_Header.read(document.get))
-  }
+  private def parseNodeHeader(): Document.Node.Header =
+    session.thy_load.check_thy_text(name, document.get)
 
   /**
    * Indicate the document perspective: active portion of the document that should be processed
@@ -66,7 +66,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
   }
 
   // TODO also allow explicitly saying how much to calculate - e.g. with a submitOffset?
-  private def currentPerspective() = Text.Perspective(List(activePerspectiveRange))
+  private def currentPerspective = Text.Perspective(List(activePerspectiveRange))
 
   /**
    * Indicate the offset up to which everything should be processed
@@ -94,10 +94,34 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
     
     // submit the full perspective
     lockSubmit(monitor) {
-      // TODO caching for node header?
-      session.edit_node(name, parseNodeHeader(), Text.Perspective(List(documentRange)), Nil)
+      session.update(nodeEdits(Text.Perspective(List(documentRange)), Nil))
     }
   }
+
+  /* edits */
+
+  def initEdits(): List[Document.Edit_Text] = {
+
+    val header = parseNodeHeader()
+    val text = document.get
+    val perspective = currentPerspective
+
+    List(session.header_edit(name, header),
+      name -> Document.Node.Clear(),
+      name -> Document.Node.Edits(List(Text.Edit.insert(0, text))),
+      name -> Document.Node.Perspective(perspective))
+  }
+
+  def nodeEdits(perspective: Text.Perspective,
+                textEdits: List[Text.Edit]): List[Document.Edit_Text] = {
+
+    val header = parseNodeHeader()
+
+    List(session.header_edit(name, header),
+      name -> Document.Node.Edits(textEdits),
+      name -> Document.Node.Perspective(perspective))
+  }
+  
   
   /* pending text edits */
 
@@ -108,14 +132,13 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
     private var lastPerspective: Text.Perspective = Text.Perspective.empty
 
     // functional lock based on Java read/write lock
-    import isabelle.eclipse.core.util.ConcurrentUtil.funLock
     private val lock = new ReentrantReadWriteLock()
     
     
     /** a job to perform edits in a separate (and delayed) thread */
     private val flushJob = new PostponeJob("Sending Changes to Prover", doFlush) {
       // set the submit rule
-      override def config(job: Job) = job.setRule(ISABELLE_SUBMIT)
+      override def config(job: Job) = job.setRule(DocumentModel.serialSubmitRule)
     }
     
     
@@ -131,21 +154,13 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
         edits
       }
 
-//      val perspective = if (pendingPerspective) {
-//        pendingPerspective = false
-//        currentPerspective()
-//      } else {
-//        lastPerspective
-//      }
-
-      val newPerspective = currentPerspective()
+      val newPerspective = currentPerspective
 
       if (!edits.isEmpty || lastPerspective != newPerspective) {
         lastPerspective = newPerspective
 
         lockSubmit(monitor) {
-          // TODO cache node header?
-          session.edit_node(name, parseNodeHeader(), newPerspective, edits)
+          session.update(nodeEdits(newPerspective, edits))
         }
       }
 
@@ -153,7 +168,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
     }
 
     def flush(delay: Long = 0) = flushJob.run(delay)
-    def flushDelayed() = flush(session.input_delay.ms)
+    def flushDelayed() = flush(DocumentModel.flushDelay)
 
     def +=(edit: Text.Edit) {
       
@@ -170,7 +185,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
       // need a lock on the document for initialisation? E.g. to avoid edits while initialising?
       // technically this should come from the SWT thread so should not be any need?
       lockSubmit() {
-        session.init_node(name, parseNodeHeader(), currentPerspective(), document.get())
+        session.update(initEdits())
       }
     }
 
@@ -241,9 +256,10 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
 
     val jobs = Job.getJobManager
 
-    jobs.beginRule(ISABELLE_SUBMIT, monitor)
+    val submitRule = DocumentModel.serialSubmitRule
+    jobs.beginRule(submitRule, monitor)
     f
-    jobs.endRule(ISABELLE_SUBMIT)
+    jobs.endRule(submitRule)
   }
   
 }

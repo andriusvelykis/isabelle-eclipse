@@ -9,6 +9,7 @@ import isabelle.Symbol;
 import isabelle.eclipse.core.text.DocumentModel;
 import isabelle.eclipse.ui.IsabelleImages;
 
+import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -32,9 +33,11 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
     private String lastError = null;
     
     private final TheoryEditor editor;
+    private final ResourceManager resourceManager;
     
-	public IsabelleContentAssistProcessor(TheoryEditor editor) {
+	public IsabelleContentAssistProcessor(TheoryEditor editor, ResourceManager resourceMgr) {
 		this.editor = editor;
+		this.resourceManager = resourceMgr;
 	}
 
 	@Override
@@ -61,7 +64,7 @@ public class IsabelleContentAssistProcessor implements IContentAssistProcessor {
 				return null;
 			}
 			
-			Image image = IsabelleImages.getImage(IsabelleImages.IMG_CONTENT_ASSIST);
+			Image image = resourceManager.createImageWithDefault(IsabelleImages.CONTENT_ASSIST());
 			
 			List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 

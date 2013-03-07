@@ -1,22 +1,20 @@
 package isabelle.eclipse.core.resource
 
-import isabelle.Document
-import isabelle.Isabelle_System
-import isabelle.Library
-import isabelle.Path
-import isabelle.Thy_Load
-import isabelle.Thy_Header
-import isabelle.eclipse.core.IsabelleCorePlugin
-import isabelle.eclipse.core.text.DocumentModel
-import java.net.URI
-import java.net.URISyntaxException
-import org.eclipse.core.filesystem.EFS
+import java.net.{URI, URISyntaxException}
+
+import scala.language.implicitConversions
+import scala.util.{Failure, Success, Try}
+
 import org.eclipse.core.filebuffers.FileBuffers
+import org.eclipse.core.{filesystem => efs}
+import org.eclipse.core.filesystem.EFS
+import org.eclipse.core.{runtime => erun}
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.emf.common.CommonPlugin
-import org.eclipse.core.{runtime => erun}
-import org.eclipse.core.{filesystem => efs}
 import org.eclipse.emf.common.util.{URI => EmfURI}
+
+import isabelle.{Document, Isabelle_System, Outer_Syntax, Path, Symbol, Thy_Header, Thy_Load}
+import isabelle.eclipse.core.internal.IsabelleCorePlugin.{error, log}
 
 
 /** A theory loader (and a companion object) that uses URIs to enable file-system operations. 
@@ -70,11 +68,7 @@ object URIThyLoad {
     val path = source_path.expand
 
     if (path.is_absolute) {
-      // path is absolute file system path - use Isabelle's libraries
-      // to resolve (e.g. it has some cygwin considerations)
-      val platformPath = Isabelle_System.platform_path(path);
-      // encode as file system URI
-      efs.URIUtil.toURI(platformPath)
+      isabellePathUri(path)
     } else {
       // assume relative URI and resolve it against the base URI
       val pathStr = path.implode 
@@ -84,7 +78,7 @@ object URIThyLoad {
         base.resolve(sourceUri);
       } catch {
         case e: URISyntaxException => {
-          IsabelleCorePlugin.log(e);
+          log(error(Some(e)));
           // at the worst case, just append the path (expecting a directory here)
           erun.URIUtil.append(base, pathStr);
         }
@@ -121,76 +115,87 @@ object URIThyLoad {
     val uri = EmfURI.createPlatformResourceURI(path.toString(), true)
     URI.create(uri.toString())
   }
+
+  /**
+   * Retrieves URI of the Isabelle Path representing a file system path
+   */
+  def isabellePathUri(path: Path): URI = {
+    // path is absolute file system path - use Isabelle's libraries
+    // to resolve (e.g. it has some cygwin considerations)
+    val platformPath = Isabelle_System.platform_path(path)
+    // encode as file system URI
+    efs.URIUtil.toURI(platformPath)
+  }
+  
 }
 
-class URIThyLoad extends Thy_Load {
+class URIThyLoad(loaded_theories: Set[String] = Set.empty, base_syntax: Outer_Syntax)
+    extends Thy_Load(loaded_theories, base_syntax) {
   
   import URIThyLoad._
   
-  /** Use URI-based resolution of import names. */
-  private def importName(baseUri: URI, s: String): Document.Node.Name =
+  /*
+   * Resolves imported document names.
+   * 
+   * Overloaded to allow for URI resolution.
+   */
+  override def import_name(base_name: Document.Node.Name, s: String): Document.Node.Name =
   {
+    val baseUri = base_name.uri
     val theory = Thy_Header.base_name(s)
-    if (is_loaded(theory)) Document.Node.Name(theory, "", theory)
+    if (loaded_theories(theory)) Document.Node.Name(theory, "", theory)
     else {
       // explode the path into parts
       val namePath = Path.explode(s)
-      val path = thy_path(namePath)
+      val path = Thy_Load.thy_path(namePath)
       
       // resolve the relative path (similar to append, but can resolve relative paths)
       val nodeUri = resolveURI(baseUri, path)
-      
       URINodeName(nodeUri, theory)
     }
   }
   
-  /* Checks the theory header for consistency and resolves imported theories as document names.
-   * 
-   * Redeclared to allow for URI resolution.
-   * 
-   * @see isabelle.Thy_Load#check_header(Document.Node.Name, Thy_Header)
-   */
-  override def check_header(name: Document.Node.Name, header: Thy_Header): Document.Node.Deps =
-  {
-    val uri = name.uri
-    val imports = header.imports.map(importName(uri, _))
-    // FIXME val uses = header.uses.map(p => (append(name.dir, Path.explode(p._1)), p._2))
-    val uses = header.uses
-    if (name.theory != header.name)
-      Library.error("Bad file name " + thy_path(Path.basic(name.theory)) + " for theory " + Library.quote(header.name))
-    Document.Node.Deps(imports, header.keywords, uses)
+  
+  @throws[CoreException]
+  private def loadDocumentContents(name: Document.Node.Name): String = {
+    // resolve the document URI to load its contents
+    val uri = URIThyLoad.resolveDocumentUri(name)
+    
+    val store = EFS.getStore(uri)
+
+    // Load the file contents using FileBuffers. In this way if the file is already open by
+    // some editor, we may avoid the need to reopen it, as the file buffer may be cached.
+    val manager = FileBuffers.getTextFileBufferManager
+    manager.connectFileStore(store, null)
+    val buffer = manager.getFileStoreTextFileBuffer(store)
+    val fileText = buffer.getDocument.get
+
+    manager.disconnectFileStore(store, null)
+    
+    fileText
   }
 
-  /* Reads theory header for the given document reference. The implementation resolves the URI and
-   * loads the file contents using Eclipse EFS, thus benefiting from the support for non-local
-   * filesystems.
+  /*
+   * Performs document operations that require its text.
    * 
-   * @see isabelle.Thy_Load#check_thy(Document.Node.Name)
+   * The implementation resolves the URI and loads the file contents using Eclipse EFS,
+   * thus benefiting from the support for non-local filesystems.
    */
-  override def read_header(name: Document.Node.Name): Thy_Header = {
-    // resolve the document URI to load its contents
-    val uri = URIThyLoad.resolveDocumentUri(name);
+  override def with_thy_text[A](name: Document.Node.Name, f: CharSequence => A): A = {
+    
+    val documentText = Try(loadDocumentContents(name))
 
-    try {
-      val store = EFS.getStore(uri);
-
-      // Load the file contents using FileBuffers. In this way if the file is already open by
-      // some editor, we may avoid the need to reopen it, as the file buffer may be cached.
-      val manager = FileBuffers.getTextFileBufferManager();
-      manager.connectFileStore(store, null);
-      val buffer = manager.getFileStoreTextFileBuffer(store);
-      val fileText = buffer.getDocument().get();
-
-      manager.disconnectFileStore(store, null);
-
-      // read the header from the file
-      Thy_Header.read(fileText);
-
-    } catch {
-      case e: CoreException => {
-        IsabelleCorePlugin.log(e);
+    documentText match {
+      
+      case Success(text) => {
+        Symbol.decode_strict(text)
+        f(text)
+      }
+      
+      case Failure(e) => {
+        log(error(Some(e)))
         // in case of failure, perform default loading
-        super.read_header(name);
+        super.with_thy_text(name, f)
       }
     }
   }

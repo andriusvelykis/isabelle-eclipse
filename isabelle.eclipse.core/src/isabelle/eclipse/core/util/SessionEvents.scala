@@ -5,8 +5,9 @@ import scala.actors.Actor._
 
 import isabelle.Event_Bus
 import isabelle.Session
-import isabelle.eclipse.core.IsabelleCorePlugin
+import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
+
 
 /** Support for listening to session events.
   *
@@ -34,7 +35,7 @@ trait SessionEvents {
     */
   protected def initSessionEvents() {
     // add listener to the isabelle app to react to session init
-    val isabelle = IsabelleCorePlugin.getIsabelle
+    val isabelle = IsabelleCore.isabelle
     isabelle.systemEvents += systemListener
     
     if (isabelle.isInit) {
@@ -47,7 +48,7 @@ trait SessionEvents {
   /** Disconnects listeners from session events. */
   protected def disposeSessionEvents() {
     // remove isabelle app listener
-    val isabelle = IsabelleCorePlugin.getIsabelle
+    val isabelle = IsabelleCore.isabelle
     isabelle.systemEvents -= systemListener
     
     isabelle.session foreach shutdownSession

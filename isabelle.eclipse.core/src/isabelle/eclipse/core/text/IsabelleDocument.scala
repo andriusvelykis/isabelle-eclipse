@@ -1,7 +1,7 @@
 package isabelle.eclipse.core.text
 
 import isabelle.Symbol
-import isabelle.eclipse.core.IsabelleCorePlugin
+import isabelle.eclipse.core.IsabelleCore
 import org.eclipse.jface.text.BadLocationException
 import org.eclipse.jface.text.Document
 import org.eclipse.jface.text.DocumentEvent
@@ -115,7 +115,7 @@ object IsabelleDocument {
 
     val text = from.document.get()
 
-    val isabelle = IsabelleCorePlugin.getIsabelle
+    val isabelle = IsabelleCore.isabelle
     val transcoded = if (isabelle.isInit) {
       transcode(text)
     } else {
@@ -138,7 +138,7 @@ object IsabelleDocument {
   private def syncEvent(from: UpdatingDocument, to: UpdatingDocument, transcode: String => String,
       event: DocumentEvent, originalFromEndLine: Option[Int]) {
 
-    val isabelle = IsabelleCorePlugin.getIsabelle
+    val isabelle = IsabelleCore.isabelle
     // check if Isabelle is initialised, otherwise we do not have access to symbol encodings
     val edit = if (isabelle.isInit) {
       

@@ -2,11 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Isabelle Core
 Bundle-SymbolicName: isabelle.eclipse.core;singleton:=true
-Bundle-Version: 1.1.0.qualifier
-Bundle-Activator: isabelle.eclipse.core.IsabelleCorePlugin
+Bundle-Version: 1.2.0.qualifier
+Bundle-Activator: isabelle.eclipse.core.internal.IsabelleCorePlugin
 Require-Bundle: org.eclipse.core.runtime,
- org.scala-ide.scala.library;bundle-version="2.9.1",
- isabelle.pure;bundle-version="[2012.0.0,2012.1.0)",
+ isabelle.pure;bundle-version="[2013.0.1,2013.1.0)",
  org.eclipse.core.filesystem;bundle-version="1.0.0",
  org.eclipse.text,
  org.eclipse.core.resources,
@@ -14,11 +13,21 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.common;bundle-version="2.3.0",
  org.eclipse.compare.core;bundle-version="3.5.0"
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: isabelle.eclipse.core,
  isabelle.eclipse.core.app,
  isabelle.eclipse.core.resource,
  isabelle.eclipse.core.text,
- isabelle.eclipse.core.util,
- isabelle.scala
+ isabelle.eclipse.core.util
 Bundle-Vendor: AI4FM.org
+Import-Package: scala;version="2.10.0",
+ scala.actors;version="2.10.0",
+ scala.annotation;version="2.10.0",
+ scala.collection;version="2.10.0",
+ scala.collection.convert;version="2.10.0",
+ scala.collection.generic;version="2.10.0",
+ scala.collection.immutable;version="2.10.0",
+ scala.collection.mutable;version="2.10.0",
+ scala.math;version="2.10.0",
+ scala.runtime;version="2.10.0",
+ scala.util;version="2.10.0"

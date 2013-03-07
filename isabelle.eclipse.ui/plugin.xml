@@ -127,6 +127,29 @@
             colorPreferenceValue="244,200,45">
       </specification>
       <specification
+            annotationType="isabelle.eclipse.ui.annotation.tracing"
+            textPreferenceKey="tracingMessage"
+            presentationLayer="4"
+            showInNextPrevDropdownToolbarAction="true"
+            textPreferenceValue="true"
+            label="Tracing Messages"
+            colorPreferenceKey="tracingMessageColor"
+            showInNextPrevDropdownToolbarActionKey="showTracingInNextPrevDropdownToolbarAction"
+            isGoToNextNavigationTargetKey="isTracingGoToNextNavigationTarget"
+            isGoToNextNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="isTracingGoToPreviousNavigationTarget"
+            isGoToPreviousNavigationTarget="true"
+            textStylePreferenceKey="tracingTextStyle"
+			textStylePreferenceValue="NONE"             
+            overviewRulerPreferenceKey="tracingMessageInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            verticalRulerPreferenceKey="tracingMessageInVerticalRuler"
+            verticalRulerPreferenceValue="false"
+            highlightPreferenceKey="tracingMessageHighlighting"
+            highlightPreferenceValue="true"
+            colorPreferenceValue="240,248,255">
+      </specification>
+      <specification
             annotationType="isabelle.eclipse.ui.annotation.markup.bad"
             colorPreferenceKey="markupBadColor"
             colorPreferenceValue="255,204,204"
@@ -145,21 +168,21 @@
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
-            annotationType="isabelle.eclipse.ui.annotation.markup.hilite"
-            colorPreferenceKey="markupHiliteColor"
+            annotationType="isabelle.eclipse.ui.annotation.markup.intensify"
+            colorPreferenceKey="markupIntensifyColor"
             colorPreferenceValue="255,235,194"
-            highlightPreferenceKey="markupHiliteHighlighting"
+            highlightPreferenceKey="markupIntensifyHighlighting"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
             label="Isabelle Highlight Markup"
-            overviewRulerPreferenceKey="markupHiliteInOverviewRuler"
+            overviewRulerPreferenceKey="markupIntensifyInOverviewRuler"
             overviewRulerPreferenceValue="true"
             presentationLayer="2"
-            textPreferenceKey="markupHiliteIndication"
+            textPreferenceKey="markupIntensifyIndication"
             textPreferenceValue="false"
-            textStylePreferenceKey="markupHiliteTextStyle"
+            textStylePreferenceKey="markupIntensifyTextStyle"
             textStylePreferenceValue="NONE"
-            verticalRulerPreferenceKey="markupHiliteInVerticalRuler"
+            verticalRulerPreferenceKey="markupIntensifyInVerticalRuler"
             verticalRulerPreferenceValue="false">
       </specification>
       <specification
@@ -279,10 +302,13 @@
             markerSeverity="1">
       </type>
       <type
+            name="isabelle.eclipse.ui.annotation.tracing">
+      </type>
+      <type
             name="isabelle.eclipse.ui.annotation.markup.bad">
       </type>
       <type
-            name="isabelle.eclipse.ui.annotation.markup.hilite">
+            name="isabelle.eclipse.ui.annotation.markup.intensify">
       </type>
       <type
             name="isabelle.eclipse.ui.annotation.markup.token">
@@ -336,18 +362,6 @@
             </with>
          </activeWhen>
       </handler>
-      <handler
-            class="isabelle.eclipse.ui.actions.OutputViewSelectAllHandler"
-            commandId="org.eclipse.ui.edit.selectAll">
-         <activeWhen>
-            <with
-                  variable="activePartId">
-               <equals
-                     value="isabelle.eclipse.ui.proverOutputView">
-               </equals>
-            </with>
-         </activeWhen>
-      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -394,19 +408,9 @@
       </target>
    </extension>
    <extension
-         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
-      <hyperlinkDetector
-            activate="true"
-            class="isabelle.eclipse.ui.editors.IsabelleHyperlinkDetector"
-            id="isabelle.eclipse.ui.isabelleHyperlinkDetector"
-            name="Isabelle Definition"
-            targetId="isabelle.eclipse.ui.theoryEditor">
-      </hyperlinkDetector>
-   </extension>
-   <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="isabelle.eclipse.ui.preferences.ColourPreferenceInitializer">
+            class="isabelle.eclipse.ui.preferences.IsabelleUIPreferenceInitializer">
       </initializer>
    </extension>
 

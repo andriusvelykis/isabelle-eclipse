@@ -45,5 +45,5 @@ object StringTokenComparator {
   /** Creates a word-based range comparator for the given text block. */
   def wordComparator(text: String) =
     // split into words and whitespaces
-    new StringTokenComparator(text.split("(?!^)\\b") toIndexedSeq)
+    new StringTokenComparator(text.split("(?!^)\\b").toIndexedSeq)
 }

@@ -1,32 +1,25 @@
 package isabelle.eclipse.ui.editors
 
-import java.net.URI
-import java.net.URISyntaxException
+import java.net.{URI, URISyntaxException}
 
 import scala.actors.Actor._
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.eclipse.core.filesystem.EFS
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.jface.dialogs.MessageDialog
-import org.eclipse.jface.resource.JFaceResources
-import org.eclipse.jface.resource.LocalResourceManager
-import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.IRegion
-import org.eclipse.jface.text.Region
+import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
+import org.eclipse.jface.text.{IDocument, IRegion, Region}
+import org.eclipse.jface.text.source.IAnnotationModel
+import org.eclipse.jface.viewers.{ISelectionChangedListener, SelectionChangedEvent}
 import org.eclipse.swt.widgets.Composite
-import org.eclipse.ui.IEditorInput
-import org.eclipse.ui.IEditorSite
-import org.eclipse.ui.PartInitException
+import org.eclipse.ui.{IEditorInput, IEditorSite, PartInitException}
 import org.eclipse.ui.contexts.IContextService
 import org.eclipse.ui.editors.text.TextEditor
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 
-import isabelle.Command
-import isabelle.Document
-import isabelle.Session
-import isabelle.Thy_Header
-import isabelle.eclipse.core.IsabelleCorePlugin
+import isabelle.{Command, Document, Session, Thy_Header, Thy_Info}
+import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
 import isabelle.eclipse.core.text.DocumentModel
@@ -35,7 +28,8 @@ import isabelle.eclipse.core.util.LoggingActor
 import isabelle.eclipse.ui.IsabelleUIPlugin
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
-import isabelle.eclipse.ui.views.TheoryOutlinePage
+import isabelle.eclipse.ui.views.outline.TheoryOutlinePage
+
 
 /** The editor for Isabelle theory files.
   * 
@@ -63,7 +57,13 @@ class TheoryEditor extends TextEditor {
   private var state: Option[State] = None
   private var init = false;
 
-  val outlinePage = new TheoryOutlinePage(this)
+  val outlinePage = new TheoryOutlinePage(this, getSourceViewer)
+  // listen to outline page selection changes and highlight the selection in editor
+  outlinePage.addSelectionChangedListener(new ISelectionChangedListener {
+    override def selectionChanged(event: SelectionChangedEvent) =
+      outlinePage.selectedRegionInEditor foreach (r => selectInEditor(r, r))
+  })
+
 
   private val systemListener = LoggingActor {
     loop {
@@ -111,7 +111,7 @@ class TheoryEditor extends TextEditor {
 
     if (init) {
       // connect & init state with the current session and the new document
-      IsabelleCorePlugin.getIsabelle.session.foreach(initState(_, input))
+      IsabelleCore.isabelle.session.foreach(initState(_, input))
     }
   }
 
@@ -119,7 +119,7 @@ class TheoryEditor extends TextEditor {
     super.createPartControl(parent)
 
     // add listener to the isabelle app to react to session init
-    val isabelle = IsabelleCorePlugin.getIsabelle
+    val isabelle = IsabelleCore.isabelle
     isabelle.systemEvents += systemListener
 
     // init state if session is already available
@@ -165,6 +165,9 @@ class TheoryEditor extends TextEditor {
   }
 
   def document: IDocument = getDocumentProvider.getDocument(getEditorInput)
+  
+  private[editors] def annotationModel: Option[IAnnotationModel] = 
+    Option(getDocumentProvider) flatMap (p => Option(p.getAnnotationModel(getEditorInput)))
 
   def isabelleModel: Option[DocumentModel] = state.map(_.isabelleModel)
 
@@ -172,12 +175,12 @@ class TheoryEditor extends TextEditor {
   /** reload input in the UI thread */
   private def reload() = uiJob("Reloading editor") { setInput(getEditorInput()) }
 
-  private def reloadOutline() = uiJob("Reloading outline") { outlinePage.reload() }
+  private def reloadOutline() = outlinePage.reload()
 
 
   override def dispose() {
 
-    IsabelleCorePlugin.getIsabelle.systemEvents -= systemListener
+    IsabelleCore.isabelle.systemEvents -= systemListener
 
     // TODO review what happens if a second editor is opened for the same input
     disposeState()
@@ -247,10 +250,10 @@ class TheoryEditor extends TextEditor {
     commandStart.map(new Region(_, command.length)) foreach { cmdRange =>
       {
         val rangeInCommand = regionInCommand.map(range =>
-          new Region(cmdRange.getOffset + command.decode(range.getOffset), range.getLength))
+          new Region(cmdRange.getOffset + range.getOffset, range.getLength))
 
         // reveal & select
-        selectInEditor(cmdRange, rangeInCommand.getOrElse(cmdRange))
+        selectInEditor(rangeInCommand.getOrElse(cmdRange), cmdRange)
       }
     }
   }
@@ -286,6 +289,7 @@ class TheoryEditor extends TextEditor {
     def init() {
       
       isabelleModel.session.commands_changed += sessionActor
+      markers.init()
       
       initPerspective()
 
@@ -293,8 +297,8 @@ class TheoryEditor extends TextEditor {
     }
 
     def dispose() {
-      isabelleModel.session.commands_changed -= sessionActor
       markers.dispose()
+      isabelleModel.session.commands_changed -= sessionActor
       disposePerspective()
     }
 
@@ -327,7 +331,7 @@ class TheoryEditor extends TextEditor {
           } catch {
             case e: CoreException => {
               // cannot load parent - skip
-              IsabelleCorePlugin.log(e)
+              IsabelleUIPlugin.log(e.getMessage, e)
               None
             }
           }
@@ -349,15 +353,16 @@ class TheoryEditor extends TextEditor {
 
     private def pendingDependencies(): List[Document.Node.Name] = {
 
-      val thyInfo = IsabelleCorePlugin.getIsabelle.thyInfo
+      val thyInfo = new Thy_Info(isabelleModel.session.thy_load)
 
       val currentName = isabelleModel.name
 
       // get the dependencies for this name and filter the duplicates as well as this editor
-      val dependencyNodes = thyInfo.dependencies(List(currentName)).map(_._1).distinct.filter(_ != currentName)
-
+      val dependencies = thyInfo.dependencies(true, List(currentName)).deps
+      val dependencyNodes = dependencies.map(_.name).distinct.filter(_ != currentName)
+      
       // get document models for each open editor and resolve their names
-      val loadedNodes = EditorUtil.getOpenEditors.map(
+      val loadedNodes = EditorUtil.getOpenEditors.asScala.map(
         editor => adapt(editor.getAdapter _)(classOf[DocumentModel])).flatten.map(_.name).toSet
 
       dependencyNodes.filterNot(loadedNodes.contains)
