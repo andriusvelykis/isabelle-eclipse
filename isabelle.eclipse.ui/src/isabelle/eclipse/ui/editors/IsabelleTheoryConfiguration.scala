@@ -14,6 +14,7 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor, resourceManager: Resourc
     extends IsabelleTheoryViewerConfiguration(
       editor.isabelleModel map (_.session),
       editor.isabelleModel map (_.snapshot),
+      Some(editor),
       resourceManager) {
 
   override def getContentAssistant(sourceViewer: ISourceViewer): IContentAssistant = {

@@ -4,7 +4,7 @@ import org.eclipse.jface.resource.ResourceManager
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector
 import org.eclipse.jface.text.presentation.{IPresentationReconciler, PresentationReconciler}
-import org.eclipse.jface.text.rules.{DefaultDamagerRepairer, ITokenScanner}
+import org.eclipse.jface.text.rules.ITokenScanner
 import org.eclipse.jface.text.source.ISourceViewer
 import org.eclipse.ui.editors.text.{EditorsUI, TextSourceViewerConfiguration}
 import org.eclipse.ui.texteditor.ChainedPreferenceStore
@@ -20,6 +20,7 @@ import isabelle.eclipse.ui.preferences.{
 import isabelle.eclipse.ui.text.{
   AbstractIsabelleScanner,
   ChainedTokenScanner,
+  IsabelleActionMarkupScanner,
   IsabelleMarkupScanner,
   IsabelleTokenScanner,
   SingleTokenScanner,
@@ -30,6 +31,7 @@ import isabelle.eclipse.ui.text.{
 /** @author Andrius Velykis */
 class IsabelleTheoryViewerConfiguration(session: => Option[Session],
                                         snapshot: => Option[Snapshot],
+                                        targetEditor: => Option[TheoryEditor],
                                         resourceManager: ResourceManager)
   extends TextSourceViewerConfiguration(new ChainedPreferenceStore(Array(
       // chain the preference store to get default editor preference values as well as Isabelle-specific
@@ -58,7 +60,7 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
         case None => partScanner
       }
       
-      val dr = new DefaultDamagerRepairer(fullScanner)
+      val dr = new ExtendedStylesDamagerRepairer(fullScanner)
       reconciler.setDamager(dr, partitionType)
       reconciler.setRepairer(dr, partitionType)
     }
@@ -72,7 +74,8 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
       // for comments, only use the partition scanner - no need to display further scanning
       case ISABELLE_COMMENT => handlePartition(ISABELLE_COMMENT)
       // for other content types, use markup & token scanners in addition to partition scanner
-      case contentType => handlePartition(contentType, Some(join(markupScanner(), tokenScanner())))
+      case contentType => handlePartition(contentType, 
+          Some(join(markupScanner(), join(actionMarkupScanner(), tokenScanner()))))
     }
 
     reconciler
@@ -113,14 +116,22 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }
+  
+  /** Creates a scanner for Isabelle markup information for action links */
+  private def actionMarkupScanner(): ITokenScanner =
+    new IsabelleActionMarkupScanner(snapshot) with IsabelleScanner {
+      override def getToken(markupType: String) =
+        getToken(IsabelleMarkupToSyntaxClass(markupType))
+    }
 
 
   override def getHyperlinkDetectors(sourceViewer: ISourceViewer): Array[IHyperlinkDetector] = {
     
     val detectors = Option(super.getHyperlinkDetectors(sourceViewer)) getOrElse Array()
     val isabelleHyperlinks = new IsabelleHyperlinkDetector(snapshot)
+    val actionHyperlinks = new IsabelleActionHyperlinkDetector(snapshot, targetEditor)
     
-    Array(isabelleHyperlinks) ++ detectors
+    Array(actionHyperlinks, isabelleHyperlinks) ++ detectors
   }
 
 }
