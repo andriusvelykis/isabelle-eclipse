@@ -175,7 +175,7 @@ class TheoryEditor extends TextEditor {
   /** reload input in the UI thread */
   private def reload() = uiJob("Reloading editor") { setInput(getEditorInput()) }
 
-  private def reloadOutline() = uiJob("Reloading outline") { outlinePage.reload() }
+  private def reloadOutline() = outlinePage.reload()
 
 
   override def dispose() {
