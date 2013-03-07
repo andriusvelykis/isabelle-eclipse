@@ -7,6 +7,7 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.Color
 
 import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.editors.ExtendedTextAttribute
 
 
 /** Definition of a syntax class that can be stored/read from a preference store.
@@ -27,6 +28,7 @@ case class IsabelleSyntaxClass(displayName: String, baseName: String) {
   def boldKey = baseKey + BOLD_SUFFIX
   def italicKey = baseKey + ITALIC_SUFFIX
   def underlineKey = baseKey + UNDERLINE_SUFFIX
+  def underlineStyleKey = baseKey + UNDERLINE_STYLE_SUFFIX
   def strikethroughKey = baseKey + STRIKETHROUGH_SUFFIX
 
   def getTextAttribute(resourceManager: ResourceManager,
@@ -45,8 +47,10 @@ case class IsabelleSyntaxClass(displayName: String, baseName: String) {
       preferenceStore.getBoolean(italicKey),
       preferenceStore.getBoolean(strikethroughKey),
       preferenceStore.getBoolean(underlineKey))
+    
+    val underlineStyle = preferenceStore.getInt(underlineStyleKey)
 
-    new TextAttribute(foreground.orNull, background.orNull, style)
+    new ExtendedTextAttribute(foreground.orNull, background.orNull, style, null, underlineStyle)
   }
   
 

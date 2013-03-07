@@ -4,7 +4,7 @@ import org.eclipse.jface.resource.ResourceManager
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector
 import org.eclipse.jface.text.presentation.{IPresentationReconciler, PresentationReconciler}
-import org.eclipse.jface.text.rules.{DefaultDamagerRepairer, ITokenScanner}
+import org.eclipse.jface.text.rules.ITokenScanner
 import org.eclipse.jface.text.source.ISourceViewer
 import org.eclipse.ui.editors.text.{EditorsUI, TextSourceViewerConfiguration}
 import org.eclipse.ui.texteditor.ChainedPreferenceStore
@@ -58,7 +58,7 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
         case None => partScanner
       }
       
-      val dr = new DefaultDamagerRepairer(fullScanner)
+      val dr = new ExtendedStylesDamagerRepairer(fullScanner)
       reconciler.setDamager(dr, partitionType)
       reconciler.setRepairer(dr, partitionType)
     }

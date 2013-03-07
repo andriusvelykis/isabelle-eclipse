@@ -26,7 +26,8 @@ object ColourPreferenceInitializer {
     bold: Boolean = false,
     italic: Boolean = false,
     strikethrough: Boolean = false,
-    underline: Boolean = false)(implicit prefs: IPreferenceStore) =
+    underline: Boolean = false,
+    underlineStyle: Option[Int] = None)(implicit prefs: IPreferenceStore) =
     {
       foreground foreach (fg =>
         prefs.setDefault(syntaxClass.foregroundKey, StringConverter.asString(fg)))
@@ -36,6 +37,7 @@ object ColourPreferenceInitializer {
       prefs.setDefault(syntaxClass.italicKey, italic)
       prefs.setDefault(syntaxClass.strikethroughKey, strikethrough)
       prefs.setDefault(syntaxClass.underlineKey, underline)
+      underlineStyle foreach (style => prefs.setDefault(syntaxClass.underlineStyleKey, style))
     }
 
   private def setDefaultsForSyntaxClasses(implicit prefs: IPreferenceStore) {

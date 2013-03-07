@@ -53,6 +53,7 @@ object IsabelleSyntaxClasses {
   val ITALIC_SUFFIX = ".italic"
   val STRIKETHROUGH_SUFFIX = ".strikethrough"
   val UNDERLINE_SUFFIX = ".underline"
+  val UNDERLINE_STYLE_SUFFIX = ".underlineStyle"
   
 }
 
