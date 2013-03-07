@@ -167,7 +167,7 @@ class TheoryEditor extends TextEditor {
   def document: IDocument = getDocumentProvider.getDocument(getEditorInput)
   
   private[editors] def annotationModel: Option[IAnnotationModel] = 
-    Option(getDocumentProvider.getAnnotationModel(getEditorInput))
+    Option(getDocumentProvider) flatMap (p => Option(p.getAnnotationModel(getEditorInput)))
 
   def isabelleModel: Option[DocumentModel] = state.map(_.isabelleModel)
 
