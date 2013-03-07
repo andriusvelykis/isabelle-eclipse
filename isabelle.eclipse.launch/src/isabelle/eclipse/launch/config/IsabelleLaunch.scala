@@ -176,13 +176,14 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
      */
     def sessionStartup(app: Isabelle,
                        isabellePath: String,
+                       moreSessionDirs: Seq[IPath],
                        sessionName: String,
                        envMap: Map[String, String]): Either[IStatus, Unit] = {
       
       monitor.worked(3)
       monitor.subTask("Starting Isabelle session")
       
-      val sessionTry = app.start(isabellePath, sessionName)
+      val sessionTry = app.start(isabellePath, sessionName, moreSessionDirs, envMap)
 
       sessionTry match {
 
@@ -224,7 +225,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       _ <- canceled.right
       _ <- sessionBuild(configuration, isabellePath, sessionDirs, sessionName, envMap).right
       _ <- canceled.right
-      err <- sessionStartup(isabelle, isabellePath, sessionName, envMap).left
+      err <- sessionStartup(isabelle, isabellePath, sessionDirs, sessionName, envMap).left
     } yield (err)
     
     launchErr.left foreach reportLaunchError
