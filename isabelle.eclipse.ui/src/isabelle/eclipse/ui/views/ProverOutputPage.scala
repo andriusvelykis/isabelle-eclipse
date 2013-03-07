@@ -1,11 +1,8 @@
 package isabelle.eclipse.ui.views
 
-import java.io.IOException
-import java.net.URL
-
 import scala.actors.Actor._
 
-import org.eclipse.core.runtime.{FileLocator, IProgressMonitor, IStatus, Platform, Status}
+import org.eclipse.core.runtime.{IProgressMonitor, IStatus, Status}
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.action.{Action, GroupMarker, IAction}
 import org.eclipse.jface.commands.ActionHandler
@@ -17,7 +14,6 @@ import org.eclipse.swt.widgets.{Composite, Control}
 import org.eclipse.ui.{IActionBars, ISharedImages, IWorkbenchCommandConstants, PlatformUI}
 import org.eclipse.ui.handlers.IHandlerService
 import org.eclipse.ui.part.{IPageSite, Page}
-import org.osgi.framework.Bundle
 
 import isabelle.{Future, Linear_Set, Pretty, Protocol, Session, Text, XML}
 import isabelle.Command
@@ -89,8 +85,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   // selection listener to update output when editor selection changes
   val editorListener = selectionListener { _ => updateOutputAtCaret() }
   
-  // load CSS file contents, because they cannot be accessed from the browser when packaged into JARs
-  private lazy val inlineCss = getCssPaths.flatMap(readResource(_)).mkString("\n\n")
 
   override def createControl(parent: Composite) {
     
@@ -103,18 +97,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
         currentResultsSnapshot,
         Some(editor))
 
-
-    // add listener to hyperlink selection
-    // the results can have hyperlinks, e.g. "sendback" to replace the command with some text, used in 'sledgehammer' resutls
-//    outputArea.addLocationListener(new LocationAdapter {
-//      override def changing(event: LocationEvent) {
-//        event.location match {
-//          // handle sendback
-//          case ProverOutputHtml.SendbackLink(content) => doSendback(content)
-//          case _ => // do nothing
-//        }
-//      }
-//    })
 
     // init session event listeners
     initSessionEvents()
@@ -236,8 +218,8 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
       }
     }
   }
-  
-  
+
+
   private def commandStateMarkup(st: Command.State): List[XML.Tree] =
     st.results.entries.map(_._2).filterNot(Protocol.is_result(_)).toList
 
@@ -264,32 +246,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
   
 
-  private def getCssPaths(): List[URL] = {
-    val bundle = Platform.getBundle(IsabelleUIPlugin.PLUGIN_ID)
-    def path = getResourcePath(bundle) _
-
-    List(path("etc/isabelle.css"), path("etc/isabelle-jedit.css")).flatten
-  }
-
-  private def getResourcePath(bundle: Bundle)(pathInBundle: String): Option[URL] = {
-    val fileURL = Option(bundle.getEntry(pathInBundle));
-
-    fileURL match {
-      case Some(url) => {
-        try {
-          val fullURL = FileLocator.resolve(url)
-          Some(fullURL)
-        } catch {
-          case ioe: IOException => {
-            IsabelleUIPlugin.log("Unable to locate resource " + pathInBundle, ioe)
-            None
-          }
-        }
-      }
-      case None => { IsabelleUIPlugin.log("Unable to locate resource " + pathInBundle, null); None }
-    }
-  }
-
   private def setContent(resultsText: String, snapshot: Snapshot) {
     // set the input in the UI thread
     SWTUtil.asyncExec(Some(control.getDisplay)) {
@@ -303,41 +259,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
 
-  /** Reads the target resource URL contents */
-  private def readResource(url: URL): Option[String] = {
-    try {
-      val source = scala.io.Source.fromURL(url, "UTF-8")
-      try {
-        // read text
-        Some(source.mkString)
-      } finally {
-        source.close
-      }
-    } catch {
-      case ioe: IOException => {
-        IsabelleUIPlugin.log(ioe.getMessage, ioe)
-        None
-      }
-    }
-  }
-  
-  private def doSendback(text: String) {
-    
-    // if command and isabelle model are available, replace the current command with sendback text
-    (currentCommand, editor.isabelleModel) match {
-      case (Some(cmd), Some(isabelleModel)) => {
-        val cmdOffsetOpt = isabelleModel.snapshot.node.command_start(cmd)
-        
-        cmdOffsetOpt foreach {offset => {
-          // replace the command text in the document with sendback text
-          editor.document.replace(offset, cmd.length, text)
-        }
-        }
-      }
-      case _ =>
-    }
-  }
-  
   private def selectionListener(f: (SelectionChangedEvent => Unit)) =
     new ISelectionChangedListener {
       override def selectionChanged(event: SelectionChangedEvent) {
