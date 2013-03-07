@@ -20,6 +20,7 @@ import isabelle.eclipse.ui.preferences.{
 import isabelle.eclipse.ui.text.{
   AbstractIsabelleScanner,
   ChainedTokenScanner,
+  IsabelleActionMarkupScanner,
   IsabelleMarkupScanner,
   IsabelleTokenScanner,
   SingleTokenScanner,
@@ -72,7 +73,8 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
       // for comments, only use the partition scanner - no need to display further scanning
       case ISABELLE_COMMENT => handlePartition(ISABELLE_COMMENT)
       // for other content types, use markup & token scanners in addition to partition scanner
-      case contentType => handlePartition(contentType, Some(join(markupScanner(), tokenScanner())))
+      case contentType => handlePartition(contentType, 
+          Some(join(markupScanner(), join(actionMarkupScanner(), tokenScanner()))))
     }
 
     reconciler
@@ -110,6 +112,13 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
   /** Creates a scanner for Isabelle markup information */
   private def markupScanner(): ITokenScanner =
     new IsabelleMarkupScanner(snapshot) with IsabelleScanner {
+      override def getToken(markupType: String) =
+        getToken(IsabelleMarkupToSyntaxClass(markupType))
+    }
+  
+  /** Creates a scanner for Isabelle markup information for action links */
+  private def actionMarkupScanner(): ITokenScanner =
+    new IsabelleActionMarkupScanner(snapshot) with IsabelleScanner {
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }

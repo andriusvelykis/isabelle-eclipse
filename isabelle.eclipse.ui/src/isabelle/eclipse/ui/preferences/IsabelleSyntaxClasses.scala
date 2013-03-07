@@ -42,10 +42,13 @@ object IsabelleSyntaxClasses {
   val ML_STRING = IsabelleSyntaxClass("ML Strings", "syntax.ml.string")
   val ML_COMMENT = IsabelleSyntaxClass("ML Comments", "syntax.ml.comment")
   
+  val ACTIVE = IsabelleSyntaxClass("Isabelle Action Links", "syntax.active")
+  
   val ALL_SYNTAX_CLASSES = List(DEFAULT, COMMENT, INNER_COMMENT, VERBATIM, STRING, INNER_STRING,
       KEYWORD, KEYWORD2,
       LITERAL, DELIMITER, TYPE, FREE, SKOLEM, BOUND, VAR, DYN_FACT, ANTIQ, 
-      ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT)
+      ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT,
+      ACTIVE)
 
   val COLOR_SUFFIX = ".color"
   val BACKGROUND_COLOR_SUFFIX = ".bgColor"
@@ -136,9 +139,16 @@ object IsabelleMarkupToSyntaxClass {
     ML_STRING -> IsabelleSyntaxClasses.ML_STRING,
     ML_COMMENT -> IsabelleSyntaxClasses.ML_COMMENT
     ).withDefaultValue(IsabelleSyntaxClasses.UNDEFINED)
+
+  val extendedMarkupClasses: Map[String, IsabelleSyntaxClass] = markupClasses ++ Map(
+    BROWSER -> IsabelleSyntaxClasses.ACTIVE,
+    GRAPHVIEW -> IsabelleSyntaxClasses.ACTIVE,
+    SENDBACK -> IsabelleSyntaxClasses.ACTIVE,
+    DIALOG -> IsabelleSyntaxClasses.ACTIVE
+    )
   
   val markups = markupClasses.keySet
 
-  def apply(markupType: String): IsabelleSyntaxClass = markupClasses(markupType)
+  def apply(markupType: String): IsabelleSyntaxClass = extendedMarkupClasses(markupType)
 }
 

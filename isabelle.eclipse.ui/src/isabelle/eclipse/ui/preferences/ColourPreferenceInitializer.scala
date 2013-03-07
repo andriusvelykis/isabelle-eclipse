@@ -2,6 +2,7 @@ package isabelle.eclipse.ui.preferences
 
 import org.eclipse.jface.preference.IPreferenceStore
 import org.eclipse.jface.resource.StringConverter
+import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.RGB
 
 import isabelle.eclipse.ui.IsabelleUIPlugin
@@ -78,6 +79,8 @@ object ColourPreferenceInitializer {
     setDefaultsForSyntaxClass(CMD, keyword1, bold = true)
     setDefaultsForSyntaxClass(CMD_SCRIPT, rgb(246, 52, 36))
     setDefaultsForSyntaxClass(CMD_GOAL, keyword3, bold = true)
+
+    setDefaultsForSyntaxClass(ACTIVE, underline = true, underlineStyle = Some(SWT.UNDERLINE_LINK))
   }
   
   private def rgb(r: Int, g: Int, b: Int): Option[RGB] = Some(new RGB(r, g, b))
