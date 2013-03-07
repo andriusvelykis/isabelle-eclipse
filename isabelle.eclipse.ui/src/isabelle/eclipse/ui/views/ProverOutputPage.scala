@@ -100,7 +100,8 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     outputViewer = createSourceViewer(
         contentArea,
         editor.isabelleModel map (_.session),
-        currentResultsSnapshot)
+        currentResultsSnapshot,
+        Some(editor))
 
 
     // add listener to hyperlink selection
@@ -126,11 +127,12 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   private def createSourceViewer(parent: Composite,
                                  session: => Option[Session],
-                                 snapshot: => Option[Snapshot]): IsabelleTheorySourceViewer = {
+                                 snapshot: => Option[Snapshot],
+                                 targetEditor: => Option[TheoryEditor]): IsabelleTheorySourceViewer = {
 
     val styles = SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | /*SWT.BORDER | */ SWT.FULL_SELECTION
 
-    val viewer = IsabelleTheorySourceViewer(parent, session, snapshot, styles)
+    val viewer = IsabelleTheorySourceViewer(parent, session, snapshot, targetEditor, styles)
     viewer.setEditable(false)
 
     val document = new Document with IsabellePartitions

@@ -46,14 +46,16 @@ class IsabelleTheorySourceViewer private (
   annotationAccess: IAnnotationAccess,
   annotationPrefs: MarkerAnnotationPreferences,
   verticalRuler: IVerticalRuler,
-  overviewRuler: IOverviewRuler)
+  overviewRuler: IOverviewRuler,
+  targetEditor: => Option[TheoryEditor])
     extends SourceViewer(parent, verticalRuler, overviewRuler, true, style) with FontUpdates {
 
   // cleanup on control dispose
   getControl onDispose disposeViewer()
 
 
-  private val configuration = new IsabelleTheoryViewerConfiguration(session, snapshot, resourceManager)
+  private val configuration = new IsabelleTheoryViewerConfiguration(
+      session, snapshot, targetEditor, resourceManager)
   configure(configuration)
   
   private val decorationSupport = configureDecorationSupport()
@@ -154,6 +156,7 @@ object IsabelleTheorySourceViewer {
   def apply(parent: Composite,
             session: => Option[Session],
             snapshot: => Option[Snapshot],
+            targetEditor: => Option[TheoryEditor],
             style: Int): IsabelleTheorySourceViewer = {
 
     val resourceManager = new LocalResourceManager(JFaceResources.getResources)
@@ -171,7 +174,8 @@ object IsabelleTheorySourceViewer {
       annotationAccess,
       annotationPrefs,
       verticalRuler,
-      overviewRuler)
+      overviewRuler,
+      targetEditor)
   }
   
 }

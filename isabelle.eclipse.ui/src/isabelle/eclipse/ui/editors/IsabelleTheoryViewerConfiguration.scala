@@ -31,6 +31,7 @@ import isabelle.eclipse.ui.text.{
 /** @author Andrius Velykis */
 class IsabelleTheoryViewerConfiguration(session: => Option[Session],
                                         snapshot: => Option[Snapshot],
+                                        targetEditor: => Option[TheoryEditor],
                                         resourceManager: ResourceManager)
   extends TextSourceViewerConfiguration(new ChainedPreferenceStore(Array(
       // chain the preference store to get default editor preference values as well as Isabelle-specific
@@ -128,8 +129,9 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
     
     val detectors = Option(super.getHyperlinkDetectors(sourceViewer)) getOrElse Array()
     val isabelleHyperlinks = new IsabelleHyperlinkDetector(snapshot)
+    val actionHyperlinks = new IsabelleActionHyperlinkDetector(snapshot, targetEditor)
     
-    Array(isabelleHyperlinks) ++ detectors
+    Array(actionHyperlinks, isabelleHyperlinks) ++ detectors
   }
 
 }
