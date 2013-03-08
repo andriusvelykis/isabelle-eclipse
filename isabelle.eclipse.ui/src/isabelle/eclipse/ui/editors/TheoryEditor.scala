@@ -22,7 +22,7 @@ import isabelle.{Command, Document, Session, Thy_Header, Thy_Info}
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
-import isabelle.eclipse.core.text.DocumentModel
+import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel}
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
 import isabelle.eclipse.ui.IsabelleUIPlugin
@@ -158,7 +158,7 @@ class TheoryEditor extends TextEditor {
 
     val name = createDocumentName(input)
 
-    state = name.map(DocumentModel.init(session, document, _)).map(new State(_))
+    state = name.map(new EditDocumentModel(session, document, _)).map(new State(_))
     state.foreach(_.init())
 
     reloadOutline()
@@ -289,6 +289,7 @@ class TheoryEditor extends TextEditor {
     def init() {
       
       isabelleModel.session.commands_changed += sessionActor
+      isabelleModel.init()
       markers.init()
       
       initPerspective()
@@ -341,7 +342,8 @@ class TheoryEditor extends TextEditor {
           withDocument(input) { document =>
             {
               // init document model
-              val model = DocumentModel.init(isabelleModel.session, document, node)
+              val model = new EditDocumentModel(isabelleModel.session, document, node)
+              model.init()
               // dispose immediately after initialisation
               model.dispose()
             }
