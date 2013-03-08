@@ -1,4 +1,4 @@
-package isabelle.eclipse.ui.editors
+package isabelle.eclipse.ui.text.hyperlink
 
 import org.eclipse.jface.text.{BadLocationException, IDocument, IRegion, ITextSelection, ITextViewer}
 import org.eclipse.jface.text.hyperlink.IHyperlink

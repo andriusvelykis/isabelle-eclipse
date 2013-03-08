@@ -26,6 +26,7 @@ import isabelle.eclipse.ui.text.{
   SingleTokenScanner,
   TokenUtil
 }
+import isabelle.eclipse.ui.text.hyperlink.{IsabelleActionHyperlinkDetector, IsabelleHyperlinkDetector}
 
 
 /** @author Andrius Velykis */

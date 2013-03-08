@@ -1,4 +1,4 @@
-package isabelle.eclipse.ui.editors
+package isabelle.eclipse.ui.text.hyperlink
 
 import org.eclipse.jface.text.{IRegion, ITextViewer, Region}
 import org.eclipse.jface.text.hyperlink.{AbstractHyperlinkDetector, IHyperlink, IHyperlinkDetectorExtension2}
@@ -6,6 +6,7 @@ import org.eclipse.swt.SWT
 
 import isabelle.{Markup, Text, XML}
 import isabelle.Document.Snapshot
+import isabelle.eclipse.ui.editors.{EditorUtil, TheoryEditor}
 
 
 /**

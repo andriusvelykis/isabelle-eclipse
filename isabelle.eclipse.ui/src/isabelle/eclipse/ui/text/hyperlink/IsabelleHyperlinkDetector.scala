@@ -1,4 +1,4 @@
-package isabelle.eclipse.ui.editors
+package isabelle.eclipse.ui.text.hyperlink
 
 import java.net.URI
 
