@@ -319,6 +319,9 @@ class TheoryEditor extends TextEditor {
       initPerspective()
 
       loadTheoryImports()
+      
+      // refresh after initialisation
+      refreshView()
     }
 
     def dispose() {
