@@ -8,7 +8,7 @@
             class="isabelle.eclipse.ui.editors.TheoryEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             extensions="thy"
-            icon="icons/isabelle.png"
+            icon="icons/isabelle_file.gif"
             id="isabelle.eclipse.ui.theoryEditor"
             name="Isabelle/Isar Theory Editor"
             symbolicFontName="isabelle.eclipse.ui.isabelleFont">
