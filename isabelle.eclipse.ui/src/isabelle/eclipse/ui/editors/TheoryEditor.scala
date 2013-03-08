@@ -25,7 +25,7 @@ import isabelle.eclipse.core.resource.URIThyLoad._
 import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel, ReadOnlyDocumentModel}
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.{IsabelleImages, IsabelleUIPlugin}
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
 import isabelle.eclipse.ui.views.outline.TheoryOutlinePage
@@ -55,7 +55,9 @@ class TheoryEditor extends TextEditor {
 
   /** The Isabelle-state of the editor (available after Isabelle is launched) */
   private var state: Option[State] = None
-  private var init = false;
+  private var init = false
+  
+  private var editable = true
 
   val outlinePage = new TheoryOutlinePage(this, getSourceViewer)
   // listen to outline page selection changes and highlight the selection in editor
@@ -159,6 +161,9 @@ class TheoryEditor extends TextEditor {
     val name = createDocumentName(input)
     
     val loaded = name forall (n => session.thy_load.loaded_theories(n.theory))
+    if (loaded) {
+      makeReadOnly()
+    }
 
     val docModel = name map { n =>
       if (loaded) new ReadOnlyDocumentModel(session, document, n)
@@ -170,6 +175,18 @@ class TheoryEditor extends TextEditor {
 
     reloadOutline()
   }
+
+
+  private def makeReadOnly() {
+    // use loaded file icon for the editor
+    setTitleImage(resourceManager.createImageWithDefault(IsabelleImages.ISABELLE_LOADED_FILE))
+    // disable editing as well
+    editable = false
+    getSourceViewer.setEditable(isEditable())
+  }
+  
+  override def isEditable() = editable && super.isEditable()
+
 
   def document: IDocument = getDocumentProvider.getDocument(getEditorInput)
   
