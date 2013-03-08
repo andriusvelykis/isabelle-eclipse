@@ -1,8 +1,10 @@
-package isabelle.eclipse.ui
+package isabelle.eclipse.ui.internal
 
 import java.net.{MalformedURLException, URL}
 
 import org.eclipse.jface.resource.ImageDescriptor
+
+import isabelle.eclipse.ui.IsabelleUIPlugin
 
 
 /**

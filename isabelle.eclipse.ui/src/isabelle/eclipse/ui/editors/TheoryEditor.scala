@@ -25,7 +25,8 @@ import isabelle.eclipse.core.resource.URIThyLoad._
 import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel, ReadOnlyDocumentModel}
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
-import isabelle.eclipse.ui.{IsabelleImages, IsabelleUIPlugin}
+import isabelle.eclipse.ui.{IsabelleUIPlugin}
+import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
 import isabelle.eclipse.ui.views.outline.TheoryOutlinePage

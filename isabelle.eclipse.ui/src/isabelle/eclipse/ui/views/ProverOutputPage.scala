@@ -19,7 +19,8 @@ import isabelle.{Future, Linear_Set, Pretty, Protocol, Session, Text, XML}
 import isabelle.Command
 import isabelle.Document.Snapshot
 import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.{IsabelleImages, IsabelleUIPlugin}
+import isabelle.eclipse.ui.{IsabelleUIPlugin}
+import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.editors.{IsabellePartitions, IsabelleTheorySourceViewer, TheoryEditor}
 import isabelle.eclipse.ui.util.SWTUtil
 

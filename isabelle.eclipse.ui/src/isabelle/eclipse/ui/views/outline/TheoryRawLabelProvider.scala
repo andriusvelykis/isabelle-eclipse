@@ -5,7 +5,7 @@ import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.swt.graphics.Image
 
 import isabelle.{Library, Pretty}
-import isabelle.eclipse.ui.IsabelleImages
+import isabelle.eclipse.ui.internal.IsabelleImages
 
 
 /**

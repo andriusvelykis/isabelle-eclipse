@@ -1,6 +1,6 @@
 package isabelle.eclipse.ui.views;
 
-import isabelle.eclipse.ui.IsabelleImages;
+import isabelle.eclipse.ui.internal.IsabelleImages;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.console.IConsole;
