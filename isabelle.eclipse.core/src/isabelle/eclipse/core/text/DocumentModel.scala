@@ -81,13 +81,13 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
     }
   }
   
-  def documentRange = Text.Range(0, math.max(document.getLength - 1, 0))
+  private def documentRange = Text.Range(0, math.max(document.getLength - 1, 0))
 
-  def updatePerspective() {
+  private def updatePerspective() {
     pendingEdits.flushDelayed()
   }
 
-  def submitFullPerspective(monitor: IProgressMonitor) {
+  private def submitFullPerspective(monitor: IProgressMonitor) {
 
     // force flush current edits
     pendingEdits.doFlush(monitor)
@@ -100,7 +100,7 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
 
   /* edits */
 
-  def initEdits(): List[Document.Edit_Text] = {
+  private def initEdits(): List[Document.Edit_Text] = {
 
     val header = parseNodeHeader()
     val text = document.get
@@ -112,8 +112,8 @@ class DocumentModel private (val session: Session, val document: IDocument, val 
       name -> Document.Node.Perspective(perspective))
   }
 
-  def nodeEdits(perspective: Text.Perspective,
-                textEdits: List[Text.Edit]): List[Document.Edit_Text] = {
+  private def nodeEdits(perspective: Text.Perspective,
+                        textEdits: List[Text.Edit]): List[Document.Edit_Text] = {
 
     val header = parseNodeHeader()
 
