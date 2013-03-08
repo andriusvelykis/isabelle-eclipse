@@ -19,7 +19,9 @@ object IsabelleImages {
 
   val MISSING_ICON = ImageDescriptor.getMissingImageDescriptor
 
-  // TODO make all images lazy
+  lazy val ISABELLE_FILE = create("isabelle_file.gif")
+  lazy val ISABELLE_LOADED_FILE = create("isabelle_loaded_file.gif")
+  
   lazy val RAW_OUTPUT_CONSOLE = create("isabelle.png")
   lazy val CONTENT_ASSIST = create("isabelle.png")
   lazy val OUTLINE_ITEM = create("isabelle.png")

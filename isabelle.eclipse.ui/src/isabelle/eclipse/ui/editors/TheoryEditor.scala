@@ -22,10 +22,10 @@ import isabelle.{Command, Document, Session, Thy_Header, Thy_Info}
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
-import isabelle.eclipse.core.text.DocumentModel
+import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel, ReadOnlyDocumentModel}
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.{IsabelleImages, IsabelleUIPlugin}
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
 import isabelle.eclipse.ui.views.outline.TheoryOutlinePage
@@ -55,7 +55,9 @@ class TheoryEditor extends TextEditor {
 
   /** The Isabelle-state of the editor (available after Isabelle is launched) */
   private var state: Option[State] = None
-  private var init = false;
+  private var init = false
+  
+  private var editable = true
 
   val outlinePage = new TheoryOutlinePage(this, getSourceViewer)
   // listen to outline page selection changes and highlight the selection in editor
@@ -157,12 +159,34 @@ class TheoryEditor extends TextEditor {
   private def initState(session: Session, input: IEditorInput = getEditorInput) {
 
     val name = createDocumentName(input)
+    
+    val loaded = name forall (n => session.thy_load.loaded_theories(n.theory))
+    if (loaded) {
+      makeReadOnly()
+    }
 
-    state = name.map(DocumentModel.init(session, document, _)).map(new State(_))
+    val docModel = name map { n =>
+      if (loaded) new ReadOnlyDocumentModel(session, document, n)
+      else new EditDocumentModel(session, document, n)
+    }
+
+    state = docModel map (new State(_))
     state.foreach(_.init())
 
     reloadOutline()
   }
+
+
+  private def makeReadOnly() {
+    // use loaded file icon for the editor
+    setTitleImage(resourceManager.createImageWithDefault(IsabelleImages.ISABELLE_LOADED_FILE))
+    // disable editing as well
+    editable = false
+    getSourceViewer.setEditable(isEditable())
+  }
+  
+  override def isEditable() = editable && super.isEditable()
+
 
   def document: IDocument = getDocumentProvider.getDocument(getEditorInput)
   
@@ -289,11 +313,15 @@ class TheoryEditor extends TextEditor {
     def init() {
       
       isabelleModel.session.commands_changed += sessionActor
+      isabelleModel.init()
       markers.init()
       
       initPerspective()
 
       loadTheoryImports()
+      
+      // refresh after initialisation
+      refreshView()
     }
 
     def dispose() {
@@ -341,7 +369,8 @@ class TheoryEditor extends TextEditor {
           withDocument(input) { document =>
             {
               // init document model
-              val model = DocumentModel.init(isabelleModel.session, document, node)
+              val model = new EditDocumentModel(isabelleModel.session, document, node)
+              model.init()
               // dispose immediately after initialisation
               model.dispose()
             }
