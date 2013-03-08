@@ -19,8 +19,8 @@ import isabelle.{Future, Linear_Set, Pretty, Protocol, Session, Text, XML}
 import isabelle.Command
 import isabelle.Document.Snapshot
 import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.{IsabelleUIPlugin}
-import isabelle.eclipse.ui.internal.IsabelleImages
+import isabelle.eclipse.ui.internal.{IsabelleImages, IsabelleUIPlugin}
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{log, error}
 import isabelle.eclipse.ui.editors.{IsabellePartitions, IsabelleTheorySourceViewer, TheoryEditor}
 import isabelle.eclipse.ui.util.SWTUtil
 
@@ -30,12 +30,12 @@ import isabelle.eclipse.ui.util.SWTUtil
   */
 object ProverOutputPage {
   
-  private val viewId = IsabelleUIPlugin.PLUGIN_ID + ".proverOutputView"
+  private val viewId = IsabelleUIPlugin.plugin.pluginId + ".proverOutputView"
   private val propShowTrace = viewId + ".showTrace"
   private val propLinkEditor = viewId + ".linkEditor"
   
   // init default values once
-  private def prefs = IsabelleUIPlugin.getPreferences();
+  private def prefs = IsabelleUIPlugin.plugin.getPreferenceStore
   prefs.setDefault(propShowTrace, false);
   prefs.setDefault(propLinkEditor, true);
   
@@ -63,7 +63,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
             updateOutput(_ => cmd)
           }
         }
-        case bad => IsabelleUIPlugin.log("Bad message received in output page: " + bad, null)
+        case bad => log(error(msg = Some("Bad message received in output page: " + bad)))
       }
     }
   }

@@ -3,7 +3,7 @@ package isabelle.eclipse.ui.editors;
 import isabelle.Text.Range;
 import isabelle.eclipse.core.text.AnnotationInfo;
 import isabelle.eclipse.core.text.IsabelleAnnotation;
-import isabelle.eclipse.ui.IsabelleUIPlugin;
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +30,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
+
 import scala.Option;
 import scala.Some;
 
@@ -268,7 +269,7 @@ public class AnnotationUpdater {
 						markerResource.findMarkers(markerType, false, IResource.DEPTH_ZERO)));
 			}
 		} catch (CoreException e) {
-			IsabelleUIPlugin.log(e.getLocalizedMessage(), e);
+		  log(e);
 		}
 		
 		if (changeRange.isEmpty()) {
@@ -325,7 +326,7 @@ public class AnnotationUpdater {
 				}
 				
 			} catch (CoreException e) {
-				IsabelleUIPlugin.log(e.getLocalizedMessage(), e);
+			  log(e);
 			}
 			
 			// did not match with a corresponding marker in the new state, so delete it
@@ -359,8 +360,12 @@ public class AnnotationUpdater {
 		try {
 			markerResource.getWorkspace().run(r, null, IWorkspace.AVOID_UPDATE, null);
 		} catch (CoreException ce) {
-			IsabelleUIPlugin.log(ce.getMessage(), ce);
+		  log(ce);
 		}
+	}
+	
+	private void log(Throwable ex) {
+	  IsabelleUIPlugin.log(IsabelleUIPlugin.error(Some.apply(ex), Option.apply((String) null)));
 	}
 	
 	private Map<String, Object> getMarkerAttributes(Range maxRange, AnnotationInfo ann, MarkerKey markerKey) {

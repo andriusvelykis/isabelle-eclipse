@@ -8,7 +8,7 @@ import org.eclipse.ui.console.MessageConsole
 
 import isabelle.{Isabelle_Process, Session, XML}
 import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 
 
 /**
@@ -48,8 +48,8 @@ class RawOutputConsole(name: String, image: ImageDescriptor)
   override protected def dispose() {
     disposeSessionEvents()
 
-    Try(consoleStream.close()).failed foreach (
-      IsabelleUIPlugin.log("Unable to close raw output console", _))
+    Try(consoleStream.close()).failed foreach ( ex =>
+      log(error(Some(ex), Some("Unable to close raw output console"))) )
 
     super.dispose()
   }

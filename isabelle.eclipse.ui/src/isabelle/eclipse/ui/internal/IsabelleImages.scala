@@ -4,8 +4,6 @@ import java.net.{MalformedURLException, URL}
 
 import org.eclipse.jface.resource.ImageDescriptor
 
-import isabelle.eclipse.ui.IsabelleUIPlugin
-
 
 /**
  * Isabelle image definitions.
@@ -17,7 +15,7 @@ import isabelle.eclipse.ui.IsabelleUIPlugin
  */
 object IsabelleImages {
 
-  private lazy val ICON_BASE_URL = IsabelleUIPlugin.getDefault.getBundle.getEntry("icons/")
+  private lazy val ICON_BASE_URL = IsabelleUIPlugin.plugin.getBundle.getEntry("icons/")
 
   val MISSING_ICON = ImageDescriptor.getMissingImageDescriptor
 

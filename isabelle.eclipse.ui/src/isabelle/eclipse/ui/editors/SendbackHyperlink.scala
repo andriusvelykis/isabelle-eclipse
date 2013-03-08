@@ -7,7 +7,7 @@ import isabelle.{Markup, Position, Properties}
 import isabelle.Document
 import isabelle.Document.Snapshot
 import isabelle.eclipse.core.text.DocumentModel
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 
 
 /**
@@ -48,8 +48,7 @@ class SendbackHyperlink(linkRegion: IRegion,
           replaceSelected(viewer, sendbackText)
         }
 
-        case _ => IsabelleUIPlugin.log(
-            "Invalid sendback link target - target viewer undefined", null)
+        case _ => log(error(msg = Some("Invalid sendback link target - target viewer undefined")))
       }
 
     }

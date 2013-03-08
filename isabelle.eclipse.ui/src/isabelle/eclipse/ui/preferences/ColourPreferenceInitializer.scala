@@ -5,7 +5,7 @@ import org.eclipse.jface.resource.StringConverter
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.RGB
 
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin
 import isabelle.eclipse.ui.preferences.IsabelleSyntaxClasses._
 
 
@@ -17,7 +17,7 @@ import isabelle.eclipse.ui.preferences.IsabelleSyntaxClasses._
 object ColourPreferenceInitializer {
 
   def initializeDefaultPreferences() {
-    setDefaultsForSyntaxClasses(IsabelleUIPlugin.getPreferences())
+    setDefaultsForSyntaxClasses(IsabelleUIPlugin.plugin.getPreferenceStore)
   }
   
   private def setDefaultsForSyntaxClass(

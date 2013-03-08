@@ -14,7 +14,7 @@ import isabelle.Document.Snapshot
 import isabelle.Text.Range
 import isabelle.eclipse.core.text.{AnnotationFactory, AnnotationInfo}
 import isabelle.eclipse.core.util.SerialSchedulingRule
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 import isabelle.eclipse.ui.util.SWTUtil.asyncExec
 
 
@@ -148,8 +148,8 @@ class TheoryViewerAnnotations(snapshot: => Option[Snapshot],
 
     annotationModel match {
       case Some(modern: IAnnotationModelExtension) => f(modern)
-      case Some(old) =>
-        IsabelleUIPlugin.log("Obsolete annotation model is used: " + old.getClass, null)
+      case Some(old) => 
+        log(error(msg = Some("Obsolete annotation model is used: " + old.getClass)))
       case _ => {}
     }
   }

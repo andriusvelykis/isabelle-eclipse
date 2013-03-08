@@ -11,7 +11,7 @@ import org.eclipse.ui.texteditor.ChainedPreferenceStore
 
 import isabelle.{Outer_Syntax, Session}
 import isabelle.Document.Snapshot
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin
 import isabelle.eclipse.ui.preferences.{
   IsabelleMarkupToSyntaxClass,
   IsabellePartitionToSyntaxClass,
@@ -35,7 +35,7 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
                                         resourceManager: ResourceManager)
   extends TextSourceViewerConfiguration(new ChainedPreferenceStore(Array(
       // chain the preference store to get default editor preference values as well as Isabelle-specific
-      IsabelleUIPlugin.getPreferences(),
+      IsabelleUIPlugin.plugin.getPreferenceStore,
       EditorsUI.getPreferenceStore()))) {
 
     
