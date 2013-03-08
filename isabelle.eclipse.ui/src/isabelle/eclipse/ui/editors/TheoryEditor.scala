@@ -22,7 +22,7 @@ import isabelle.{Command, Document, Session, Thy_Header, Thy_Info}
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
-import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel}
+import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel, ReadOnlyDocumentModel}
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
 import isabelle.eclipse.ui.IsabelleUIPlugin
@@ -157,8 +157,15 @@ class TheoryEditor extends TextEditor {
   private def initState(session: Session, input: IEditorInput = getEditorInput) {
 
     val name = createDocumentName(input)
+    
+    val loaded = name forall (n => session.thy_load.loaded_theories(n.theory))
 
-    state = name.map(new EditDocumentModel(session, document, _)).map(new State(_))
+    val docModel = name map { n =>
+      if (loaded) new ReadOnlyDocumentModel(session, document, n)
+      else new EditDocumentModel(session, document, n)
+    }
+
+    state = docModel map (new State(_))
     state.foreach(_.init())
 
     reloadOutline()
