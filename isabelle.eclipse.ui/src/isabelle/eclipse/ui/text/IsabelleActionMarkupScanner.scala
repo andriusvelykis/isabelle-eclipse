@@ -5,6 +5,7 @@ import org.eclipse.jface.text.rules.IToken
 import isabelle.{Markup, Protocol, Text}
 import isabelle.Command
 import isabelle.Document.Snapshot
+import isabelle.eclipse.ui.preferences.IsabelleMarkupToSyntaxClass
 
 
 /**
@@ -24,10 +25,19 @@ class IsabelleActionMarkupScanner(snapshot: => Option[Snapshot])
 
   override def markupMatch(commandState: Command.State)
       : PartialFunction[(Option[IToken], Text.Markup), Option[IToken]] = {
+    case (_, Text.Info(info_range, Protocol.Dialog(_, serial, result))) =>
+      commandState.results.get(serial) match {
+        // this option was selected
+        case Some(Protocol.Dialog_Result(res)) if res == result =>
+          Some(getToken(IsabelleMarkupToSyntaxClass.DIALOG_SELECTED))
 
-    case (_, Text.Info(info_range, elem @ Protocol.Dialog(_, serial, _))) 
-      if !commandState.results.defined(serial) =>
-        Some(getToken(Markup.DIALOG))
+        // nothing selected yet - render as dialog
+        case None =>
+          Some(getToken(Markup.DIALOG))
+
+        // something selected, but not this one - remove special rendering
+        case _ => None
+      }
 
     case (_, MarkupName(name))
       if name == Markup.BROWSER || name == Markup.GRAPHVIEW || name == Markup.SENDBACK => 

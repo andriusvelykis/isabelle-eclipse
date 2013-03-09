@@ -130,7 +130,7 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
     
     val detectors = Option(super.getHyperlinkDetectors(sourceViewer)) getOrElse Array()
     val isabelleHyperlinks = new IsabelleHyperlinkDetector(snapshot)
-    val actionHyperlinks = new IsabelleActionHyperlinkDetector(snapshot, targetEditor)
+    val actionHyperlinks = new IsabelleActionHyperlinkDetector(session, snapshot, targetEditor)
     
     Array(actionHyperlinks, isabelleHyperlinks) ++ detectors
   }

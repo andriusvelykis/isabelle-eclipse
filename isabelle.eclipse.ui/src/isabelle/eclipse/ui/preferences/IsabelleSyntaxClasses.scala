@@ -43,6 +43,7 @@ object IsabelleSyntaxClasses {
   val ML_COMMENT = IsabelleSyntaxClass("ML Comments", "syntax.ml.comment")
   
   val ACTIVE = IsabelleSyntaxClass("Isabelle Action Links", "syntax.active")
+  val DIALOG_SELECTED = IsabelleSyntaxClass("Isabelle Selected Dialog", "syntax.dialog.selected")
   
   val ALL_SYNTAX_CLASSES = List(DEFAULT, COMMENT, INNER_COMMENT, VERBATIM, STRING, INNER_STRING,
       KEYWORD, KEYWORD2,
@@ -111,6 +112,8 @@ object IsabelleTokenToSyntaxClass {
 }
 
 object IsabelleMarkupToSyntaxClass {
+  
+  val DIALOG_SELECTED = "dialog-selected"
 
   import isabelle.Markup._
 
@@ -144,7 +147,8 @@ object IsabelleMarkupToSyntaxClass {
     BROWSER -> IsabelleSyntaxClasses.ACTIVE,
     GRAPHVIEW -> IsabelleSyntaxClasses.ACTIVE,
     SENDBACK -> IsabelleSyntaxClasses.ACTIVE,
-    DIALOG -> IsabelleSyntaxClasses.ACTIVE
+    DIALOG -> IsabelleSyntaxClasses.ACTIVE,
+    DIALOG_SELECTED -> IsabelleSyntaxClasses.DIALOG_SELECTED
     )
   
   val markups = markupClasses.keySet

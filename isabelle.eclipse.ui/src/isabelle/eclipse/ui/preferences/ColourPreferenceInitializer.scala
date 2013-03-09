@@ -81,6 +81,8 @@ object ColourPreferenceInitializer {
     setDefaultsForSyntaxClass(CMD_GOAL, keyword3, bold = true)
 
     setDefaultsForSyntaxClass(ACTIVE, underline = true, underlineStyle = Some(SWT.UNDERLINE_LINK))
+    setDefaultsForSyntaxClass(DIALOG_SELECTED,
+      underline = true, underlineStyle = Some(SWT.UNDERLINE_DOUBLE))
   }
   
   private def rgb(r: Int, g: Int, b: Int): Option[RGB] = Some(new RGB(r, g, b))

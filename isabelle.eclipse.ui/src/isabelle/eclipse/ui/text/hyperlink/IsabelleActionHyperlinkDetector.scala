@@ -4,19 +4,20 @@ import org.eclipse.jface.text.{IRegion, ITextViewer, Region}
 import org.eclipse.jface.text.hyperlink.{AbstractHyperlinkDetector, IHyperlink, IHyperlinkDetectorExtension2}
 import org.eclipse.swt.SWT
 
-import isabelle.{Markup, Text, XML}
+import isabelle.{Markup, Protocol, Session, Text, XML}
 import isabelle.Document.Snapshot
 import isabelle.eclipse.ui.editors.{EditorUtil, TheoryEditor}
 
 
 /**
  * A hyperlink detector for Isabelle Action markup, e.g. "sendback".
- * 
+ *
  * Simulates real hyperlinks by not requiring some key masks to activate detector.
  *
  * @author Andrius Velykis
  */
-class IsabelleActionHyperlinkDetector(snapshot: => Option[Snapshot],
+class IsabelleActionHyperlinkDetector(session: => Option[Session],
+                                      snapshot: => Option[Snapshot],
                                       targetEditor: => Option[TheoryEditor])
     extends AbstractHyperlinkDetector with IHyperlinkDetectorExtension2 {
 
@@ -51,10 +52,11 @@ class IsabelleActionHyperlinkDetector(snapshot: => Option[Snapshot],
       // adapted from isabelle.jedit.Rendering#active and isabelle.jedit.Active
       snapshot.select_markup(range, Some(activeInclude), command_state =>
         {
-          // TODO implement dialog and other active links below
-//          case Text.Info(info_range, elem @ Protocol.Dialog(id, serial, result)) 
-//            if !command_state.results.defined(serial) =>
-//              Text.Info(snapshot.convert(info_range), elem)
+          case Text.Info(info_range, Protocol.Dialog(id, serial, result))
+            if !command_state.results.defined(serial) =>
+              new ProtocolDialogHyperlink(linkRegion(info_range),
+                session,
+                id, serial, result)
 
           case Text.Info(info_range, XML.Elem(Markup(Markup.SENDBACK, props), _)) =>
             new SendbackHyperlink(linkRegion(info_range),
@@ -66,9 +68,10 @@ class IsabelleActionHyperlinkDetector(snapshot: => Option[Snapshot],
           case Text.Info(info_range, XML.Elem(Markup(Markup.BROWSER, _), body)) =>
             new TheoryGraphHyperlink(linkRegion(info_range), body)
 
-//          case Text.Info(info_range, elem @ XML.Elem(Markup(name, _), _))
-//            if name == Markup.BROWSER || name == Markup.GRAPHVIEW || name == Markup.SENDBACK =>
-//              Text.Info(snapshot.convert(info_range), elem)
+          // GraphView not supported yet: it is disabled in Isabelle2013 according to Makarius
+          // TODO implement GraphView in Isabelle/Eclipse?
+//          case Text.Info(info_range, XML.Elem(Markup(Markup.GRAPHVIEW, _), body)) =>
+//            new GraphViewHyperlink(linkRegion(info_range), snapshot, body)
         })
     
     hyperlinkInfos map { case Text.Info(_, hyperlink) => hyperlink }
