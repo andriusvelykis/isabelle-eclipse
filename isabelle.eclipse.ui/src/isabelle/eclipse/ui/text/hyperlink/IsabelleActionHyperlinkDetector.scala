@@ -63,6 +63,9 @@ class IsabelleActionHyperlinkDetector(snapshot: => Option[Snapshot],
               props,
               snapshotText(snapshot, snapshot.convert(info_range)))
 
+          case Text.Info(info_range, XML.Elem(Markup(Markup.BROWSER, _), body)) =>
+            new TheoryGraphHyperlink(linkRegion(info_range), body)
+
 //          case Text.Info(info_range, elem @ XML.Elem(Markup(name, _), _))
 //            if name == Markup.BROWSER || name == Markup.GRAPHVIEW || name == Markup.SENDBACK =>
 //              Text.Info(snapshot.convert(info_range), elem)
