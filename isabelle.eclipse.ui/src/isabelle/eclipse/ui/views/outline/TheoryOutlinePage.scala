@@ -19,7 +19,7 @@ import isabelle.Thy_Syntax.Structure
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.text.DocumentModel
 import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.IsabelleImages
+import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.editors.TheoryEditor
 import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
 import isabelle.eclipse.ui.text.DocumentListenerSupport

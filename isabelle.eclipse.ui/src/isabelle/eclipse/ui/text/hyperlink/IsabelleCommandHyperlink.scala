@@ -1,4 +1,4 @@
-package isabelle.eclipse.ui.editors
+package isabelle.eclipse.ui.text.hyperlink
 
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.hyperlink.IHyperlink
@@ -7,7 +7,8 @@ import org.eclipse.ui.ide.IDE
 
 import isabelle.Command
 import isabelle.eclipse.core.resource.URIThyLoad
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.editors.TheoryEditor
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 
 
 /**
@@ -59,7 +60,7 @@ class IsabelleCommandHyperlink(
         case _ =>
       }
     } catch {
-      case e: PartInitException => IsabelleUIPlugin.log(e.getMessage, e)
+      case e: PartInitException => log(error(Some(e)))
     }
   }
   

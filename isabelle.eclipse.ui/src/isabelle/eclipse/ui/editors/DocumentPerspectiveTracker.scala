@@ -10,7 +10,7 @@ import org.eclipse.swt.events.ControlAdapter
 import org.eclipse.swt.events.ControlEvent
 
 import isabelle.eclipse.core.text.DocumentModel
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 
 /** Tracker for changes in editor/document - upon change, updates the active perspective
@@ -100,7 +100,7 @@ trait DocumentPerspectiveTracker {
       } catch {
         
         case e: BadLocationException => {
-          IsabelleUIPlugin.log(e.getMessage(), e)
+          log(error(Some(e)))
           // something is visible, but problems calculating the perspective: use full document
           (0, document.getLength)
         }

@@ -6,7 +6,7 @@ import org.eclipse.swt.graphics.Image
 
 import isabelle.Library
 import isabelle.Thy_Syntax.Structure
-import isabelle.eclipse.ui.IsabelleImages
+import isabelle.eclipse.ui.internal.IsabelleImages
 
 
 /**

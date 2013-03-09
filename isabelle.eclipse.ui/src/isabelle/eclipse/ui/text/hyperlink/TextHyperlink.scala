@@ -1,4 +1,4 @@
-package isabelle.eclipse.ui.editors
+package isabelle.eclipse.ui.text.hyperlink
 
 import java.net.URI
 
@@ -6,7 +6,8 @@ import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.hyperlink.IHyperlink
 import org.eclipse.ui.{IWorkbenchPage, PartInitException}
 
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.editors.EditorUtil
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 
 
 /**
@@ -53,7 +54,7 @@ class TextHyperlink(
       EditorUtil.revealInEditor(editor, selectRegion, highlightRegion)
 
     } catch {
-      case e: PartInitException => IsabelleUIPlugin.log(e.getMessage, e)
+      case e: PartInitException => log(error(Some(e)))
     }
   }
 

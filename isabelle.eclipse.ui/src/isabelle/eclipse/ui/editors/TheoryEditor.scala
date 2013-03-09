@@ -25,7 +25,8 @@ import isabelle.eclipse.core.resource.URIThyLoad._
 import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel, ReadOnlyDocumentModel}
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
-import isabelle.eclipse.ui.{IsabelleImages, IsabelleUIPlugin}
+import isabelle.eclipse.ui.internal.IsabelleImages
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
 import isabelle.eclipse.ui.views.outline.TheoryOutlinePage
@@ -137,7 +138,7 @@ class TheoryEditor extends TextEditor {
 
         val name = Thy_Header.thy_name(uri.toString) map { URINodeName(uri, _) }
         if (name.isEmpty) {
-          IsabelleUIPlugin.log("Cannot resolve theory name for URI: " + uri.toString, null)
+          log(error(msg = Some("Cannot resolve theory name for URI: " + uri.toString)))
         }
 
         name map toDocumentNodeName
@@ -150,7 +151,7 @@ class TheoryEditor extends TextEditor {
       ResourceUtil.getInputURI(input)
     } catch {
       case e: URISyntaxException => {
-        IsabelleUIPlugin.log(e.getMessage, e)
+        log(error(Some(e)))
         None
       }
     }
@@ -359,7 +360,7 @@ class TheoryEditor extends TextEditor {
           } catch {
             case e: CoreException => {
               // cannot load parent - skip
-              IsabelleUIPlugin.log(e.getMessage, e)
+              log(error(Some(e)))
               None
             }
           }
@@ -407,7 +408,7 @@ class TheoryEditor extends TextEditor {
         provider.disconnect(input)
 
       } catch {
-        case e: CoreException => IsabelleUIPlugin.log(e.getMessage(), e)
+        case e: CoreException => log(error(Some(e)))
       }
   }
 

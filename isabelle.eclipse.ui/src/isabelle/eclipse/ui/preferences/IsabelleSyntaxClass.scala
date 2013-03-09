@@ -6,7 +6,7 @@ import org.eclipse.jface.text.TextAttribute
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.Color
 
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin
 import isabelle.eclipse.ui.editors.ExtendedTextAttribute
 
 
@@ -21,7 +21,7 @@ case class IsabelleSyntaxClass(displayName: String, baseName: String) {
 
   import IsabelleSyntaxClasses._
   
-  val baseKey = IsabelleUIPlugin.PLUGIN_ID + "." + baseName
+  val baseKey = IsabelleUIPlugin.plugin.pluginId + "." + baseName
   
   def foregroundKey = baseKey + COLOR_SUFFIX
   def backgroundKey = baseKey + BACKGROUND_COLOR_SUFFIX

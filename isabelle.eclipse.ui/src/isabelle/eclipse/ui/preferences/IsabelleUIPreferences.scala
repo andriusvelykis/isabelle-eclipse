@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.preferences.{
   InstanceScope
 }
 
-import isabelle.eclipse.ui.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin
 
 
 /**
@@ -16,7 +16,7 @@ import isabelle.eclipse.ui.IsabelleUIPlugin
   */
 object IsabelleUIPreferences {
   
-  private def pluginId = IsabelleUIPlugin.PLUGIN_ID
+  private def pluginId = IsabelleUIPlugin.plugin.pluginId
   
   private[preferences] def prefNode(prefScope: IScopeContext) = prefScope.getNode(pluginId)
   
