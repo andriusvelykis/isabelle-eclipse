@@ -337,22 +337,40 @@
    </extension>
    <extension
          point="org.eclipse.ui.commands">
+      <category
+            id="isabelle.eclipse.ui.category.theory"
+            name="Isabelle Theory">
+      </category>
       <command
             categoryId="isabelle.eclipse.ui.category.theory"
             description="Move Prover To Selected Theory Line"
             id="isabelle.eclipse.ui.editor.submitToPoint"
             name="Go To Point">
       </command>
-      <category
-            id="isabelle.eclipse.ui.category.theory"
-            name="Isabelle Theory">
-      </category>
+      <command
+            categoryId="isabelle.eclipse.ui.category.theory"
+            description="Open Definition of Element at Cursor Position"
+            id="isabelle.eclipse.ui.editor.openDefinition"
+            name="Open Definition">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
             class="isabelle.eclipse.ui.actions.SubmitToPointCommand"
             commandId="isabelle.eclipse.ui.editor.submitToPoint">
+         <activeWhen>
+            <with
+                  variable="activePartId">
+               <equals
+                     value="isabelle.eclipse.ui.theoryEditor">
+               </equals>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="isabelle.eclipse.ui.actions.OpenDefinitionCommand"
+            commandId="isabelle.eclipse.ui.editor.openDefinition">
          <activeWhen>
             <with
                   variable="activePartId">
@@ -378,6 +396,14 @@
             </command>
          </toolbar>
       </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:navigate?after=open.ext">
+         <command
+               commandId="isabelle.eclipse.ui.editor.openDefinition"
+               style="push">
+         </command>
+      </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
@@ -386,6 +412,12 @@
             contextId="isabelle.eclipse.ui.theoryEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Shift+M1+Enter">
+      </key>
+      <key
+            commandId="isabelle.eclipse.ui.editor.openDefinition"
+            contextId="isabelle.eclipse.ui.theoryEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F3">
       </key>
    </extension>
    <extension
