@@ -79,18 +79,25 @@ class SendbackHyperlink(linkRegion: IRegion,
     case (offset, length) => {
 
       val document = viewer.getDocument
-      val paddedText = if (length == 0) {
-        text
-      } else {
-        // if nothing is selected, add padding to text if needed
-        def pad(offset: Int): String =
-          if (safeTextAt(document, offset) == Some("\n")) "" else "\n"
+      val (replaceOffset, paddedText) = if (length != 0) {
+        (offset, text)
+      } else safeLineInfoAt(document, offset) match {
+        case None => (offset, text)
 
-        pad(offset - 1) + text + pad(offset)
+        // if nothing is selected, try to work out how to add text as new line
+        case Some((lineOffset, lineEnd)) => 
+          if (lineOffset == offset) {
+            // cursor at the start of the line, append newline
+            (offset, text + "\n")
+          } else {
+            // cursor is either at the end or in the middle of the line:
+            // replace at the end of the line with leading newline
+            (lineEnd, "\n" + text)
+          }
       }
 
       // set the text
-      document.replace(offset, length, paddedText)
+      document.replace(replaceOffset, length, paddedText)
     }
   }
 
@@ -128,11 +135,13 @@ class SendbackHyperlink(linkRegion: IRegion,
   }
 
 
-  private def safeTextAt(document: IDocument, offset: Int): Option[String] =
+  private def safeLineInfoAt(document: IDocument, offset: Int): Option[(Int, Int)] = {
     try {
-      Some(String.valueOf(document.getChar(offset)))
+      val line = document.getLineInformationOfOffset(offset)
+      Some(line.getOffset, line.getOffset + line.getLength)
     } catch {
       case _: BadLocationException => None
     }
+  }
 
 }
