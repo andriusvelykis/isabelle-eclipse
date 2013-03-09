@@ -1,7 +1,8 @@
 package isabelle.eclipse.ui.util
 
 import org.eclipse.swt.events.{DisposeEvent, DisposeListener}
-import org.eclipse.swt.widgets.{Display, Widget}
+import org.eclipse.swt.graphics.{Font, FontMetrics, GC}
+import org.eclipse.swt.widgets.{Control, Display, Widget}
 import org.eclipse.ui.IWorkbenchPart
 
 
@@ -47,6 +48,20 @@ object SWTUtil {
       })
 
     }
+  }
+
+
+  /**
+   * Get the metrics for the given font.
+   * 
+   * Needs to be called from the UI thread.
+   */
+  def initializeFontMetrics(control: Control, font: Font): FontMetrics = {
+    val gc = new GC(control)
+    gc.setFont(font)
+    val fontMetrics = gc.getFontMetrics()
+    gc.dispose()
+    fontMetrics
   }
 
 }
