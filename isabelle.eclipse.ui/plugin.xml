@@ -11,7 +11,7 @@
             icon="icons/isabelle_file.gif"
             id="isabelle.eclipse.ui.theoryEditor"
             name="Isabelle/Isar Theory Editor"
-            symbolicFontName="isabelle.eclipse.ui.isabelleFont">
+            symbolicFontName="isabelle.eclipse.ui.theoryEditorFont">
       </editor>
    </extension>
    <extension
@@ -51,10 +51,21 @@
    </extension>
    <extension
          point="org.eclipse.ui.themes">
+      <themeElementCategory
+            id="isabelle.eclipse.ui.isabelleTheme"
+            label="Isabelle">
+         <description>
+            Theme configuration for Isabelleeditors and views
+         </description>
+      </themeElementCategory>
       <fontDefinition
-            id="isabelle.eclipse.ui.isabelleFont"
-            label="IsabelleText"
+            categoryId="isabelle.eclipse.ui.isabelleTheme"
+            id="isabelle.eclipse.ui.theoryEditorFont"
+            label="Theory Editor Text Font"
             value="IsabelleText-regular-12">
+         <description>
+            Font used by Isabelle theory editor and views to display text with Isabelle mathematical symbols.
+         </description>
       </fontDefinition>
    </extension>
    <extension

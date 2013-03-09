@@ -31,7 +31,7 @@ object IsabelleUIPreferences {
   /** Preference indicating whether to show Raw outline tree */
   val OUTLINE_RAW_TREE = pluginId + ".outlineRawTree"
   
-  def ISABELLE_FONT = "isabelle.eclipse.ui.isabelleFont"
+  def ISABELLE_FONT = "isabelle.eclipse.ui.theoryEditorFont"
   
 }
 
