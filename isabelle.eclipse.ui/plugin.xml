@@ -48,6 +48,15 @@
             name="Prover Output"
             restorable="true">
       </view>
+      <view
+            allowMultiple="true"
+            category="isabelle.eclipse.ui"
+            class="isabelle.eclipse.ui.views.IsabelleSymbolsView"
+            icon="icons/symbols.png"
+            id="isabelle.eclipse.ui.symbolsView"
+            name="Symbols"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.themes">
