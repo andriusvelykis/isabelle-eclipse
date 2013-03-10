@@ -4,6 +4,7 @@ import scala.actors.Actor._
 
 import org.eclipse.jface.layout.TreeColumnLayout
 import org.eclipse.jface.resource.JFaceResources
+import org.eclipse.jface.util.{IPropertyChangeListener, PropertyChangeEvent}
 import org.eclipse.jface.viewers.{
   AbstractTreeViewer,
   ColumnViewerToolTipSupport,
@@ -55,7 +56,17 @@ class IsabelleSymbolsView extends ViewPart {
       }
     }
   }
-  
+
+  /** listener for font changes in preferences */
+  private val fontChangeListener = new IPropertyChangeListener {
+
+    override def propertyChange(event: PropertyChangeEvent) =
+      if (event.getProperty().equals(isabelleFontKey)) {
+        updateFont()
+      }
+  }
+
+
   private var viewer: SymbolFilteredTree = _
   
   override def createPartControl(parent: Composite) {
@@ -66,12 +77,16 @@ class IsabelleSymbolsView extends ViewPart {
     val isabelle = IsabelleCore.isabelle
     isabelle.systemEvents += systemListener
     
+    // listen to font changes
+    JFaceResources.getFontRegistry.addListener(fontChangeListener)
+    
     if (isabelle.isInit) {
       initSymbols()
     }
   }
   
   override def dispose() {
+    JFaceResources.getFontRegistry.removeListener(fontChangeListener)
     IsabelleCore.isabelle.systemEvents -= systemListener
   }
 
@@ -86,9 +101,24 @@ class IsabelleSymbolsView extends ViewPart {
     Symbol.groups map { case (name, symbols) => SymbolGroup(name, symbols) }
 
 
+  private def updateFont() {
+    viewer.updateRowHeight()
+    viewer.getViewer.refresh()
+  }
+
+
+  private def isabelleFontKey: String = IsabelleUIPreferences.ISABELLE_FONT
+
+  private def isabelleFont: Font = JFaceResources.getFontRegistry.get(isabelleFontKey)
+
+
+
   /**
    * On symbol action (double-click), replace the editor selection with the given symbol
    * (add symbol to editor)
+   * 
+   * TODO support control styles properly
+   * (see Token_Markup#edit_control_style and Symbols_Dockable)
    */
   private def symbolAction(s: Symbol.Symbol) = Option(getSite.getPage.getActiveEditor) match {
     // for theory editor, use Unicode symbols if initialised
@@ -105,11 +135,6 @@ class IsabelleSymbolsView extends ViewPart {
     replaceSelected(editor, text)
     editor.getSite.getPage.activate(editor)
   }
-
-
-  // TODO preference change
-  private def isabelleFont: Font =
-    JFaceResources.getFontRegistry.get(IsabelleUIPreferences.ISABELLE_FONT)
 
 
   private case class SymbolGroup(name: String, symbols: List[Symbol.Symbol])
@@ -154,7 +179,7 @@ class IsabelleSymbolsView extends ViewPart {
     })
 
 
-    private def updateRowHeight() {
+    def updateRowHeight() {
       val fontMetrics = SWTUtil.initializeFontMetrics(getViewer.getTree, isabelleFont)
       val fontRowHeight = fontMetrics.getHeight// + 2
       
@@ -167,7 +192,6 @@ class IsabelleSymbolsView extends ViewPart {
 
   private class SymbolLabelProvider extends StyledCellLabelProvider {
 
-    lazy val font = isabelleFont
     lazy val groupImage = PlatformUI.getWorkbench.getSharedImages.getImage(
       ISharedImages.IMG_OBJ_FOLDER)
 
@@ -180,7 +204,7 @@ class IsabelleSymbolsView extends ViewPart {
 
         val symLength = decoded.length
         val symStyle = new StyleRange(0, symLength, null, null)
-        symStyle.font = font
+        symStyle.font = isabelleFont
 
         (decoded + name, List(symStyle))
       }
