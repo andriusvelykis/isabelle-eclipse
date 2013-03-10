@@ -86,5 +86,17 @@ object EditorUtil2 {
       case _ => None
     }
   }
+
+
+  /**
+   * Executes given function while preserving scroll position in the given text viewer.
+   */
+  def preserveScroll(viewer: ITextViewer)(f: => Unit) {
+    val topIndex = viewer.getTopIndex
+    f
+    if (viewer.getTopIndex != topIndex) {
+      viewer.setTopIndex(topIndex)
+    }
+  }
   
 }

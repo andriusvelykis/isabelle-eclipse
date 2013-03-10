@@ -22,9 +22,10 @@ import isabelle.{Command, Document, Session, Thy_Header, Thy_Info}
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
-import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel, ReadOnlyDocumentModel}
+import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel, IsabelleDocument, ReadOnlyDocumentModel}
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
+import isabelle.eclipse.ui.editors.EditorUtil2.preserveScroll
 import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 import isabelle.eclipse.ui.util.JobUtil.uiJob
@@ -57,6 +58,9 @@ class TheoryEditor extends TextEditor {
   /** The Isabelle-state of the editor (available after Isabelle is launched) */
   private var state: Option[State] = None
   private var init = false
+
+  /** A flag to indicate that Isabelle document needs initialisation (do symbols) */
+  @volatile private var needDocumentInit = false
   
   private var editable = true
 
@@ -71,8 +75,11 @@ class TheoryEditor extends TextEditor {
   private val systemListener = LoggingActor {
     loop {
       react {
-        // upon system init, reload the editor - the symbols have changed then
-        case Isabelle.SystemInit => reload()
+        // upon system init, initialise editor document - the symbols have changed then
+        case Isabelle.SystemInit => {
+          needDocumentInit = true
+          uiJob("Initialising Isabelle Document") { initDocument() }
+        }
         // when session is init/shutdown, update the editor state accordingly
         case Isabelle.SessionInit(session) => uiJob("Initialising Isabelle Editor") { initState(session) }
         case Isabelle.SessionShutdown(_) => uiJob("Updating Isabelle Editor") { disposeState() }
@@ -159,6 +166,8 @@ class TheoryEditor extends TextEditor {
 
   private def initState(session: Session, input: IEditorInput = getEditorInput) {
 
+    initDocument()
+    
     val name = createDocumentName(input)
     
     val loaded = name forall (n => session.thy_load.loaded_theories(n.theory))
@@ -197,8 +206,22 @@ class TheoryEditor extends TextEditor {
   def isabelleModel: Option[DocumentModel] = state.map(_.isabelleModel)
 
 
-  /** reload input in the UI thread */
-  private def reload() = uiJob("Reloading editor") { setInput(getEditorInput()) }
+  /**
+   * Initialise document symbols
+   */
+  private def initDocument() = if (needDocumentInit) {
+    document match {
+      case isaDoc: IsabelleDocument => preserveScroll(getSourceViewer) {
+        isaDoc.init()
+        // also reset undo manager, because if there are undo actions,
+        // they mess up encoded/decoded appearance
+        getSourceViewer.resetPlugins
+      }
+      case _ =>
+    }
+    needDocumentInit = false
+  }
+
 
   private def reloadOutline() = outlinePage.reload()
 

@@ -1,16 +1,20 @@
 package isabelle.eclipse.core.text
 
+import scala.collection.mutable.WeakHashMap
+
+import org.eclipse.jface.text.{
+  BadLocationException,
+  Document,
+  DocumentEvent,
+  IDocument,
+  IDocumentExtension4,
+  IDocumentListener,
+  IRegion,
+  Region
+}
+
 import isabelle.Symbol
 import isabelle.eclipse.core.IsabelleCore
-import org.eclipse.jface.text.BadLocationException
-import org.eclipse.jface.text.Document
-import org.eclipse.jface.text.DocumentEvent
-import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.IDocumentExtension4
-import org.eclipse.jface.text.IDocumentListener
-import org.eclipse.jface.text.IRegion
-import org.eclipse.jface.text.Region
-import scala.collection.mutable.WeakHashMap
 
 
 /** A document containing text with Isabelle Unicode symbols (as opposed to the ASCII version
@@ -41,20 +45,21 @@ class IsabelleDocument(val base: IDocument) extends Document {
   // import methods from the companion object to avoid full name referencing
   import IsabelleDocument._
 
+
+  // wrap the documents to allow flagging them during the sync
+  // this is needed to avoid sync loop
+  private val baseDoc = new UpdatingDocument(base)
+  private val thisDoc = new UpdatingDocument(this)
+
   // keep sync listeners after initialisation to disconnect when no longer used
   private val (baseListener, thisListener) = {
-    
-    // wrap the documents to allow flagging them during the sync
-    // this is needed to avoid sync loop
-    val baseDoc = new UpdatingDocument(base)
-    val thisDoc = new UpdatingDocument(this);
 
     // init listeners to keep the documents in sync
     val baseListener = keepInSync(baseDoc, thisDoc, Symbol.decode)
     val thisListener = keepInSync(thisDoc, baseDoc, Symbol.encode)
 
     // do initial sync from base to this (current document is empty)
-    syncAll(baseDoc, thisDoc, Symbol.decode)
+    init()
 
     (baseListener, thisListener)
   }
@@ -64,7 +69,14 @@ class IsabelleDocument(val base: IDocument) extends Document {
     base.removeDocumentListener(baseListener)
     this.removeDocumentListener(thisListener)
   }
-  
+
+
+  /**
+   * Initialises Isabelle document contents by synchronising all text from the base document
+   * and decoding symbols, if available.
+   */
+  def init() = syncAll(baseDoc, thisDoc, Symbol.decode)
+
 }
 
 object IsabelleDocument {
