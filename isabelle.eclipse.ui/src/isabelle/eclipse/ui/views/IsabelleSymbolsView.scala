@@ -8,6 +8,9 @@ import org.eclipse.jface.viewers.{
   AbstractTreeViewer,
   ColumnViewerToolTipSupport,
   ColumnWeightData,
+  DoubleClickEvent,
+  IDoubleClickListener,
+  IStructuredSelection,
   ITreeContentProvider,
   StyledCellLabelProvider,
   TreeViewerColumn,
@@ -21,11 +24,14 @@ import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.{ISharedImages, PlatformUI}
 import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 import org.eclipse.ui.part.ViewPart
+import org.eclipse.ui.texteditor.ITextEditor
 
 import isabelle.Symbol
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.util.LoggingActor
+import isabelle.eclipse.ui.editors.EditorUtil2.replaceSelected
+import isabelle.eclipse.ui.editors.TheoryEditor
 import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
 import isabelle.eclipse.ui.util.{EclipseBug154341Hack, SWTUtil}
 
@@ -78,7 +84,29 @@ class IsabelleSymbolsView extends ViewPart {
 
   private def symbolsGroups: List[SymbolGroup] =
     Symbol.groups map { case (name, symbols) => SymbolGroup(name, symbols) }
+
+
+  /**
+   * On symbol action (double-click), replace the editor selection with the given symbol
+   * (add symbol to editor)
+   */
+  private def symbolAction(s: Symbol.Symbol) = Option(getSite.getPage.getActiveEditor) match {
+    // for theory editor, use Unicode symbols if initialised
+    case Some(editor: TheoryEditor) if editor.isabelleModel.isDefined =>
+      replaceInEditor(editor, Symbol.decode(s))
+
+    // for any text editor, insert non-decoded (ASCII) symbol
+    case Some(editor: ITextEditor) => replaceInEditor(editor, s)
+
+    case _ =>
+  }
   
+  private def replaceInEditor(editor: ITextEditor, text: String) {
+    replaceSelected(editor, text)
+    editor.getSite.getPage.activate(editor)
+  }
+
+
   // TODO preference change
   private def isabelleFont: Font =
     JFaceResources.getFontRegistry.get(IsabelleUIPreferences.ISABELLE_FONT)
@@ -113,6 +141,17 @@ class IsabelleSymbolsView extends ViewPart {
     
     // enable tooltips
     ColumnViewerToolTipSupport.enableFor(getViewer)
+
+    // on double-click, replace in editor
+    getViewer.addDoubleClickListener(new IDoubleClickListener {
+      override def doubleClick(event: DoubleClickEvent) = event.getSelection match {
+        case ss: IStructuredSelection => ss.getFirstElement match {
+          case s: Symbol.Symbol => symbolAction(s)
+          case _ =>
+        }
+        case _ =>
+      } 
+    })
 
 
     private def updateRowHeight() {
