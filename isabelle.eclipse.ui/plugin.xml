@@ -373,6 +373,18 @@
             id="isabelle.eclipse.ui.editor.openDefinition"
             name="Open Definition">
       </command>
+      <command
+            categoryId="isabelle.eclipse.ui.category.theory"
+            description="Increase Isabelle editor font by 1 point"
+            id="isabelle.eclipse.ui.editor.fontIncrease"
+            name="Increase Isabelle Font">
+      </command>
+      <command
+            categoryId="isabelle.eclipse.ui.category.theory"
+            description="Decrease Isabelle editor font by 1 point"
+            id="isabelle.eclipse.ui.editor.fontDecrease"
+            name="Decrease Isabelle Font">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -400,6 +412,14 @@
             </with>
          </activeWhen>
       </handler>
+      <handler
+            class="isabelle.eclipse.ui.actions.FontIncreaseCommand"
+            commandId="isabelle.eclipse.ui.editor.fontIncrease">
+      </handler>
+      <handler
+            class="isabelle.eclipse.ui.actions.FontDecreaseCommand"
+            commandId="isabelle.eclipse.ui.editor.fontDecrease">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -414,6 +434,16 @@
                   label="Go To Point"
                   style="push">
             </command>
+            <command
+                  commandId="isabelle.eclipse.ui.editor.fontIncrease"
+                  icon="icons/font_increase.gif"
+                  style="push">
+            </command>
+            <command
+                  commandId="isabelle.eclipse.ui.editor.fontDecrease"
+                  icon="icons/font_decrease.gif"
+                  style="push">
+            </command>
          </toolbar>
       </menuContribution>
       <menuContribution
@@ -423,6 +453,24 @@
                commandId="isabelle.eclipse.ui.editor.openDefinition"
                style="push">
          </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu">
+         <menu
+               id="isabelle.eclipse.ui.main.menu"
+               label="Isabelle">
+            <command
+                  commandId="isabelle.eclipse.ui.editor.fontIncrease"
+                  icon="icons/font_increase.gif"
+                  style="push">
+            </command>
+            <command
+                  commandId="isabelle.eclipse.ui.editor.fontDecrease"
+                  icon="icons/font_decrease.gif"
+                  style="push">
+            </command>
+         </menu>
       </menuContribution>
    </extension>
    <extension
@@ -438,6 +486,22 @@
             contextId="isabelle.eclipse.ui.theoryEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F3">
+      </key>
+      <key
+            commandId="isabelle.eclipse.ui.editor.fontIncrease"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1++">
+      </key>
+      <key
+            commandId="isabelle.eclipse.ui.editor.fontIncrease"
+            platform="cocoa"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+=">
+      </key>
+      <key
+            commandId="isabelle.eclipse.ui.editor.fontDecrease"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+-">
       </key>
    </extension>
    <extension
