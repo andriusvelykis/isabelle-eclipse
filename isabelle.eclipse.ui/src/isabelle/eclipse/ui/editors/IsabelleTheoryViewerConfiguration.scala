@@ -1,11 +1,13 @@
 package isabelle.eclipse.ui.editors
 
 import org.eclipse.jface.resource.ResourceManager
-import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.ITextHover
+import org.eclipse.jface.text.ITextViewerExtension2.DEFAULT_HOVER_STATE_MASK
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector
 import org.eclipse.jface.text.presentation.{IPresentationReconciler, PresentationReconciler}
 import org.eclipse.jface.text.rules.ITokenScanner
-import org.eclipse.jface.text.source.ISourceViewer
+import org.eclipse.jface.text.source.{Annotation, ISourceViewer}
+import org.eclipse.swt.SWT
 import org.eclipse.ui.editors.text.{EditorsUI, TextSourceViewerConfiguration}
 import org.eclipse.ui.texteditor.ChainedPreferenceStore
 
@@ -26,14 +28,25 @@ import isabelle.eclipse.ui.text.{
   SingleTokenScanner,
   TokenUtil
 }
+import isabelle.eclipse.ui.text.hover.IsabelleTextHover
 import isabelle.eclipse.ui.text.hyperlink.{IsabelleActionHyperlinkDetector, IsabelleHyperlinkDetector}
 
 
-/** @author Andrius Velykis */
-class IsabelleTheoryViewerConfiguration(session: => Option[Session],
-                                        snapshot: => Option[Snapshot],
-                                        targetEditor: => Option[TheoryEditor],
-                                        resourceManager: ResourceManager)
+/**
+ * A SourceViewer configuration used for Isabelle viewers.
+ * 
+ * This configuration is intended to be used both in Editors and in Views.
+ * See IsabelleTheoryConfiguration for Editors-specific extension.
+ * 
+ * @author Andrius Velykis
+ */
+class IsabelleTheoryViewerConfiguration(
+  session: => Option[Session],
+  snapshot: => Option[Snapshot],
+  targetEditor: => Option[TheoryEditor],
+  resourceManager: ResourceManager,
+  annotationHoverMask: Int = DEFAULT_HOVER_STATE_MASK,
+  isabelleHoverMask: Int = DEFAULT_HOVER_STATE_MASK)
   extends TextSourceViewerConfiguration(new ChainedPreferenceStore(Array(
       // chain the preference store to get default editor preference values as well as Isabelle-specific
       IsabelleUIPlugin.plugin.getPreferenceStore,
@@ -44,6 +57,10 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
   
   override def getConfiguredDocumentPartitioning(sourceViewer: ISourceViewer) = 
     IsabellePartitions.ISABELLE_PARTITIONING
+
+  override def getConfiguredContentTypes(sourceViewer: ISourceViewer): Array[String] =
+    // add Isabelle content types
+    super.getConfiguredContentTypes(sourceViewer) ++ IsabellePartitions.contentTypes
     
 
   override def getPresentationReconciler(sourceViewer: ISourceViewer): IPresentationReconciler = {
@@ -67,8 +84,7 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
     }
 
     // set damager/repairer for each content type
-    // add default content type
-    val contentTypes = IDocument.DEFAULT_CONTENT_TYPE :: IsabellePartitions.contentTypes.toList
+    val contentTypes = getConfiguredContentTypes(sourceViewer)
     
     import IsabellePartitions._
     contentTypes foreach {
@@ -133,6 +149,23 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
     val actionHyperlinks = new IsabelleActionHyperlinkDetector(session, snapshot, targetEditor)
     
     Array(actionHyperlinks, isabelleHyperlinks) ++ detectors
+  }
+
+  override def getConfiguredTextHoverStateMasks(sourceViewer: ISourceViewer,
+                                                contentType: String): Array[Int] =
+    Array(DEFAULT_HOVER_STATE_MASK, SWT.ALT)
+
+  override def getTextHover(sourceViewer: ISourceViewer,
+                            contentType: String,
+                            stateMask: Int): ITextHover = {
+
+    val showAnnTooltips = annotationHoverMask == stateMask
+    val showIsaTooltips = isabelleHoverMask == stateMask
+
+    new IsabelleTextHover(session, snapshot, sourceViewer, showAnnTooltips, showIsaTooltips) {
+      // support annotation configuration for "show in text"
+      override protected def isIncluded(annotation: Annotation): Boolean = isShownInText(annotation)
+    }
   }
 
 }
