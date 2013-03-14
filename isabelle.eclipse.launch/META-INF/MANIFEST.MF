@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.ui,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: AI4FM.org
-Import-Package: scala;version="2.10.0",
+Import-Package: org.eclipse.ui.console,
+ scala;version="2.10.0",
  scala.actors;version="2.10.0",
  scala.collection;version="2.10.0",
  scala.collection.convert;version="2.10.0",
