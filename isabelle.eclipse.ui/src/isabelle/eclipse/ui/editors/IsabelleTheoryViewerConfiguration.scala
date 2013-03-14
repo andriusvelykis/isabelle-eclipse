@@ -44,6 +44,10 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
   
   override def getConfiguredDocumentPartitioning(sourceViewer: ISourceViewer) = 
     IsabellePartitions.ISABELLE_PARTITIONING
+
+  override def getConfiguredContentTypes(sourceViewer: ISourceViewer): Array[String] =
+    // add Isabelle content types
+    super.getConfiguredContentTypes(sourceViewer) ++ IsabellePartitions.contentTypes
     
 
   override def getPresentationReconciler(sourceViewer: ISourceViewer): IPresentationReconciler = {
@@ -67,8 +71,7 @@ class IsabelleTheoryViewerConfiguration(session: => Option[Session],
     }
 
     // set damager/repairer for each content type
-    // add default content type
-    val contentTypes = IDocument.DEFAULT_CONTENT_TYPE :: IsabellePartitions.contentTypes.toList
+    val contentTypes = getConfiguredContentTypes(sourceViewer)
     
     import IsabellePartitions._
     contentTypes foreach {
