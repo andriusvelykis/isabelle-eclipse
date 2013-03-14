@@ -89,7 +89,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   override def createControl(parent: Composite) {
     
-    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent)
+    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent, getSite)
     this.control = control
     
     outputViewer = createSourceViewer(

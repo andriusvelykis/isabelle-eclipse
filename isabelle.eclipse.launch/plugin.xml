@@ -4,14 +4,14 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            category="org.eclipse.ui.externaltools"
+            category="isabelle.eclipse.launch.group"
             delegate="isabelle.eclipse.launch.config.AppBundleLaunch"
             id="isabelle.eclipse.launch.isabelleApp"
             modes="run"
             name="Isabelle Mac App">
       </launchConfigurationType>
       <launchConfigurationType
-            category="org.eclipse.ui.externaltools"
+            category="isabelle.eclipse.launch.group"
             delegate="isabelle.eclipse.launch.config.RootDirLaunch"
             id="isabelle.eclipse.launch.isabelleRoot"
             modes="run"
@@ -45,6 +45,73 @@
             id="isabelle.eclipse.launch.tabGroup.isabelleRoot"
             type="isabelle.eclipse.launch.isabelleRoot">
       </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchGroups">
+      <launchGroup
+            bannerImage="icons/isabelle_run_wiz.png"
+            category="isabelle.eclipse.launch.group"
+            id="isabelle.eclipse.launch.group"
+            image="icons/isabelle.png"
+            label="Isabelle"
+            mode="run"
+            title="Configure Isabelle installation">
+      </launchGroup>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="Isabelle Configurations"
+            visible="true"
+            id="isabelle.eclipse.launch.IsabelleLaunchSet">
+         <menu
+               label="&amp;Run"
+               path="additions"
+               id="org.eclipse.ui.run">
+            <separator
+                  name="IsabelleLaunchGroup">
+            </separator>
+         </menu>
+         <action
+               label="Isabelle"
+               style="pulldown"
+               icon="$nl$/icons/isabelle_run.png"
+               class="isabelle.eclipse.launch.actions.IsabelleLaunchMenuDelegate"
+               menubarPath="org.eclipse.ui.run/IsabelleLaunchGroup"
+               id="isabelle.eclipse.launch.isabelleLaunchMenuDelegateMenu">
+         </action>
+         <action
+               definitionId="isabelle.eclipse.launch.isabelleLaunchMenuDelegateToolbar"
+               label="Isabelle"
+               style="pulldown"
+               icon="$nl$/icons/isabelle_run.png"
+               tooltip="Run Last Isabelle Configuration"
+               class="isabelle.eclipse.launch.actions.IsabelleLaunchMenuDelegate"
+               toolbarPath="org.eclipse.debug.ui.launchActionSet/debug"
+               id="isabelle.eclipse.launch.isabelleLaunchMenuDelegateToolbar">
+         </action>
+         <action
+               definitionId="isabelle.eclipse.launch.openIsabelleConfigurations"
+               label="Isabelle Configurations"
+               class="isabelle.eclipse.launch.actions.OpenIsabelleLaunchConfigurations"
+               id="isabelle.eclipse.launch.openIsabelleConfigurations">
+         </action>
+      </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            name="Run Last Launched Isabelle Configuration"
+            description="Runs the last launched Isabelle configuration"
+            categoryId="org.eclipse.debug.ui.category.run"
+            id="isabelle.eclipse.launch.isabelleLaunchMenuDelegateToolbar">
+      </command>
+       <command
+            name="Isabelle Configurations..."
+            categoryId="org.eclipse.debug.ui.category.run"
+            description="Open Isabelle launch configuration dialog"
+            id="isabelle.eclipse.launch.openIsabelleConfigurations">
+      </command>
    </extension>
 
 </plugin>

@@ -19,8 +19,8 @@ import isabelle.Thy_Syntax.Structure
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.text.DocumentModel
 import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.editors.TheoryEditor
+import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
 import isabelle.eclipse.ui.text.DocumentListenerSupport
 import isabelle.eclipse.ui.util.{SWTUtil, TypingDelayHelper}
@@ -97,7 +97,7 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
   
   override def createControl(parent: Composite) {
     
-    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent)
+    val (control, contentArea) = SessionStatusMessageArea.wrapPart(parent, getSite)
     this.control = control
     
     super.createControl(contentArea)
