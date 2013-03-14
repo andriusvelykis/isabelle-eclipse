@@ -1,16 +1,20 @@
 package isabelle.eclipse.ui.views
 
 import scala.actors.Actor
+import scala.util.Try
 
 import org.eclipse.jface.layout.{GridDataFactory, GridLayoutFactory}
 import org.eclipse.swt.SWT
 import org.eclipse.swt.layout.{FillLayout, GridData}
-import org.eclipse.swt.widgets.{Composite, Control, Label}
+import org.eclipse.swt.widgets.{Composite, Control, Event, Label, Link, Listener}
 import org.eclipse.ui.{ISharedImages, PlatformUI}
+import org.eclipse.ui.handlers.IHandlerService
+import org.eclipse.ui.services.IServiceLocator
 
 import isabelle.Session
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.util.SessionEvents
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 import isabelle.eclipse.ui.util.SWTUtil
 import isabelle.eclipse.ui.util.SWTUtil.Disposable
 
@@ -22,7 +26,7 @@ import isabelle.eclipse.ui.util.SWTUtil.Disposable
  * 
  * @author Andrius Velykis
  */
-class SessionStatusMessageArea extends SessionEvents {
+class SessionStatusMessageArea(services: IServiceLocator) extends SessionEvents {
 
   private var main: Composite = _
   
@@ -40,10 +44,27 @@ class SessionStatusMessageArea extends SessionEvents {
     iconLabel.setToolTipText(tooltip)
     iconLabel.setLayoutData(GridDataFactory.swtDefaults.create)
     
-    val textLabel = new Label(main, SWT.WRAP)
-    textLabel.setText("Isabelle prover is not running")
+    val textLabel = new Link(main, SWT.WRAP)
+    // display a link in the message to configure prover
+    textLabel.setText("Isabelle prover is <a>not running</a>")
     textLabel.setToolTipText(tooltip)
     textLabel.setLayoutData(GridDataFactory.fillDefaults.grab(true, false).create)
+
+    // launch Isabelle prover configuration dialog when link is selected
+    textLabel.addListener(SWT.Selection, new Listener() {
+      override def handleEvent(event: Event) = handlerService match {
+        case Some(handler) => {
+
+          val exec = Try(handler.executeCommand(
+            "isabelle.eclipse.launch.openIsabelleConfigurations", null))
+
+          // log if failed
+          exec.failed foreach (ex => log(error(Some(ex))))
+        }
+
+        case _ =>
+      }
+    })
     
     val separator = new Label(main, SWT.SEPARATOR | SWT.HORIZONTAL)
     separator.setLayoutData(GridDataFactory.fillDefaults.span(2, 1).grab(true, false).create)
@@ -53,7 +74,16 @@ class SessionStatusMessageArea extends SessionEvents {
     
     initSessionEvents()
   }
-  
+
+  /**
+   * Resolves the command handler service
+   */
+  private def handlerService: Option[IHandlerService] =
+    services.getService(classOf[IHandlerService]) match {
+      case s: IHandlerService => Some(s)
+      case _ => None
+    }
+
   def getControl(): Control = main
   
   def update() = updateSessionStatus()
@@ -107,9 +137,9 @@ class SessionStatusMessageArea extends SessionEvents {
 
 object SessionStatusMessageArea {
   
-  def wrapPart(parent: Composite): (Control, Composite) = {
+  def wrapPart(parent: Composite, services: IServiceLocator): (Control, Composite) = {
 
-    val statusArea = new SessionStatusMessageArea
+    val statusArea = new SessionStatusMessageArea(services)
     
     val main = new Composite(parent, SWT.NONE)
     main.setLayout(GridLayoutFactory.fillDefaults.create)
