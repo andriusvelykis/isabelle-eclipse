@@ -30,8 +30,9 @@ class SessionStatusMessageArea extends SessionEvents {
     
     main = new Composite(parent, SWT.NONE)
     main.setLayout(GridLayoutFactory.fillDefaults.numColumns(2).spacing(0, 0).create)
-    
-    val tooltip = "Isabelle prover is not running: start it as External Tool"
+
+    val tooltip = "Isabelle prover is not running: configure and start it " +
+                  "in Isabelle launch configurations"
     
     val iconLabel = new Label(main, SWT.NONE)
     val warnImg = PlatformUI.getWorkbench.getSharedImages.getImage(ISharedImages.IMG_OBJS_WARN_TSK)
