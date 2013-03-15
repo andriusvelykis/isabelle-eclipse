@@ -17,7 +17,7 @@ import isabelle.eclipse.ui.internal.IsabelleImages
 class TheoryRawLabelProvider(resourceManager: ResourceManager) extends LabelProvider {
   
   override def getImage(obj: AnyRef): Image =
-    resourceManager.createImageWithDefault(IsabelleImages.OUTLINE_ITEM)
+    resourceManager.createImageWithDefault(IsabelleImages.ISABELLE_ITEM)
 
 
   override def getText(obj: AnyRef): String = obj match {

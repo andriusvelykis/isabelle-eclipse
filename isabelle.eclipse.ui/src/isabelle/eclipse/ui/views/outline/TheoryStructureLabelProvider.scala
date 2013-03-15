@@ -16,9 +16,40 @@ import isabelle.eclipse.ui.internal.IsabelleImages
  */
 /* Adapted from Isabelle_Sidekick_Structure */
 class TheoryStructureLabelProvider(resourceManager: ResourceManager) extends LabelProvider {
-  
-  override def getImage(obj: AnyRef): Image =
-    resourceManager.createImageWithDefault(IsabelleImages.OUTLINE_ITEM)
+
+  private val cmdImages = Map(
+    "qed" -> IsabelleImages.SUCCESS,
+    "done" -> IsabelleImages.SUCCESS,
+    "by" -> IsabelleImages.SUCCESS,
+    "apply" -> IsabelleImages.COMMAND_APPLY,
+    "proof" -> IsabelleImages.COMMAND_PROOF
+    ).withDefaultValue(IsabelleImages.ISABELLE_ITEM)
+
+
+  override def getImage(obj: AnyRef): Image = {
+
+    val imgDesc = obj match {
+      case TheoryStructureEntry(_, Structure.Block(nameText, _), _, _) => {
+        val name = nameText.trim
+        
+        if (name.startsWith("lemma") || name.startsWith("theorem")) {
+          IsabelleImages.LEMMA
+        } else if (name.startsWith("text")) {
+          IsabelleImages.TEXT
+        } else if (name.startsWith("theory")) {
+          IsabelleImages.ISABELLE_FILE
+        } else {
+          IsabelleImages.HEADING
+        }
+      }
+
+      case TheoryStructureEntry(_, Structure.Atom(command), _, _) => cmdImages(command.name)
+
+      case _ => IsabelleImages.ISABELLE_ITEM
+    }
+
+    resourceManager.createImageWithDefault(imgDesc)
+  }
 
 
   override def getText(obj: AnyRef): String = obj match {
