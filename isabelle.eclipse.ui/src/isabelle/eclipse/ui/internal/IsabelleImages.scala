@@ -24,9 +24,17 @@ object IsabelleImages {
   
   lazy val RAW_OUTPUT_CONSOLE = create("isabelle.png")
   lazy val CONTENT_ASSIST = create("isabelle.png")
-  lazy val OUTLINE_ITEM = create("isabelle.png")
+
   lazy val RAW_TREE = create("raw_tree.gif")
   lazy val SHOW_TRACE = create("show_trace.gif")
+
+  lazy val HEADING = create("heading.png")
+  lazy val LEMMA = create("lemma.png")
+  lazy val SUCCESS = create("success.gif")
+  lazy val TEXT = create("text.png")
+  lazy val COMMAND_APPLY = create("command_apply.png")
+  lazy val COMMAND_PROOF = create("command_proof.png")
+  lazy val ISABELLE_ITEM = create("isabelle_item.png")
 
 
   private def create(iconPath: String) = {

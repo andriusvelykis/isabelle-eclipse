@@ -43,7 +43,7 @@
             allowMultiple="true"
             category="isabelle.eclipse.ui"
             class="isabelle.eclipse.ui.views.ProverOutputView"
-            icon="icons/isabelle.png"
+            icon="icons/prover_output.png"
             id="isabelle.eclipse.ui.proverOutputView"
             name="Prover Output"
             restorable="true">
@@ -399,6 +399,14 @@
                </equals>
             </with>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="activePartId">
+               <equals
+                     value="isabelle.eclipse.ui.theoryEditor1">
+               </equals>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             class="isabelle.eclipse.ui.actions.OpenDefinitionCommand"
@@ -430,7 +438,7 @@
                id="isabelle.eclipse.ui.main.toolbar">
             <command
                   commandId="isabelle.eclipse.ui.editor.submitToPoint"
-                  icon="icons/isabelle.png"
+                  icon="icons/submit_point.png"
                   label="Go To Point"
                   style="push">
             </command>
