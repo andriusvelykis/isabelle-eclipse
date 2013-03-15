@@ -537,5 +537,14 @@
             class="isabelle.eclipse.ui.preferences.IsabelleUIPreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="isabelle.eclipse.ui.perspective.IsabelleTheoryPerspective"
+            icon="icons/isabelle.png"
+            id="isabelle.eclipse.ui.perspective.theory"
+            name="Isabelle">
+      </perspective>
+   </extension>
 
 </plugin>
