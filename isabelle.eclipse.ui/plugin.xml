@@ -537,5 +537,35 @@
             class="isabelle.eclipse.ui.preferences.IsabelleUIPreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="isabelle.eclipse.ui.perspective.IsabelleTheoryPerspective"
+            icon="icons/isabelle.png"
+            id="isabelle.eclipse.ui.theoryPerspective"
+            name="Isabelle">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.ui.resourcePerspective">
+         <perspectiveShortcut
+               id="isabelle.eclipse.ui.theoryPerspective">
+         </perspectiveShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.debug.ui.DebugPerspective">
+         <perspectiveShortcut
+               id="isabelle.eclipse.ui.theoryPerspective">
+         </perspectiveShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <perspectiveShortcut
+               id="isabelle.eclipse.ui.theoryPerspective">
+         </perspectiveShortcut>
+      </perspectiveExtension>
+   </extension>
 
 </plugin>
