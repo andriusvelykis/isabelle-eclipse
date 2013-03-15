@@ -399,6 +399,14 @@
                </equals>
             </with>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="activePartId">
+               <equals
+                     value="isabelle.eclipse.ui.theoryEditor1">
+               </equals>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             class="isabelle.eclipse.ui.actions.OpenDefinitionCommand"
@@ -430,7 +438,7 @@
                id="isabelle.eclipse.ui.main.toolbar">
             <command
                   commandId="isabelle.eclipse.ui.editor.submitToPoint"
-                  icon="icons/isabelle.png"
+                  icon="icons/submit_point.png"
                   label="Go To Point"
                   style="push">
             </command>
