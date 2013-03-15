@@ -43,7 +43,7 @@
             allowMultiple="true"
             category="isabelle.eclipse.ui"
             class="isabelle.eclipse.ui.views.ProverOutputView"
-            icon="icons/isabelle.png"
+            icon="icons/prover_output.png"
             id="isabelle.eclipse.ui.proverOutputView"
             name="Prover Output"
             restorable="true">
