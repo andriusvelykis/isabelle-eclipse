@@ -13,6 +13,20 @@
   <name>Isabelle/Eclipse p2 Repository</name>
 
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-repository-plugin</artifactId>
+        <version>${tycho.version}</version>
+        <configuration>
+          <repositoryName>Isabelle/Eclipse Updates</repositoryName>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
   <profiles>
     <profile>
       <!-- A special profile to regenerate composite p2 repository for Isabelle/Eclipse releases.
