@@ -27,6 +27,9 @@
     <java.version>1.7</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- The build ID - normally the qualifier, but can be e.g. "M2" for milestone builds -->
+    <isabelle.buildId>${buildQualifier}</isabelle.buildId>
   </properties>
 
   <dependencies>
@@ -51,6 +54,19 @@
   <build>
     <sourceDirectory>${basedir}/src</sourceDirectory>
     <testSourceDirectory>${basedir}/test</testSourceDirectory>
+
+    <resources>
+      <resource>
+        <!-- Replace (filter) Maven variables in .mappings files
+             (e.g. build ID, version qualifiers, etc) -->
+        <directory>.</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/*.mappings</include>
+        </includes>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
