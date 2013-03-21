@@ -9,7 +9,7 @@ import org.eclipse.core.filesystem.EFS
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.jface.dialogs.MessageDialog
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
-import org.eclipse.jface.text.{IDocument, IRegion, Region}
+import org.eclipse.jface.text.{IDocument, IRegion, ITextViewerExtension2, Region}
 import org.eclipse.jface.text.source.IAnnotationModel
 import org.eclipse.jface.viewers.{ISelectionChangedListener, SelectionChangedEvent}
 import org.eclipse.swt.widgets.Composite
@@ -19,6 +19,7 @@ import org.eclipse.ui.editors.text.TextEditor
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 
 import isabelle.{Command, Document, Session, Thy_Header, Thy_Info}
+import isabelle.Text.Range
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.app.Isabelle
 import isabelle.eclipse.core.resource.URIThyLoad._
@@ -30,6 +31,7 @@ import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
+import isabelle.eclipse.ui.util.SWTUtil.asyncExec
 import isabelle.eclipse.ui.views.outline.TheoryOutlinePage
 
 
@@ -314,51 +316,64 @@ class TheoryEditor extends TextEditor {
 
     // When commands change (e.g. results from the prover), signal to update the document view,
     // e.g. new markups, etc.
-    val sessionActor = LoggingActor {
-      loop {
-        react {
-          case changed: Session.Commands_Changed => {
+    val commandChange = new CommandChangeHelper(isabelleModel)(refreshViewUI)
 
-            // avoid updating if commands are from a different document
-            if (changed.nodes.contains(isabelleModel.name)) {
-              refreshView()
-            }
-          }
+    override protected def textViewer = getSourceViewer
+    
+    private def display = textViewer.getTextWidget.getDisplay
 
-          case _ => // ignore
-        }
-      }
-    }
-
-    override protected def textViewer() = getSourceViewer
-
-    val markers = new TheoryAnnotations(TheoryEditor.this)
+    val markers = new TheoryViewerAnnotations(
+      Some(isabelleModel.snapshot),
+      isabelleModel.document,
+      annotationModel,
+      Option(EditorUtil.getResource(getEditorInput)),
+      Some(display))
 
     def init() {
       
-      isabelleModel.session.commands_changed += sessionActor
       isabelleModel.init()
-      markers.init()
+      commandChange.init()
       
       initPerspective()
 
       loadTheoryImports()
       
-      // refresh after initialisation
+      // refresh all after initialisation
       refreshView()
     }
 
     def dispose() {
-      markers.dispose()
-      isabelleModel.session.commands_changed -= sessionActor
+      commandChange.dispose()
       disposePerspective()
     }
 
-    /** Refreshes the text presentation */
-    def refreshView() {
+    def refreshViewUI(changedRanges: Option[List[Range]] = None) =
+      asyncExec(Some(display))(refreshView(changedRanges))
 
-      uiJob("Refreshing view") {
-        Option(getSourceViewer) foreach (_.invalidateTextPresentation())
+    /**
+     * Refreshes the text presentation.
+     * 
+     * Must be called in the UI thread.
+     */
+    def refreshView(changedRanges: Option[List[Range]] = None) {
+
+      // regenerate annotations for the changed ranges
+      markers.updateAnnotations(changedRanges)
+
+      // After setting annotations, queue viewer refresh in the UI thread.
+      // 
+      // This is necessary because there seems to be a race condition with annotation model
+      // when some refreshes are being lost, so doing it explicitly here.
+      // AnnotationRepainter schedules refresh in UI thread using asyncExec, so add one more after
+      asyncExec(Some(display)) {
+        (Option(getSourceViewer), changedRanges) match {
+          case (Some(textViewer: ITextViewerExtension2), Some(ranges)) =>
+            ranges foreach (r => textViewer.invalidateTextPresentation(r.start, r.length))
+
+          case (Some(viewer), _) => viewer.invalidateTextPresentation()
+
+          case _ =>
+        }
       }
     }
 
