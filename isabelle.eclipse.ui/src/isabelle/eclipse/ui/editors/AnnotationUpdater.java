@@ -7,6 +7,7 @@ import isabelle.eclipse.ui.internal.IsabelleUIPlugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -165,8 +166,7 @@ public class AnnotationUpdater {
 			List<Range> changeRange) {
 		
 		if (changeRange.isEmpty()) {
-			// create a single "full range"
-			changeRange = Arrays.asList(new Range(0, Integer.MAX_VALUE - 1));
+			return Collections.emptyList();
 		}
 
 		Set<Annotation> changedAnns = new LinkedHashSet<Annotation>();
@@ -273,8 +273,7 @@ public class AnnotationUpdater {
 		}
 		
 		if (changeRange.isEmpty()) {
-			// use all markers
-			return allMarkers;
+			return Collections.emptyList();
 		}
 
 		List<IMarker> changedMarkers = new ArrayList<IMarker>();
