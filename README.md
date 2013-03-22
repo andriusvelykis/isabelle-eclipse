@@ -27,6 +27,10 @@ Use the _Update Manager_ in Eclipse to download the plug-ins. Note that this upd
 
     Isabelle/Eclipse should work with any Eclipse distribution (e.g. Eclipse Classic or just the minimal Platform Runtime). The required Scala library is currently distributed together with the plug-ins.
 
+-   **Java 7**
+
+    Isabelle/Scala requires Java 7 runtime - the plug-ins will be disabled if older Java version is used.
+
 ## Previous versions
 
 An older version of Isabelle/Eclipse plug-ins is available for Isabelle 2012. Get them from the update site:
