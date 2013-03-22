@@ -1,0 +1,10 @@
+# about.mappings
+# contains fill-ins for about.properties and plugin.properties
+# java.io.Properties file (ISO 8859-1 with "\" escapes)
+# This file does not need to be translated.
+
+# the build ID of Isabelle/Eclipse product
+0=${isabelle.buildId}
+
+# the version number of Isabelle/Eclipse product
+1=${unqualifiedVersion}.${buildQualifier}
