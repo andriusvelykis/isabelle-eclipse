@@ -21,6 +21,7 @@ class IsabelleTheoryPerspective extends IPerspectiveFactory {
   private def searchViewId = "org.eclipse.search.ui.views.SearchView"
   private def consoleViewId = "org.eclipse.ui.console.ConsoleView"
   private def navigatorViewId = "org.eclipse.ui.views.ResourceNavigator"
+  private def logViewId = "org.eclipse.pde.runtime.LogView"
   
   private def outputViewId = "isabelle.eclipse.ui.proverOutputView"
   private def symbolsViewId = "isabelle.eclipse.ui.symbolsView"
@@ -51,10 +52,12 @@ class IsabelleTheoryPerspective extends IPerspectiveFactory {
     val outputFolder = layout.createFolder(outputFolderId, IPageLayout.BOTTOM, 0.75f, editorArea)
     outputFolder.addView(outputViewId)
     outputFolder.addView(IPageLayout.ID_PROBLEM_VIEW)
+    outputFolder.addPlaceholder(IPageLayout.ID_TASK_LIST)
     outputFolder.addView(consoleViewId)
     outputFolder.addPlaceholder(searchViewId)
-    //    outputFolder.addPlaceholder(consoleViewId)
+    outputFolder.addPlaceholder(logViewId)
     outputFolder.addPlaceholder(IPageLayout.ID_BOOKMARKS)
+    outputFolder.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW)
 
     // Add action sets
     layout.addActionSet(IPageLayout.ID_NAVIGATE_ACTION_SET)
@@ -74,9 +77,9 @@ class IsabelleTheoryPerspective extends IPerspectiveFactory {
     layout.addShowViewShortcut(IPageLayout.ID_BOOKMARKS)
     layout.addShowViewShortcut(IPageLayout.ID_OUTLINE)
     layout.addShowViewShortcut(IPageLayout.ID_PROBLEM_VIEW)
-    layout.addShowViewShortcut(IPageLayout.ID_TASK_LIST)
+//    layout.addShowViewShortcut(IPageLayout.ID_TASK_LIST)
     layout.addShowViewShortcut(IPageLayout.ID_PROJECT_EXPLORER)
-    layout.addShowViewShortcut("org.eclipse.pde.runtime.LogView")
+    layout.addShowViewShortcut(logViewId)
 
     // new actions - Java project creation wizard
     layout.addNewWizardShortcut("org.eclipse.ui.wizards.new.folder")
