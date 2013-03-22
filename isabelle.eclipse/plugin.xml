@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.eclipse.ui.ide.workbench"
+            description="%productAboutText"
+            name="%productName">
+         <property
+               name="appName"
+               value="%appName" />
+         <property
+               name="aboutImage"
+               value="icons/about.png" />
+         <property
+               name="aboutText"
+               value="%productAboutText" />
+         <property
+               name="introTitle"
+               value="%productIntroTitle" />
+         <property
+               name="introBrandingImage"
+               value="product:icons/isabelle_ide_intro.png" />
+         <property
+               name="introBrandingImageText"
+               value="%productIntroBrandingText" />
+         <property
+               name="windowImages"
+               value="icons/isabelle16.png,icons/isabelle32.png,icons/isabelle48.png,icons/isabelle64.png,icons/isabelle128.png" />
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini" />
+         <property
+               name="buildIdLocation"
+               value="17,157" />
+         <property
+               name="startupForegroundColor"
+               value="000000" />
+         <property
+               name="startupMessageRect"
+               value="17,242,208,20" />
+         <property
+               name="startupProgressRect"
+               value="15,272,210,15" />
+         <property
+               name="cssTheme"
+               value="org.eclipse.e4.ui.css.theme.e4_default" />
+         <property
+               name="applicationCSSResources"
+               value="platform:/plugin/org.eclipse.platform/images/" />
+      </product>
+   </extension>
+   <extension
+         point="org.eclipse.ui.intro">
+      <introProductBinding
+            introId="org.eclipse.ui.intro.universal"
+            productId="isabelle.eclipse.product">
+      </introProductBinding>
+   </extension>
+
+</plugin>

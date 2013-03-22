@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="Isabelle" sequenceNumber="3">
+<?pde version="3.8"?><target includeMode="feature" name="Isabelle" sequenceNumber="8">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.platform.sdk" version="3.7.2.M20120208-0800"/>
-<unit id="org.eclipse.emf.common.feature.group" version="2.7.0.v20120127-1122"/>
-<repository location="http://download.eclipse.org/releases/indigo"/>
+<unit id="org.eclipse.equinox.executable.feature.group" version="3.6.0.v20121119-201001-7P7OG2BFLWUl7UnqBnO8V4Of"/>
+<unit id="org.eclipse.platform.sdk" version="4.2.2.M20130204-1200"/>
+<unit id="org.eclipse.ui.views.log" version="0.0.0"/>
+<repository location="http://download.eclipse.org/releases/juno"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>

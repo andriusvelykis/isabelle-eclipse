@@ -10,7 +10,7 @@
   <artifactId>isabelle.eclipse.repository</artifactId>
   <packaging>eclipse-repository</packaging>
 
-  <name>Isabelle/Eclipse p2 Repository</name>
+  <name>Isabelle/Eclipse Product and p2 Repository</name>
 
 
   <build>
@@ -21,6 +21,40 @@
         <version>${tycho.version}</version>
         <configuration>
           <repositoryName>Isabelle/Eclipse Updates</repositoryName>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-director-plugin</artifactId>
+        <version>${tycho.version}</version>
+        <executions>
+          <execution>
+            <id>materialize-products</id>
+            <goals>
+              <goal>materialize-products</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>archive-products</id>
+            <goals>
+              <goal>archive-products</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <formats>
+            <linux>tar.gz</linux>
+            <macosx>tar.gz</macosx>
+          </formats>
+          <products>
+            <product>
+              <id>isabelle.eclipse.product</id>
+              <archiveFileName>isabelle-eclipse-ide-${unqualifiedVersion}.${isabelle.buildId}</archiveFileName>
+              <rootFolder>isabelle-eclipse-ide</rootFolder>
+            </product>
+          </products>
+          <profile>SDKProfile</profile>
         </configuration>
       </plugin>
     </plugins>
