@@ -17,6 +17,7 @@
     <module>isabelle.eclipse.ui</module>
     <module>isabelle.eclipse.feature.branding</module>
     <module>isabelle.eclipse.feature</module>
+    <module>isabelle.eclipse.product.feature</module>
     <module>isabelle.eclipse.repository</module>
   </modules>
 

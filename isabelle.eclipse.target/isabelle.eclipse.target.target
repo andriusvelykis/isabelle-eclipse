@@ -3,6 +3,7 @@
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.platform.sdk" version="4.2.2.M20130204-1200"/>
+<unit id="org.eclipse.ui.views.log" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/juno"/>
 </location>
 </locations>
