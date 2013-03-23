@@ -94,9 +94,35 @@
 
         <nightly.updates.path>${isabelle.version}/updates/nightly/${timestamp}</nightly.updates.path>
         <nightly.product.path>${isabelle.version}/isabelle-eclipse-ide/nightly/${timestamp}</nightly.product.path>
+        <nightly.updates.url>http://sourceforge.net/projects/isabelleeclipse/files/${nightly.updates.path}</nightly.updates.url>
       </properties>
       <build>
         <plugins>
+          <plugin>
+            <!-- filter composite p2 repo definitions to insert nightly updates path and timestamp
+                 -->
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.6</version>
+            <executions>
+              <execution>
+                <id>copy-p2-definition</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/composite-nightly</outputDirectory>
+                  <resources>          
+                    <resource>
+                      <directory>${project.basedir}/composite-nightly</directory>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>              
+                </configuration>            
+              </execution>
+            </executions>
+          </plugin>
+
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>wagon-maven-plugin</artifactId>
