@@ -82,6 +82,8 @@
         <repo.targetDir>${project.build.directory}/composite-repo/</repo.targetDir>
         <repo.targetDir.2012>${repo.targetDir}isabelle2012/</repo.targetDir.2012>
         <repo.name>Isabelle/Eclipse Releases</repo.name>
+
+        <releases.isabelle2012.url>http://sourceforge.net/projects/isabelleeclipse/files/isabelle2012/updates</releases.isabelle2012.url>
       </properties>
       <build>
         <plugins>
@@ -106,8 +108,8 @@
                       <arg value="--name"/>
                       <arg value="${repo.name}"/>
                       <arg value="add"/>
-                      <!-- 1.0.0 release for Isabelle 2012 (relative path) -->
-                      <arg value="1.0.0"/>
+                      <!-- 1.0.0 release for Isabelle 2012 -->
+                      <arg value="${releases.isabelle2012.url}/1.0.0/"/>
                     </exec>
                   </tasks>
                 </configuration>
