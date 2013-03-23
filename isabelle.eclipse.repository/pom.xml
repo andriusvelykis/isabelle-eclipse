@@ -12,8 +12,24 @@
 
   <name>Isabelle/Eclipse Product and p2 Repository</name>
 
+  <properties>
+    <isabelle.version>isabelle2013</isabelle.version>
+
+    <deploy.host>sftp://frs.sourceforge.net</deploy.host>
+    <deploy.dir>/home/frs/project/isabelleeclipse</deploy.dir>
+  </properties>
 
   <build>
+    <extensions>
+      <!-- extension to enable SCP use for deployment
+           (must be added to the main build configuration) -->
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>2.4</version>
+      </extension>
+    </extensions>
+
     <plugins>
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
@@ -62,6 +78,64 @@
 
 
   <profiles>
+    <profile>
+      <!-- A profile to deploy nightly build artifacts to release area.
+           Deploy using `mvn clean deploy -P nightly` and provide the appropriate logins
+           in settings.xml. -->
+      <id>nightly</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <isabelle.version>isabelle2013</isabelle.version>
+
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+
+        <nightly.updates.path>${isabelle.version}/updates/nightly/${timestamp}</nightly.updates.path>
+        <nightly.product.path>${isabelle.version}/isabelle-eclipse-ide/nightly/${timestamp}</nightly.product.path>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>wagon-maven-plugin</artifactId>
+            <version>1.0-beta-4</version>
+            <executions>
+              <execution>
+                <id>upload-p2-repo</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>upload</goal>
+                </goals>
+                <configuration>
+                  <fromDir>${project.build.directory}/repository</fromDir>
+                  <includes>**</includes>
+                  <url>${deploy.host}${deploy.dir}/${nightly.updates.path}</url>
+                  <serverId>sourceforge</serverId>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>upload-products</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>upload</goal>
+                </goals>
+                <configuration>
+                  <fromDir>${project.build.directory}/products</fromDir>
+                  <includes>*.zip,*.tar.gz</includes>
+                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}</url>
+                  <serverId>sourceforge</serverId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+
     <profile>
       <!-- A special profile to regenerate composite p2 repository for Isabelle/Eclipse releases.
            This should be done when the repositories change, e.g. a new release is added - it will
