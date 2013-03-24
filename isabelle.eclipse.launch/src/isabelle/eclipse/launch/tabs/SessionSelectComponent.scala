@@ -35,7 +35,8 @@ import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, resolvePath
  */
 class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
                              sessionDirsObservable: ObservableValue[Seq[String]],
-                             envMapObservable: ObservableValue[Map[String, String]])
+                             envMapObservable: ObservableValue[Map[String, String]],
+                             systemPropertiesObservable: ObservableValue[Map[String, String]])
     extends LaunchComponent[Option[String]] {
 
   def attributeName = IsabelleLaunchConstants.ATTR_SESSION
@@ -141,6 +142,8 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     val configEnvMap = configuration.map(conf =>
       IsabelleLaunch.environmentMap(conf).right.toOption).flatten
     val envMap = configEnvMap getOrElse envMapObservable.value
+
+    val systemProps = systemPropertiesObservable.value 
     
     // same for more dirs (observable may be uninitialised)
     val configMoreDirs = configuration.map(conf =>
@@ -159,7 +162,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       
       case Some(path) => {
         
-        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe, envMap))
+        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe, envMap, systemProps))
         if (lastFinishedJob == newLoadJob) {
           // same job, avoid reloading
           sessionLoadJob = None
@@ -175,15 +178,17 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
 
   private case class SessionLoadJob(isaPath: String,
                                     moreDirs: Seq[IPath],
-                                    envMap: Map[String, String])
+                                    envMap: Map[String, String],
+                                    systemProperties: Map[String, String])
     extends Job("Loading available sessions...") {
     
     // avoid parallel loads using the sync rule
     setRule(syncLoadRule)
     
     override protected def run(monitor: IProgressMonitor): IStatus = {
-    
-      val sessionLoad = IsabelleLaunch.availableSessions(isaPath, moreDirs, envMap)
+
+      val sessionLoad = IsabelleLaunch.availableSessions(
+        isaPath, moreDirs, envMap, systemProperties)
 
       runInUI(sessionCheck.viewer.getControl) { () =>
         finishedLoadingSessions(Some(this), sessionLoad, true)

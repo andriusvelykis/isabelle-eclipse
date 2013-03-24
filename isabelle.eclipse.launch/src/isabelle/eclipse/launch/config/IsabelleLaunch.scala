@@ -64,9 +64,11 @@ object IsabelleLaunch {
 
   def availableSessions(isabellePath: String,
                         moreSessionDirs: Seq[IPath],
-                        envMap: Map[String, String]): Either[IStatus, List[String]] = {
+                        envMap: Map[String, String],
+                        systemProperties: Map[String, String]): Either[IStatus, List[String]] = {
     
-    val sessionsTry = IsabelleBuild.sessions(isabellePath, moreSessionDirs, envMap)
+    val sessionsTry = IsabelleBuild.sessions(
+        isabellePath, moreSessionDirs, envMap, systemProperties)
 
     sessionsTry match {
       case Success(sessions) => result(sessions)
@@ -141,7 +143,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
                      isabellePath: String,
                      moreSessionDirs: Seq[IPath],
                      sessionName: String,
-                     envMap: Map[String, String]): Either[IStatus, Unit] = {
+                     envMap: Map[String, String],
+                     systemProperties: Map[String, String]): Either[IStatus, Unit] = {
 
       monitor.worked(3)
 
@@ -159,7 +162,7 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
           IsabelleLaunchConstants.ATTR_BUILD_TO_SYSTEM, true)
 
         val status = IsabelleBuildJob.syncExec(
-          isabellePath, moreSessionDirs, sessionName, envMap,
+          isabellePath, moreSessionDirs, sessionName, envMap, systemProperties,
           buildToSystem)
 
         if (status.isOK) {
@@ -178,12 +181,14 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
                        isabellePath: String,
                        moreSessionDirs: Seq[IPath],
                        sessionName: String,
-                       envMap: Map[String, String]): Either[IStatus, Unit] = {
+                       envMap: Map[String, String],
+                       systemProperties: Map[String, String]): Either[IStatus, Unit] = {
       
       monitor.worked(3)
       monitor.subTask("Starting Isabelle session")
       
-      val sessionTry = app.start(isabellePath, sessionName, moreSessionDirs, envMap)
+      val sessionTry = app.start(isabellePath, sessionName, moreSessionDirs,
+                                 envMap, systemProperties)
 
       sessionTry match {
 
@@ -221,11 +226,16 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       _ <- canceled.right
       envMap <- environmentMap(configuration).right
       _ <- canceled.right
-      sessionName <- selectedSession(configuration, isabellePath, sessionDirs, envMap).right
+      systemProps <- systemProperties(configuration).right
       _ <- canceled.right
-      _ <- sessionBuild(configuration, isabellePath, sessionDirs, sessionName, envMap).right
+      sessionName <- selectedSession(configuration, isabellePath, sessionDirs, 
+                                     envMap, systemProps).right
       _ <- canceled.right
-      err <- sessionStartup(isabelle, isabellePath, sessionDirs, sessionName, envMap).left
+      _ <- sessionBuild(configuration, isabellePath, sessionDirs, sessionName,
+                        envMap, systemProps).right
+      _ <- canceled.right
+      err <- sessionStartup(isabelle, isabellePath, sessionDirs, sessionName,
+                            envMap, systemProps).left
     } yield (err)
     
     launchErr.left foreach reportLaunchError
@@ -237,6 +247,15 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
    * Abstract method to allow for different configurations, e.g. dir or Mac .app
    */
   def installationPath(configuration: ILaunchConfiguration): Either[IStatus, String]
+
+
+  /**
+   * Retrieves system properties to set from the configuration, e.g. Cygwin path.
+   * 
+   * No extra system properties added by default, but subclasses may extend.
+   */
+  def systemProperties(configuration: ILaunchConfiguration): Either[IStatus, Map[String, String]] =
+    result(Map())
   
   
   private def moreSessionDirs(configuration: ILaunchConfiguration): Either[IStatus, Seq[IPath]] = {
@@ -255,7 +274,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
   private def selectedSession(configuration: ILaunchConfiguration,
                               isabellePath: String,
                               moreSessionDirs: Seq[IPath],
-                              envMap: Map[String, String]): Either[IStatus, String] = {
+                              envMap: Map[String, String],
+                              systemProperties: Map[String, String]): Either[IStatus, String] = {
     
     val sessionName = configValue(configuration, IsabelleLaunchConstants.ATTR_SESSION, "")
 
@@ -263,7 +283,8 @@ abstract class IsabelleLaunch extends LaunchConfigurationDelegate {
       abort("Isabelle logic not specified")
     } else {
 
-      val sessions = availableSessions(isabellePath, moreSessionDirs, envMap).right
+      val sessions = availableSessions(
+          isabellePath, moreSessionDirs, envMap, systemProperties).right
 
       sessions flatMap (ss => if (!ss.contains(sessionName)) {
         abort("Invalid Isabelle session name specified")

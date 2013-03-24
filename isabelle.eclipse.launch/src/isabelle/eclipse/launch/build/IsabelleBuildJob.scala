@@ -33,12 +33,13 @@ object IsabelleBuildJob {
                moreSessionDirs: Seq[IPath],
                sessionName: String,
                envMap: Map[String, String],
+               systemProperties: Map[String, String],
                buildToSystem: Boolean = true): IStatus = {
 
     val buildPromise = Promise[IStatus]()
 
     val job = new IsabelleBuildJob(
-      isabellePath, moreSessionDirs, sessionName, envMap,
+      isabellePath, moreSessionDirs, sessionName, envMap, systemProperties,
       buildToSystem) {
       
       override protected def run(monitor: IProgressMonitor): IStatus = {
@@ -71,6 +72,7 @@ class IsabelleBuildJob(isabellePath: String,
                        moreSessionDirs: Seq[IPath],
                        sessionName: String,
                        envMap: Map[String, String],
+                       systemProperties: Map[String, String],
                        buildToSystem: Boolean = true)
     extends Job("Building Isabelle/" + sessionName) {
   
@@ -121,7 +123,7 @@ class IsabelleBuildJob(isabellePath: String,
     val dirs = IsabelleBuild.resolvePaths(moreSessionDirs)
 
     // init Isabelle system and launch the build process
-    val buildTry = IsabelleBuild.init(isabellePath, envMap) flatMap { _ =>
+    val buildTry = IsabelleBuild.init(isabellePath, envMap, systemProperties) flatMap { _ =>
       
       // try to retrieve ML identifier for log info (only after init)
       val mlId = Isabelle_System.getenv("ML_IDENTIFIER")
