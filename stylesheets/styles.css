@@ -472,7 +472,7 @@ table {
 
 body {
   font: 14px/22px "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #666;
+  color: #444;
   font-weight: 300;
   margin: 0px;
   padding: 0px 0 20px 0px;
@@ -824,7 +824,10 @@ nav ul li {
   line-height: 16px;
 }
 nav ul li.tag-h1 {
-  font-size: 1.2em;
+  font-size: 1.1em;
+}
+nav ul li.tag-h2 {
+  font-size: 0.9em;
 }
 nav ul li.tag-h1 a {
   font-weight: bold;
@@ -841,6 +844,7 @@ nav ul a:hover {
 }
 
 footer {
+  font-size: 0.9em;
   width: 180px;
   position: fixed;
   left: 50%;
