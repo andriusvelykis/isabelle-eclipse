@@ -1,6 +1,10 @@
 markdown: kramdown
 pygments: true
 server: true
+
+url: http://andriusvelykis.github.com/isabelle-eclipse
+baseurl: /isabelle-eclipse
+
 project_title: Isabelle/Eclipse
 owner_name: andriusvelykis
 title: Isabelle/Eclipse
