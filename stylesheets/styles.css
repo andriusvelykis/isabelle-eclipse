@@ -658,6 +658,16 @@ header h1 {
   -o-text-overflow: ellipsis;
   -ms-text-overflow: ellipsis;
 }
+header .slash-eclipse {
+  font-family: "Aller", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size: 32px;
+  padding-left: 8px;
+  /*color: #3b397c;*/
+}
+header .eclipse {
+  text-transform: lowercase;
+}
 header p {
   color: #d8d8d8;
   text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;
