@@ -95,6 +95,9 @@
         <nightly.updates.path>${isabelle.version}/updates/nightly/${timestamp}</nightly.updates.path>
         <nightly.product.path>${isabelle.version}/isabelle-eclipse-ide/nightly/${timestamp}</nightly.product.path>
         <nightly.updates.url>http://sourceforge.net/projects/isabelleeclipse/files/${nightly.updates.path}</nightly.updates.url>
+        <nightly.site.path>updates/${isabelle.version}/nightly</nightly.site.path>
+
+        <github.global.server>github</github.global.server>
       </properties>
       <build>
         <plugins>
@@ -153,6 +156,32 @@
                   <includes>*.zip,*.tar.gz</includes>
                   <url>${deploy.host}${deploy.dir}/${nightly.product.path}</url>
                   <serverId>sourceforge</serverId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <!-- GitHub site plug-in for deployment to GitHub pages.
+                 Upload the new composite repository definition pointing to latest nightly
+                 update site. -->
+            <groupId>com.github.github</groupId>
+            <artifactId>site-maven-plugin</artifactId>
+            <version>0.7</version>
+            <executions>
+              <execution>
+                <id>upload-nightly-composite-github</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>site</goal>
+                </goals>
+                <configuration>
+                  <message>link to latest nightly update site</message>
+                  <outputDirectory>${project.build.directory}/composite-nightly</outputDirectory>
+                  <path>${nightly.site.path}</path>
+                  <merge>true</merge>
+                  <repositoryName>isabelle-eclipse</repositoryName>
+                  <repositoryOwner>andriusvelykis</repositoryOwner>
                 </configuration>
               </execution>
             </executions>
