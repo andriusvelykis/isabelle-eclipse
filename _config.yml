@@ -11,7 +11,7 @@ title: Isabelle/Eclipse
 tagline: Eclipse integration for Isabelle proof assistant
 repository_url: http://github.com/andriusvelykis/isabelle-eclipse
 owner_url: http://github.com/andriusvelykis
-download1_url: http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/isabelle-eclipse-ide/
+download1_url: http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/isabelle-eclipse-ide/nightly/
 download1_title: Isabelle/Eclipse IDE
 download2_url: http://andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2013/nightly/
 download2_title: Updates
