@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.{Composite, Control, Group}
 import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 
 import AccessibleUtil.addControlAccessibleListener
-import ObservableUtil.NotifyPublisher
 import isabelle.eclipse.core.app.IsabelleBuild
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
 import isabelle.eclipse.launch.config.{IsabelleLaunch, IsabelleLaunchConstants}
@@ -82,11 +81,11 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     
     // on config change in Isabelle path, update the session selection
     // (only do after UI initialisation)
-    isaPathObservable.subscribeFun(_ => sessionLocsChanged())
+    isaPathObservable subscribe sessionLocsChanged
     // the same for session dirs change
-    sessionDirsObservable.subscribeFun(_ => sessionLocsChanged())
+    sessionDirsObservable subscribe sessionLocsChanged
     
-    envMapObservable.subscribeFun(_ => sessionLocsChanged())
+    envMapObservable subscribe sessionLocsChanged
   }
   
   private def createCheckboxTreeViewer(parent: Composite, style: Int): CheckboxTreeViewer = {
@@ -122,6 +121,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     selectedSession = if (sessionName.isEmpty) None else Some(sessionName)
   }
 
+  override def value = selectedSession
 
   private def selectedSession: Option[String] = {
     sessionCheck.checked map (_.toString)
@@ -282,10 +282,9 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     }
   
   
-  private def configModified() {
-    // notify listeners
-    publish(selectedSession)
-  }
+  // notify listeners
+  private def configModified() = publish()
+
 
   /**
    * A FilteredTree with sessions checkbox tree viewer as main control

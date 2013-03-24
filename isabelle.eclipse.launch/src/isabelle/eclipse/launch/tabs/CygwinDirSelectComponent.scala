@@ -6,8 +6,6 @@ import org.eclipse.swt.widgets.Composite
 
 import isabelle.eclipse.launch.config.{IsabelleLaunchConstants, WinDirLaunch}
 
-import ObservableUtil.NotifyPublisher
-
 
 /**
  * A specialization of directory selection component for Cygwin root selection.
@@ -43,7 +41,7 @@ class CygwinDirSelectComponent(isaPathObservable: ObservableValue[Option[String]
 
     // on config change in Isabelle path, update the Cygwin suggestion selection
     // (only do after UI initialisation)
-    isaPathObservable.subscribeFun(_ => isaPathChanged())
+    isaPathObservable subscribe isaPathChanged
   }
 
   override def initializeFrom(configuration: ILaunchConfiguration) {

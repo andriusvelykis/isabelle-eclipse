@@ -102,6 +102,8 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
 
   private def locationFieldChecked: Option[Text] = Option(locationField) filterNot (_.isDisposed)
 
+  override def value = selectedDir
+
   def selectedDir: Option[String] =
     locationFieldChecked map (_.getText.trim) filterNot (_.isEmpty())
 
@@ -142,10 +144,9 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
     dirError map { err => if (newConfig) Right(defaultLocationMessage) else Left(err) }
   }
 
-  private def configModified() {
-    // notify listeners
-    publish(selectedDir)
-  }
+  // notify listeners
+  private def configModified() = publish()
+
 
   private def browseSelected() {
     val dirOpt = browseDir()

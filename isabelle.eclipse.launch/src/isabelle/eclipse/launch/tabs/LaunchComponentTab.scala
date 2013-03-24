@@ -7,7 +7,6 @@ import org.eclipse.jface.layout.GridLayoutFactory
 import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.{Button, Composite}
 
-import ObservableUtil.NotifyPublisher
 import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
 
 
@@ -40,7 +39,7 @@ abstract class LaunchComponentTab(components: List[LaunchComponent[_]])
     Dialog.applyDialogFont(parent)
 
     // add listener to each component change
-    components foreach (_.subscribeFun(_ => configModified()))
+    components foreach (_ subscribe configModified)
   }
   
   override def createPushButton(parent: Composite, label: String): Button =

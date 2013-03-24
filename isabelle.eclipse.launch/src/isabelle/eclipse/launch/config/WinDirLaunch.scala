@@ -18,7 +18,6 @@ object WinDirLaunch {
    */
   def isabelleCygwinPath(isabellePath: String): Option[String] = {
 
-    val slash = File.separator
     val cygwinPath = new File(new File(isabellePath), "contrib/cygwin")
     
     if (!cygwinPath.isDirectory) {

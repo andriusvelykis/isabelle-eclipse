@@ -1,7 +1,5 @@
 package isabelle.eclipse.launch.tabs
 
-import scala.collection.mutable.Publisher
-
 import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
 import org.eclipse.swt.widgets.Composite
 
@@ -11,7 +9,7 @@ import org.eclipse.swt.widgets.Composite
  * 
  * @author Andrius Velykis
  */
-trait LaunchComponent[R] extends Publisher[R] {
+trait LaunchComponent[R] extends ObservableValue[R] {
 
   def createControl(parent: Composite, container: LaunchComponentContainer)
   
