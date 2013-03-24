@@ -1,0 +1,11 @@
+markdown: kramdown
+pygments: true
+server: true
+project_title: Isabelle/Eclipse
+owner_name: andriusvelykis
+title: Isabelle/Eclipse
+tagline: Eclipse integration for Isabelle proof assistant
+repository_url: http://github.com/andriusvelykis/isabelle-eclipse
+zip_url: https://github.com/andriusvelykis/isabelle-eclipse/zipball/master
+tar_url: https://github.com/andriusvelykis/isabelle-eclipse/tarball/master
+owner_url: http://github.com/andriusvelykis
