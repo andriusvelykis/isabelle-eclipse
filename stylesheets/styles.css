@@ -2,45 +2,9 @@
 Leap Day for Github Pages
 by Matt Graham
 */
-@font-face {
-  font-family: 'Quattrocento Sans';
-  src: url("../fonts/quattrocentosans-bold-webfont.eot");
-  src: url("../fonts/quattrocentosans-bold-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/quattrocentosans-bold-webfont.woff") format("woff"), url("../fonts/quattrocentosans-bold-webfont.ttf") format("truetype"), url("../fonts/quattrocentosans-bold-webfont.svg#QuattrocentoSansBold") format("svg");
-  font-weight: bold;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Quattrocento Sans';
-  src: url("../fonts/quattrocentosans-bolditalic-webfont.eot");
-  src: url("../fonts/quattrocentosans-bolditalic-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/quattrocentosans-bolditalic-webfont.woff") format("woff"), url("../fonts/quattrocentosans-bolditalic-webfont.ttf") format("truetype"), url("../fonts/quattrocentosans-bolditalic-webfont.svg#QuattrocentoSansBoldItalic") format("svg");
-  font-weight: bold;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Quattrocento Sans';
-  src: url("../fonts/quattrocentosans-italic-webfont.eot");
-  src: url("../fonts/quattrocentosans-italic-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/quattrocentosans-italic-webfont.woff") format("woff"), url("../fonts/quattrocentosans-italic-webfont.ttf") format("truetype"), url("../fonts/quattrocentosans-italic-webfont.svg#QuattrocentoSansItalic") format("svg");
-  font-weight: normal;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Quattrocento Sans';
-  src: url("../fonts/quattrocentosans-regular-webfont.eot");
-  src: url("../fonts/quattrocentosans-regular-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/quattrocentosans-regular-webfont.woff") format("woff"), url("../fonts/quattrocentosans-regular-webfont.ttf") format("truetype"), url("../fonts/quattrocentosans-regular-webfont.svg#QuattrocentoSansRegular") format("svg");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Copse';
-  src: url("../fonts/copse-regular-webfont.eot");
-  src: url("../fonts/copse-regular-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/copse-regular-webfont.woff") format("woff"), url("../fonts/copse-regular-webfont.ttf") format("truetype"), url("../fonts/copse-regular-webfont.svg#CopseRegular") format("svg");
-  font-weight: normal;
-  font-style: normal;
-}
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300,700);
+@import url('../fonts/aller-bold/stylesheet.css');
+@import url('../fonts/aller-light/stylesheet.css');
 
 /* normalize.css 2012-02-07T12:37 UTC - http://github.com/necolas/normalize.css */
 /* =============================================================================
@@ -151,6 +115,10 @@ a:active {
  * Addresses font sizes and margins set differently in IE6/7
  * Addresses font sizes within 'section' and 'article' in FF4+, Chrome, S5
  */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "AllerLight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 h1 {
   font-size: 2em;
   margin: 0.67em 0;
@@ -503,7 +471,7 @@ table {
 }
 
 body {
-  font: 14px/22px "Quattrocento Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font: 14px/22px "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #666;
   font-weight: 300;
   margin: 0px;
@@ -680,7 +648,7 @@ header {
   min-height: 76px;
 }
 header h1 {
-  font: 40px/48px "Copse", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font: 40px/48px "AllerLight", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #f3f3f3;
   text-shadow: 0px 2px 0px #235796;
   margin: 0px;
@@ -694,6 +662,7 @@ header p {
   color: #d8d8d8;
   text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;
   font-size: 18px;
+  font-weight: normal;
   margin: 0px;
 }
 
