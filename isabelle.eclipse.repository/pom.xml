@@ -74,6 +74,23 @@
         </configuration>
       </plugin>
     </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <!-- Do not use reproducible qualifiers for product build.
+               Features have some algorithm that calculates their timestamp based on their
+               contents, however it is not the case for products. Therefore, use default
+               timestamp provider and use the build date here. -->
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-packaging-plugin</artifactId>
+          <version>${tycho.version}</version>
+          <configuration>
+            <timestampProvider>default</timestampProvider>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
 
