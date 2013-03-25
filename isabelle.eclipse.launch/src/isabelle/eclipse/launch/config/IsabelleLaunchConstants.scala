@@ -29,6 +29,12 @@ object IsabelleLaunchConstants {
 
 
   /**
+   * String attribute identifying the location of Cygwin directory.
+   */
+  def ATTR_CYGWIN_LOCATION = pluginId + ".ATTR_CYGWIN_LOCATION"
+
+
+  /**
    * Boolean attribute identifying whether to build Isabelle session before launch.
    */
   def ATTR_BUILD_RUN = pluginId + ".ATTR_BUILD_RUN"

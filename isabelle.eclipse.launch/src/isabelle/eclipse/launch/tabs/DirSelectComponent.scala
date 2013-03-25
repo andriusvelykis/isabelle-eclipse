@@ -24,9 +24,9 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
 
   def attributeName = IsabelleLaunchConstants.ATTR_LOCATION
   
-  private var locationField: Text = _
+  protected var locationField: Text = _
   
-  private var initializing = false
+  protected var initializing = false
   /** Helps listening to typing changes with delay */
   private var typingDelayHelper = new TypingDelayHelper(1000)
 
@@ -37,6 +37,8 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
 
   protected def notDirectoryMessage =
     "Isabelle installation location specified is not a directory"
+
+  protected def targetTitle = "Isabelle installation"
 
   /**
    * Creates the controls needed to edit the location attribute of an external tool
@@ -100,6 +102,8 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
 
   private def locationFieldChecked: Option[Text] = Option(locationField) filterNot (_.isDisposed)
 
+  override def value = selectedDir
+
   def selectedDir: Option[String] =
     locationFieldChecked map (_.getText.trim) filterNot (_.isEmpty())
 
@@ -118,14 +122,14 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
     val dirError = selectedDir match {
 
       // either urge to select for new config, or report error
-      case None => Some("Isabelle installation location cannot be empty")
+      case None => Some(targetTitle + " location cannot be empty")
 
       case Some(location) => {
         // something is entered - validate if correct directory
 
         val file = new File(location)
         if (!file.exists) {
-          Some("Isabelle installation location does not exist")
+          Some(targetTitle + " location does not exist")
         } else if (!file.isDirectory) {
           Some(notDirectoryMessage)
         } else {
@@ -140,10 +144,9 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
     dirError map { err => if (newConfig) Right(defaultLocationMessage) else Left(err) }
   }
 
-  private def configModified() {
-    // notify listeners
-    publish(selectedDir)
-  }
+  // notify listeners
+  private def configModified() = publish()
+
 
   private def browseSelected() {
     val dirOpt = browseDir()
@@ -155,7 +158,7 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
   protected def browseDir(): Option[String] = {
 
     val dialog = new DirectoryDialog(shell, SWT.NONE)
-    dialog.setMessage("Select a Isabelle installation directory:")
+    dialog.setMessage("Select a " + targetTitle + " directory:")
     selectedDir foreach dialog.setFilterPath
 
     Option(dialog.open)

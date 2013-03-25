@@ -63,9 +63,7 @@ class CheckComponent(attributeName: String,
                        newConfig: Boolean): Option[Either[String, String]] = None
 
 
-  private def configModified() {
-    // notify listeners
-    publish(selectedValue)
-  }
+  // notify listeners
+  private def configModified() = publish()
   
 }

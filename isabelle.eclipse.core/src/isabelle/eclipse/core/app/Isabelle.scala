@@ -49,11 +49,14 @@ class Isabelle {
   def start(isabellePath: String,
             sessionName: String,
             moreSessionDirs: Seq[IPath] = Nil,
-            envMap: Map[String, String] = Map()): Try[Session] = {
+            envMap: Map[String, String] = Map(),
+            systemProperties: Map[String, String] = Map()): Try[Session] = {
 
     // start session if system init is successful
     val sessionTry = for {
-      _ <- IsabelleBuild.init(isabellePath, envMap) map { _ => systemEvents.event(SystemInit) }
+      _ <- IsabelleBuild.init(isabellePath, envMap, systemProperties) map { _ =>
+        systemEvents.event(SystemInit)
+      }
       session <- startSession(moreSessionDirs, sessionName)
     } yield session
     

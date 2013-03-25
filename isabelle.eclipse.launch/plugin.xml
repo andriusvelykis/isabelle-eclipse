@@ -12,6 +12,13 @@
       </launchConfigurationType>
       <launchConfigurationType
             category="isabelle.eclipse.launch.group"
+            delegate="isabelle.eclipse.launch.config.WinDirLaunch"
+            id="isabelle.eclipse.launch.isabelleWin"
+            modes="run"
+            name="Isabelle for Windows">
+      </launchConfigurationType>
+      <launchConfigurationType
+            category="isabelle.eclipse.launch.group"
             delegate="isabelle.eclipse.launch.config.RootDirLaunch"
             id="isabelle.eclipse.launch.isabelleRoot"
             modes="run"
@@ -24,6 +31,11 @@
             configTypeID="isabelle.eclipse.launch.isabelleApp"
             icon="icons/isabelle.png"
             id="isabelle.eclipse.launch.icon.isabelleApp">
+      </launchConfigurationTypeImage>
+      <launchConfigurationTypeImage
+            configTypeID="isabelle.eclipse.launch.isabelleWin"
+            icon="icons/isabelle.png"
+            id="isabelle.eclipse.launch.icon.isabelleWin">
       </launchConfigurationTypeImage>
       <launchConfigurationTypeImage
             configTypeID="isabelle.eclipse.launch.isabelleRoot"
@@ -39,7 +51,13 @@
             id="isabelle.eclipse.launch.tabGroup.isabelleApp"
             type="isabelle.eclipse.launch.isabelleApp">
       </launchConfigurationTabGroup>
-	<launchConfigurationTabGroup
+      <launchConfigurationTabGroup
+            class="isabelle.eclipse.launch.tabs.WinDirTabGroup"
+            description="Configure Isabelle theorem prover in Windows by indicating the installation directory and Cygwin path"
+            id="isabelle.eclipse.launch.tabGroup.isabelleWin"
+            type="isabelle.eclipse.launch.isabelleWin">
+      </launchConfigurationTabGroup>
+	  <launchConfigurationTabGroup
             class="isabelle.eclipse.launch.tabs.RootDirTabGroup"
             description="Configure Isabelle theorem prover by indicating the installation directory"
             id="isabelle.eclipse.launch.tabGroup.isabelleRoot"

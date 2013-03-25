@@ -35,7 +35,7 @@ class IsabelleEnvironmentTab extends EnvironmentTab with ObservableValue[Map[Str
   override def updateLaunchConfigurationDialog() {
     super.updateLaunchConfigurationDialog()
     
-    publish(envMap)
+    publish()
   }
   
 }

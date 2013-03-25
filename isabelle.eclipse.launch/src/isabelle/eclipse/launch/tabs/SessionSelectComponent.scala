@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.{Composite, Control, Group}
 import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 
 import AccessibleUtil.addControlAccessibleListener
-import ObservableUtil.NotifyPublisher
 import isabelle.eclipse.core.app.IsabelleBuild
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
 import isabelle.eclipse.launch.config.{IsabelleLaunch, IsabelleLaunchConstants}
@@ -35,7 +34,8 @@ import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, resolvePath
  */
 class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
                              sessionDirsObservable: ObservableValue[Seq[String]],
-                             envMapObservable: ObservableValue[Map[String, String]])
+                             envMapObservable: ObservableValue[Map[String, String]],
+                             systemPropertiesObservable: ObservableValue[Map[String, String]])
     extends LaunchComponent[Option[String]] {
 
   def attributeName = IsabelleLaunchConstants.ATTR_SESSION
@@ -81,11 +81,11 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     
     // on config change in Isabelle path, update the session selection
     // (only do after UI initialisation)
-    isaPathObservable.subscribeFun(_ => sessionLocsChanged())
+    isaPathObservable subscribe sessionLocsChanged
     // the same for session dirs change
-    sessionDirsObservable.subscribeFun(_ => sessionLocsChanged())
+    sessionDirsObservable subscribe sessionLocsChanged
     
-    envMapObservable.subscribeFun(_ => sessionLocsChanged())
+    envMapObservable subscribe sessionLocsChanged
   }
   
   private def createCheckboxTreeViewer(parent: Composite, style: Int): CheckboxTreeViewer = {
@@ -121,6 +121,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     selectedSession = if (sessionName.isEmpty) None else Some(sessionName)
   }
 
+  override def value = selectedSession
 
   private def selectedSession: Option[String] = {
     sessionCheck.checked map (_.toString)
@@ -141,6 +142,8 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     val configEnvMap = configuration.map(conf =>
       IsabelleLaunch.environmentMap(conf).right.toOption).flatten
     val envMap = configEnvMap getOrElse envMapObservable.value
+
+    val systemProps = systemPropertiesObservable.value 
     
     // same for more dirs (observable may be uninitialised)
     val configMoreDirs = configuration.map(conf =>
@@ -159,7 +162,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       
       case Some(path) => {
         
-        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe, envMap))
+        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe, envMap, systemProps))
         if (lastFinishedJob == newLoadJob) {
           // same job, avoid reloading
           sessionLoadJob = None
@@ -175,15 +178,17 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
 
   private case class SessionLoadJob(isaPath: String,
                                     moreDirs: Seq[IPath],
-                                    envMap: Map[String, String])
+                                    envMap: Map[String, String],
+                                    systemProperties: Map[String, String])
     extends Job("Loading available sessions...") {
     
     // avoid parallel loads using the sync rule
     setRule(syncLoadRule)
     
     override protected def run(monitor: IProgressMonitor): IStatus = {
-    
-      val sessionLoad = IsabelleLaunch.availableSessions(isaPath, moreDirs, envMap)
+
+      val sessionLoad = IsabelleLaunch.availableSessions(
+        isaPath, moreDirs, envMap, systemProperties)
 
       runInUI(sessionCheck.viewer.getControl) { () =>
         finishedLoadingSessions(Some(this), sessionLoad, true)
@@ -277,10 +282,9 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     }
   
   
-  private def configModified() {
-    // notify listeners
-    publish(selectedSession)
-  }
+  // notify listeners
+  private def configModified() = publish()
+
 
   /**
    * A FilteredTree with sessions checkbox tree viewer as main control

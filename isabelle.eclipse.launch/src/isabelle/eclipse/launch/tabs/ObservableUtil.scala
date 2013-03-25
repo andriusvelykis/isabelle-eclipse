@@ -1,7 +1,5 @@
 package isabelle.eclipse.launch.tabs
 
-import scala.collection.mutable.Publisher
-
 
 /**
  * Utilities for observables and publisher/subscribe functionality
@@ -11,15 +9,15 @@ import scala.collection.mutable.Publisher
 object ObservableUtil {
 
   /**
-   * An implicit class that adds a simpler subscribe method to publisher 
+   * A wrapper for ObservableValue that adapts the value type.
    */
-  implicit class NotifyPublisher[Evt](pub: Publisher[Evt]) {
-
-    def subscribeFun(sub: Evt => Unit) {
-      pub.subscribe(new pub.Sub {
-        override def notify(p: pub.Pub, event: Evt) = sub(event)
-      })
-    }
+  class AdapterObservableValue[V, BaseV](base: ObservableValue[BaseV])(adapt: BaseV => V)
+      extends ObservableValue[V] {
+    
+    // pass on the events
+    base.subscribe(publish)
+    
+    override def value = adapt(base.value)
   }
 
 }

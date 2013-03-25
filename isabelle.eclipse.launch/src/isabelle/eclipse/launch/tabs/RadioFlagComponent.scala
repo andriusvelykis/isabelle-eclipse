@@ -7,7 +7,6 @@ import org.eclipse.swt.events.{SelectionAdapter, SelectionEvent}
 import org.eclipse.swt.widgets.{Button, Composite, Group}
 
 import AccessibleUtil.addControlAccessibleListener
-import ObservableUtil.NotifyPublisher
 import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
 
 
@@ -55,7 +54,7 @@ class RadioFlagComponent(attributeName: String,
     falseButton = radioButton(falseLabel)
     
     // on enable state change (if available), update the controls
-    enableState foreach (_.subscribeFun(_ => updateEnableState()))
+    enableState foreach (_ subscribe updateEnableState)
   }
 
 
@@ -68,6 +67,8 @@ class RadioFlagComponent(attributeName: String,
       updateEnableState()
     }
   }
+
+  override def value = selectedValue
 
   def selectedValue: Boolean = trueButton.getSelection
 
@@ -85,10 +86,9 @@ class RadioFlagComponent(attributeName: String,
                        newConfig: Boolean): Option[Either[String, String]] = None
 
 
-  private def configModified() {
-    // notify listeners
-    publish(selectedValue)
-  }
+  // notify listeners
+  private def configModified() = publish()
+
   
   private def updateEnableState() {
     enableState foreach { state =>

@@ -133,6 +133,8 @@ class DirListComponent extends LaunchComponent[Seq[String]] {
     selectedDirs = dirs
   }
 
+  override def value = selectedDirs
+
   def selectedDirs: Seq[String] = _selectedDirs
 
   private def selectedDirs_=(value: Seq[String]): Unit = {
@@ -156,10 +158,10 @@ class DirListComponent extends LaunchComponent[Seq[String]] {
       Left("Invalid Isabelle session directory (no session root): " + dir) }
   }
 
-  private def configModified() {
-    // notify listeners
-    publish(selectedDirs)
-  }
+
+  // notify listeners
+  private def configModified() = publish()
+
   
   /**
    * Allows the user to enter workspace directories
