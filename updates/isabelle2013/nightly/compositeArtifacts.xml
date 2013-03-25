@@ -2,9 +2,9 @@
 <?compositeArtifactRepository version='1.0.0'?>
 <repository name='Isabelle/Eclipse Nightly Updates' type='org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository' version='1.0.0'>
   <properties size='1'>
-    <property name='p2.timestamp' value='201303241629'/>
+    <property name='p2.timestamp' value='201303250506'/>
   </properties>
   <children size='1'>
-    <child location='http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/updates/nightly/201303241629'/>
+    <child location='http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/updates/nightly/201303250506'/>
   </children>
 </repository>
