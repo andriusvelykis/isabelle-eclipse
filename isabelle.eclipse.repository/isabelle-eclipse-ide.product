@@ -25,7 +25,7 @@
       startupProgressRect="15,272,210,15"
       startupMessageRect="17,242,208,20"
       startupForegroundColor="000000" />
-   <launcher name="Isabelle-Eclipse">
+   <launcher name="isabelle-eclipse">
       <linux icon="/icons/icon.xpm"/>
       <macosx icon="/icons/isabelle.icns"/>
       <solaris/>
