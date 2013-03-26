@@ -1,7 +1,11 @@
 package isabelle.eclipse.ui.internal
 
 import org.eclipse.core.runtime.{IStatus, Status}
+import org.eclipse.swt.widgets.Display
 import org.eclipse.ui.plugin.AbstractUIPlugin
+import org.osgi.framework.BundleContext
+
+import isabelle.eclipse.ui.preferences.IsabelleFontLoad
 
 
 /**
@@ -46,5 +50,20 @@ class IsabelleUIPlugin extends AbstractUIPlugin {
 
   // The plug-in ID
   def pluginId = "isabelle.eclipse.ui" //$NON-NLS-1$
+
+  @throws[Exception]
+  override def start(context: BundleContext) {
+
+    Option(Display.getCurrent) match {
+      // already UI thread - use it without postponing
+      // to avoid editors initialising with incorrect font
+      case Some(_) => IsabelleFontLoad.loadIsabelleFont()
+
+      // non-UI thread
+      case None => Display.getDefault asyncExec new Runnable {
+        override def run() = IsabelleFontLoad.loadIsabelleFont()
+      }
+    }
+  }
 
 }

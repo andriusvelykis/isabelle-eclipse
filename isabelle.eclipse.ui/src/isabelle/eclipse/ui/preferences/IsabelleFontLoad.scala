@@ -40,31 +40,31 @@ object IsabelleFontLoad {
     val hasBold = existingIsabelleFonts exists (_.getStyle() == SWT.BOLD)
 
     // load necessary fonts
-    if (!hasPlain) {
-      loadFont(display, "IsabelleText.ttf")
-    }
-
-    if (!hasBold) {
-      loadFont(display, "IsabelleTextBold.ttf")
-    }
+    if (!hasPlain) loadFont(display, "IsabelleText.ttf")
+    if (!hasBold) loadFont(display, "IsabelleTextBold.ttf")
   }
 
 
-  private def loadFont(display: Display, fontName: String) {
+  private def loadFont(display: Display, fontName: String): Boolean = {
+    
+    def failed(msg: String, ex: Option[Throwable] = None): Boolean = {
+      log(error(ex, Some(msg)))
+      false
+    }
 
     // resolve font URL within the plug-in bundle (note, the font may be inside a JAR here)
     val fontUrl = fontBundleUrl(fontName)
 
     fontUrl match {
       case None =>
-        log(error(msg = Some("Font " + fontName + " cannot be found in the plug-in.")))
+        failed("Font " + fontName + " cannot be found in the plug-in.")
 
       // get file URL (this will also extract the font file if needed)
       case Some(fontUrl) =>
         Try(FileLocator.toFileURL(fontUrl)) match {
 
           case Failure(ex) =>
-            log(error(Some(ex), Some("Font " + fontName + " cannot be loaded: " + ex.getMessage)))
+            failed("Font " + fontName + " cannot be loaded: " + ex.getMessage, Some(ex))
 
           case Success(fontFileUrl) => {
 
@@ -73,8 +73,9 @@ object IsabelleFontLoad {
             val loaded = display.loadFont(fontFilePath)
 
             if (!loaded) {
-              log(error(msg = Some(
-                "Font " + fontName + " cannot be loaded from file " + fontFilePath)))
+              failed("Font " + fontName + " cannot be loaded from file " + fontFilePath)
+            } else {
+              true
             }
           }
         }
