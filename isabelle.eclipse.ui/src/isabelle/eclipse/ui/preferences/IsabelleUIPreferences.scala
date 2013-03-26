@@ -42,6 +42,8 @@ class IsabelleUIPreferenceInitializer extends AbstractPreferenceInitializer {
   
   override def initializeDefaultPreferences() {
     
+    IsabelleFontLoad.loadIsabelleFont()
+    
     import IsabelleUIPreferences._
     
     val prefDefaults = prefNode(DefaultScope.INSTANCE)
