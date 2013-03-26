@@ -249,13 +249,10 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   private def setContent(resultsText: String, snapshot: Snapshot) {
     // set the input in the UI thread
-    SWTUtil.asyncExec(Some(control.getDisplay)) {
-      if (!outputViewer.getControl.isDisposed) {
-        
-        this.currentResultsSnapshot = Some(snapshot)
-        outputViewer.getDocument.set(resultsText)
-        outputViewer.updateAnnotations()
-      }
+    SWTUtil.asyncUnlessDisposed(Option(outputViewer.getControl)) {
+      this.currentResultsSnapshot = Some(snapshot)
+      outputViewer.getDocument.set(resultsText)
+      outputViewer.updateAnnotations()
     }
   }
 

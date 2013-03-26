@@ -3,7 +3,7 @@ package isabelle.eclipse.ui.util
 import java.util.Date
 import java.util.concurrent.locks.{Lock, ReentrantLock}
 
-import org.eclipse.swt.widgets.Display
+import org.eclipse.swt.widgets.Widget
 
 
 /**
@@ -24,7 +24,7 @@ class TypingDelayHelper(delay: Long = 500) {
   /**
    * A callback and a time to fire it.
    */
-  private var nextScheduledEventOpt: Option[(Date, () => Any, Option[Display])] = None
+  private var nextScheduledEventOpt: Option[(Date, () => Any, Option[Widget])] = None
 
   private object SchedulerThread extends Thread {
 
@@ -39,9 +39,9 @@ class TypingDelayHelper(delay: Long = 500) {
   /**
    * Schedule a callback on the UI thread (clearing any existing scheduled callback)
    */
-  def scheduleCallback(display: Option[Display] = None)(f: => Any) = withLock(lock) {
+  def scheduleCallback(widget: Option[Widget])(f: => Any) = withLock(lock) {
     val timeToFireEvent = new Date(System.currentTimeMillis + delay)
-    nextScheduledEventOpt = Some(timeToFireEvent, () => f, display)
+    nextScheduledEventOpt = Some(timeToFireEvent, () => f, widget)
     condition.signal()
     SchedulerThread.interrupt()
   }
@@ -63,12 +63,12 @@ class TypingDelayHelper(delay: Long = 500) {
             case _: InterruptedException =>
           }
         if (active) {
-          val (nextScheduledTime, callback, display) = nextScheduledEventOpt.get
+          val (nextScheduledTime, callback, widget) = nextScheduledEventOpt.get
           val now = new Date
           if (now.before(nextScheduledTime)) {
             nextScheduledTime.getTime - now.getTime
           } else {
-            asyncExec(display)(callback())
+            SWTUtil.asyncUnlessDisposed(widget)(callback())
             nextScheduledEventOpt = None
             0
           }
@@ -91,11 +91,4 @@ class TypingDelayHelper(delay: Long = 500) {
       lock.unlock()
   }
 
-  /** Asynchronously run `f` on the UI thread.  */
-  private def asyncExec(display: Option[Display] = None)(f: => Unit) {
-    val execDisplay = display getOrElse Display.getDefault
-    execDisplay asyncExec new Runnable {
-      override def run() { f }
-    }
-  }
 }

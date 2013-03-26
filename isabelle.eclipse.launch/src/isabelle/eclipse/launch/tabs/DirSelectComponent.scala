@@ -81,7 +81,7 @@ class DirSelectComponent extends LaunchComponent[Option[String]] {
   private def locationModified() {
     if (!initializing) {
       // schedule delayed event
-      typingDelayHelper.scheduleCallback(Some(locationField.getDisplay)) {
+      typingDelayHelper.scheduleCallback(Option(locationField)) {
         configModified()
       }
     }

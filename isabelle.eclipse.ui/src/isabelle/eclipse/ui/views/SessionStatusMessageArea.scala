@@ -99,14 +99,9 @@ class SessionStatusMessageArea(services: IServiceLocator) extends SessionEvents 
   
   override protected def sessionShutdown(session: Session) = updateSessionStatusInUI()
   
-  private def updateSessionStatusInUI() {
-    val control = Option(getControl) filterNot (_.isDisposed)
-    
-    control foreach { c =>
-      SWTUtil.asyncExec(Some(c.getDisplay)){ updateSessionStatus() }
-    }
-  }
-  
+  private def updateSessionStatusInUI() =
+    SWTUtil.asyncUnlessDisposed(Option(getControl)){ updateSessionStatus() }
+
   private def updateSessionStatus(init: Boolean = false) {
     
     // just hide/show the whole area

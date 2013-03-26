@@ -92,8 +92,7 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
     updateJob = newJob
   }
   
-  def reloadWithDelay() =
-    controlSafe foreach (c => delayHelper.scheduleCallback(Some(c.getDisplay))(reload))
+  def reloadWithDelay() = delayHelper.scheduleCallback(Option(control))(reload)
   
   override def createControl(parent: Composite) {
     
@@ -119,9 +118,7 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
   }
   
   override def getControl(): Control = control
-  
-  private def controlSafe(): Option[Control] = Option(getControl) filterNot (_.isDisposed)
-  
+
   override def dispose() {
     disposeSessionEvents()
     documentListener.dispose()
@@ -155,7 +152,7 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
     val viewer = Option(getTreeViewer)
 
     viewer foreach { v =>
-      SWTUtil.asyncExec(Some(v.getControl.getDisplay)) {
+      SWTUtil.asyncUnlessDisposed(Option(v.getControl)) {
 
         val (contentProvider, labelProvider) =
           if (rawTree) {

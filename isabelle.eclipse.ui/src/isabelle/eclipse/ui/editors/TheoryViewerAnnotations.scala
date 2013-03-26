@@ -22,8 +22,7 @@ import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 class TheoryViewerAnnotations(snapshot: => Option[Snapshot],
                               document: => IDocument,
                               annotationModel: => Option[IAnnotationModel],
-                              markerResource: => Option[IResource] = None,
-                              display: => Option[Display] = None) {
+                              markerResource: => Option[IResource] = None) {
 
   /**
    * Must be called from the UI thread, otherwise getting ConcurrentModificationException

@@ -14,14 +14,15 @@ import org.eclipse.jface.viewers.{
 }
 import org.eclipse.jface.wizard.ProgressMonitorPart
 import org.eclipse.swt.SWT
-import org.eclipse.swt.widgets.{Composite, Control, Group}
+import org.eclipse.swt.widgets.{Composite, Group}
 import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
 
-import AccessibleUtil.addControlAccessibleListener
 import isabelle.eclipse.core.app.IsabelleBuild
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
 import isabelle.eclipse.launch.config.{IsabelleLaunch, IsabelleLaunchConstants}
 import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, resolvePath, setConfigValue}
+
+import AccessibleUtil.addControlAccessibleListener
 
 
 /**
@@ -190,7 +191,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       val sessionLoad = IsabelleLaunch.availableSessions(
         isaPath, moreDirs, envMap, systemProperties)
 
-      runInUI(sessionCheck.viewer.getControl) { () =>
+      SWTUtil.asyncUnlessDisposed(Option(sessionCheck.viewer.getControl)) {
         finishedLoadingSessions(Some(this), sessionLoad, true)
       }
 
@@ -207,13 +208,6 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     def isConflicting(rule: ISchedulingRule) = rule == this
   }
 
-  private def runInUI(uiControl: Control)(doRun: () => Unit) {
-    if (!uiControl.isDisposed) {
-      uiControl.getDisplay.syncExec(new Runnable {
-        override def run() = doRun()
-      })
-    }
-  }
 
   private def finishedLoadingSessions(loadJob: Option[SessionLoadJob],
                                       sessionsEither: Either[IStatus, List[String]],

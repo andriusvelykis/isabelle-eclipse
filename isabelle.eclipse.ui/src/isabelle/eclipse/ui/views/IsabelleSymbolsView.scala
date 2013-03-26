@@ -51,7 +51,7 @@ class IsabelleSymbolsView extends ViewPart {
     loop {
       react {
         case Isabelle.SystemInit =>
-          SWTUtil.asyncExec(Some(viewer.getDisplay)) { initSymbols() }
+          SWTUtil.asyncUnlessDisposed(Option(viewer)) { initSymbols() }
         case _ =>
       }
     }

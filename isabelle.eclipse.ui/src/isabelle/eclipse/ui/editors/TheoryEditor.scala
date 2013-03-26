@@ -31,7 +31,7 @@ import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 import isabelle.eclipse.ui.util.JobUtil.uiJob
 import isabelle.eclipse.ui.util.ResourceUtil
-import isabelle.eclipse.ui.util.SWTUtil.asyncExec
+import isabelle.eclipse.ui.util.SWTUtil.asyncUnlessDisposed
 import isabelle.eclipse.ui.views.outline.TheoryOutlinePage
 
 
@@ -320,14 +320,13 @@ class TheoryEditor extends TextEditor {
 
     override protected def textViewer = getSourceViewer
     
-    private def display = textViewer.getTextWidget.getDisplay
+    private def control = Option(getSourceViewer) flatMap (v => Option(v.getTextWidget))
 
     val markers = new TheoryViewerAnnotations(
       Some(isabelleModel.snapshot),
       isabelleModel.document,
       annotationModel,
-      Option(EditorUtil.getResource(getEditorInput)),
-      Some(display))
+      Option(EditorUtil.getResource(getEditorInput)))
 
     def init() {
       
@@ -348,7 +347,7 @@ class TheoryEditor extends TextEditor {
     }
 
     def refreshViewUI(changedRanges: Option[List[Range]] = None) =
-      asyncExec(Some(display))(refreshView(changedRanges))
+      asyncUnlessDisposed(control)(refreshView(changedRanges))
 
     /**
      * Refreshes the text presentation.
@@ -365,7 +364,7 @@ class TheoryEditor extends TextEditor {
       // This is necessary because there seems to be a race condition with annotation model
       // when some refreshes are being lost, so doing it explicitly here.
       // AnnotationRepainter schedules refresh in UI thread using asyncExec, so add one more after
-      asyncExec(Some(display)) {
+      asyncUnlessDisposed(control) {
         (Option(getSourceViewer), changedRanges) match {
           case (Some(textViewer: ITextViewerExtension2), Some(ranges)) =>
             ranges foreach (r => textViewer.invalidateTextPresentation(r.start, r.length))

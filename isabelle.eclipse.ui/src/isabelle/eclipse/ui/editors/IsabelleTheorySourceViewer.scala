@@ -63,8 +63,7 @@ class IsabelleTheorySourceViewer private (
   private val annotations = new TheoryViewerAnnotations(
     snapshot,
     getDocument,
-    Option(getAnnotationModel),
-    display = Some(getControl.getDisplay))
+    Option(getAnnotationModel))
 
   
   def fontKey = IsabelleUIPreferences.ISABELLE_FONT
