@@ -95,6 +95,18 @@ class EditDocumentModel(val session: Session,
     }
   }
 
+  /**
+   * Checks if the contents of this document have already been submitted as-is to the prover
+   */
+  private def alreadySubmitted: Boolean = {
+    val submitted = snapshot
+    val submittedCmds = submitted.node.commands.toList
+    val submittedText = (submittedCmds map (_.source)).mkString
+    
+    // check if the submitted text is the same as the current one - then submitted as-is
+    submittedText == document.get
+  }
+
   /* edits */
 
   private def initEdits(): List[Document.Edit_Text] = {
@@ -178,11 +190,15 @@ class EditDocumentModel(val session: Session,
 
     def init() {
       doFlush()
+      
+      if (!alreadySubmitted) {
+        // only reinitialise if not already submitted (avoid submitting everything again)
 
-      // need a lock on the document for initialisation? E.g. to avoid edits while initialising?
-      // technically this should come from the SWT thread so should not be any need?
-      lockSubmit() {
-        session.update(initEdits())
+        // need a lock on the document for initialisation? E.g. to avoid edits while initialising?
+        // technically this should come from the SWT thread so should not be any need?
+        lockSubmit() {
+          session.update(initEdits())
+        }
       }
     }
 
