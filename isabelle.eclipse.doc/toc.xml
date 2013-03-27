@@ -4,7 +4,7 @@
 <!-- Define the top level topics                                                   -->
 <!-- ============================================================================= -->
 
-<toc label="Isabelle/Eclipse User Guide" topic="target/generated-docs/toc.html">
+<toc label="Isabelle/Eclipse User Guide">
   <topic label="Getting started" href="target/generated-docs/getting-started/index.html" />
   <topic label="Features">
      <anchor id="features"/>

@@ -1,0 +1,10 @@
+@import "../../../../PRODUCT_PLUGIN/book.css";
+
+dl dt {
+  font-weight: bold;
+  margin-top: 1em;
+}
+
+dl dt:first-child {
+  margin-top: 0;
+}
