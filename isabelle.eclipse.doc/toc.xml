@@ -6,7 +6,7 @@
 
 <toc label="Isabelle/Eclipse User Guide">
   <topic label="Getting started" href="target/generated-docs/getting-started/index.html" />
-  <topic label="Features">
+  <topic label="Features" href="target/generated-docs/features/index.html">
      <anchor id="features"/>
   </topic>
 </toc>
