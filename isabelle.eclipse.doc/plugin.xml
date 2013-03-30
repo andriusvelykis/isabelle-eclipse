@@ -18,6 +18,14 @@
             configId="org.eclipse.ui.intro.universalConfig"
             content="intro/web-isabelle-eclipse.xml">
       </configExtension>
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="intro/first-steps-isabelle-eclipse.xml">
+      </configExtension>
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="intro/overview-isabelle-eclipse.xml">
+      </configExtension>
    </extension>
 
 </plugin>

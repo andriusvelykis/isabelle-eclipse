@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+  	<extensionContent id="isabelle-eclipse-getting-started" style="css/first-steps-isabelle-eclipse.css" name="Isabelle/Eclipse" path="firststeps/@">
+		<group style-id="content-group" id="isabelle-eclipse-getting-started">
+			<link style-id="content-link" label="Getting started with Isabelle/Eclipse" url="http://org.eclipse.ui.intro/showHelpTopic?id=/isabelle.eclipse.doc/target/generated-docs/getting-started/index.html" id="isabelle-eclipse">
+          		<text>Learn how to start proving with Isabelle/Eclipse.</text>
+       		</link>
+       	</group>
+  	</extensionContent>
+</introContent>
