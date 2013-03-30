@@ -48,18 +48,21 @@
       <launchConfigurationTabGroup
             class="isabelle.eclipse.launch.tabs.AppBundleTabGroup"
             description="Configure Isabelle theorem prover installed as an application bundle under Mac OS X"
+            helpContextId="isabelle.eclipse.launch.isabelle-launch-config"
             id="isabelle.eclipse.launch.tabGroup.isabelleApp"
             type="isabelle.eclipse.launch.isabelleApp">
       </launchConfigurationTabGroup>
       <launchConfigurationTabGroup
             class="isabelle.eclipse.launch.tabs.WinDirTabGroup"
             description="Configure Isabelle theorem prover in Windows by indicating the installation directory and Cygwin path"
+            helpContextId="isabelle.eclipse.launch.isabelle-launch-config"
             id="isabelle.eclipse.launch.tabGroup.isabelleWin"
             type="isabelle.eclipse.launch.isabelleWin">
       </launchConfigurationTabGroup>
 	  <launchConfigurationTabGroup
             class="isabelle.eclipse.launch.tabs.RootDirTabGroup"
             description="Configure Isabelle theorem prover by indicating the installation directory"
+            helpContextId="isabelle.eclipse.launch.isabelle-launch-config"
             id="isabelle.eclipse.launch.tabGroup.isabelleRoot"
             type="isabelle.eclipse.launch.isabelleRoot">
       </launchConfigurationTabGroup>

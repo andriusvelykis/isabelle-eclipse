@@ -27,5 +27,12 @@
             content="intro/overview-isabelle-eclipse.xml">
       </configExtension>
    </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts-launch.xml"
+            plugin="isabelle.eclipse.launch">
+      </contexts>
+   </extension>
 
 </plugin>
