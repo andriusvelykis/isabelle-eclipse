@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+  	<extensionContent id="isabelle-eclipse-www" style="css/web-isabelle-eclipse.css" name="Isabelle/Eclipse Website" path="webresources/@">
+		<group style-id="content-group" id="isabelle-eclipse-www">
+       		<link label="Isabelle/Eclipse website" url="http://andriusvelykis.github.com/isabelle-eclipse/" id="isabelle-eclipse-www" style-id="content-link">
+          		<text>Visit Isabelle/Eclipse website for recent information, documentation and useful links.</text>
+       		</link>
+       	</group>
+  	</extensionContent>
+</introContent>

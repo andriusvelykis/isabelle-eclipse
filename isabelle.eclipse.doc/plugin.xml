@@ -12,5 +12,12 @@
             file="toc-features.xml">
       </toc>
    </extension>
+   <extension
+         point="org.eclipse.ui.intro.configExtension">
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="intro/web-isabelle-eclipse.xml">
+      </configExtension>
+   </extension>
 
 </plugin>

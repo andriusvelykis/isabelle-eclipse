@@ -6,3 +6,6 @@ Bundle-Version: 1.2.0.qualifier
 Bundle-Vendor: AI4FM.org
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.eclipse.ui.intro,
+ org.eclipse.ui.intro.universal,
+ org.eclipse.ui
