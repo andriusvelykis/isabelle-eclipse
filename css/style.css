@@ -1,0 +1,273 @@
+@import url('../fonts/aller-bold/stylesheet.css');
+@import url('../fonts/aller-light/stylesheet.css');
+
+/* Jumps to in-page links (e.g. page.html#foo) do not honor fixed navbar.
+   Use pseudo element to move them down.
+   Taken from http://nicolasgallagher.com/jump-links-and-viewport-positioning/demo/#method-B
+ */
+h1[id]:before,
+h2[id]:before,
+h3[id]:before,
+h4[id]:before,
+h5[id]:before,
+h6[id]:before,
+li[id]:before,
+a[name]:before {
+    display:block; 
+    content:""; 
+    height:60px; 
+    margin:-60px 0 0; 
+}
+
+
+body {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  position: relative;
+  padding-top: 50px;
+
+/*  background-image: url('../images/bg.png');
+  background-repeat: repeat;*/
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "AllerLight", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #333;
+  font-weight: normal;
+}
+
+h2, h3, h4, h5, h6 {
+  margin-top: 20px;
+}
+
+footer.well {
+  padding: 20px 20px;
+  margin-top: 70px;
+  margin-bottom: 0;
+  -webkit-border-radius: 0;
+     -moz-border-radius: 0;
+          border-radius: 0;
+  border-right: 0;
+  border-left: 0;
+  font-size: 90%;
+  margin-right: -20px;
+  margin-left: -20px;
+}
+
+footer .pagination {
+  margin: 0;
+}
+
+footer .isabelle-logo {
+  margin-right: 1em;
+  margin-bottom: 1em;
+}
+
+.isabelle-eclipse {
+  font-family: "AllerLight", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #333;
+}
+.isabelle-eclipse .slash-eclipse {
+  font-family: "Aller", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size: 0.85em;
+  padding-left: 0.2em;
+  color: #3b397c;
+}
+.isabelle-eclipse .eclipse {
+  text-transform: lowercase;
+}
+
+
+.subhead {
+  padding-bottom: 0;
+  margin-bottom: 50px;
+}
+
+.subhead h1 {
+  font-size: 54px;
+  color: #000;
+}
+
+.subhead > div:first-child {
+  /*min-height: 200px;*/
+}
+
+.subhead h1 {
+  vertical-align: text-bottom;
+}
+
+.subhead .isabelle-svg {
+  width: 96px;
+  height: 96px;
+  vertical-align: text-bottom;
+}
+
+.subhead p {
+/*  margin-left: 111px;*/
+}
+
+.navbar .brand {
+  background-image:url(../images/isabelle-logo.svg);
+  background-repeat: no-repeat;
+  background-position: 20px center;
+  background-size: contain;
+  padding: 5px 20px 5px;
+  padding-left: 60px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.subhead .download-area {
+  margin-top: 30px;
+  text-align: center;
+}
+
+footer .isabelle-svg {
+  width: 48px;
+  height: 60px;
+}
+
+footer p {
+  color: #666;
+}
+
+
+
+/* Responsive
+-------------------------------------------------- */
+
+/* Desktop large
+------------------------- */
+@media (min-width: 1200px) {
+  #sidebar-fixed.affix {
+    top: 75px;
+    width: 230px;
+  }
+}
+
+/* Desktop
+------------------------- */
+
+@media (max-width: 980px) {
+}
+
+@media (min-width: 980px) and (max-width: 1199px) {
+  #sidebar-fixed.affix {
+    top: 75px;
+    width: 180px;
+  }
+}
+
+/* Tablet to desktop
+------------------------- */
+@media (min-width: 768px) and (max-width: 979px) {
+  /* Remove any padding from the body */
+  body {
+    padding-top: 0;
+  }
+  /* Widen masthead and social buttons to fill body padding */
+  .jumbotron {
+    margin-top: -20px; /* Offset bottom margin on .navbar */
+  }
+  /* Adjust sidenav width */
+  #sidebar-fixed {
+    width: 166px;
+    margin-top: 20px;
+  }
+  #sidebar-fixed.affix {
+    width: 166px;
+    margin-top: 20px;
+    top: 0;
+  }
+  footer [class*="span"] {
+    display: block;
+    float: none;
+    width: 100%;
+    margin-left: 0;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+}
+
+/* Tablet
+------------------------- */
+@media (max-width: 767px) {
+  /* Remove any padding from the body */
+  body {
+    padding-top: 0;
+  }
+
+  /* Widen masthead and social buttons to fill body padding */
+  .masthead h1 {
+    font-size: 90px;
+  }
+  .masthead p,
+  .masthead .btn {
+    font-size: 24px;
+  }
+
+  /* Space out the show-grid examples */
+  .show-grid [class*="span"] {
+    margin-bottom: 5px;
+  }
+
+  /* Sidenav */
+  #sidebar-fixed {
+    width: auto;
+    margin-bottom: 20px;
+  }
+  #sidebar-fixed.affix {
+    position: static;
+    width: auto;
+    top: 0;
+  }
+
+}
+
+/* Landscape phones
+------------------------- */
+@media (max-width: 480px) {
+  /* Remove padding above jumbotron */
+  body {
+    padding-top: 0;
+  }
+
+  /* Change up some type stuff */
+  h2 small {
+    display: block;
+  }
+
+  /* Downsize the jumbotrons */
+  .jumbotron h1 {
+    font-size: 45px;
+  }
+  .jumbotron p,
+  .jumbotron .btn {
+    font-size: 18px;
+  }
+  .jumbotron .btn {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* center align subhead text like the masthead */
+  .subhead h1,
+  .subhead p {
+    text-align: center;
+  }
+
+
+  /* Do our best to make tables work in narrow viewports */
+  table code {
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all;
+  }
+
+}
+
+
+
+
+

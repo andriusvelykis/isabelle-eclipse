@@ -1,0 +1,66 @@
+---
+layout: default
+category: docs
+
+docsnav:
+- text: Getting started
+  url: /getting-started/index.html
+- text: Features
+  url: /features/index.html
+  children:
+  - text: Isabelle launch configurations
+    url: /features/launch-config.html
+  - text: Theory editor
+    url: /features/theory-editor.html
+  - text: Prover output
+    url: /features/prover-output.html
+  - text: Go to definition
+    url: /features/go-to-definition.html
+  - text: Content assist
+    url: /features/content-assist.html
+  - text: Tooltips
+    url: /features/tooltips.html
+  - text: Adjust Isabelle font
+    url: /features/adjust-font.html
+  - text: Outline
+    url: /features/outline.html
+  - text: Symbols view
+    url: /features/symbols-view.html
+- text: Developer
+  children:
+  - text: Developer information
+    url: /dev/index.html
+---
+
+<div class="row">
+  <div class="span8">{{ content }}</div>
+  <div class="span4">
+    <div class="well" style="max-width: 340px; padding: 8px 0;">
+      <ul class="nav nav-list">
+        <li class="nav-header">Documentation</li>
+      {% for link in page.docsnav %}
+        {% assign current = nil %}
+        {% if page.url == link.url %}
+          {% assign current = 'active' %}
+        {% endif %}
+        {% if link.children == nil %}
+        <li class="{{ current }}"><a href="{{ site.baseurl }}{{ link.url }}">{{ link.text }}</a></li>
+        {% else %}
+        <li class="nav-header">{{ link.text }}</li>
+        {% if link.url != nil %}
+        <li class="{{ current }}"><a href="{{ site.baseurl }}{{ link.url }}"><i class="icon-reorder"></i>{{ link.text }}</a></li>
+        {% endif %}
+        {% for sublink in link.children %}
+          {% assign current = nil %}
+          {% if page.url == sublink.url %}
+            {% assign current = 'active' %}
+          {% endif %}
+          <li class="{{ current }}"><a href="{{ site.baseurl }}{{ sublink.url }}">{{ sublink.text }}</a></li>
+        {% endfor %}
+        {% endif %}
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+

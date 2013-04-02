@@ -1,0 +1,175 @@
+---
+topnav:
+- text: Overview
+  url: /
+- text: Downloads
+  icon: icon-download
+  url: /download.html
+- text: Documentation
+  category: docs
+  url: /getting-started/index.html
+  children:
+  - text: Getting started
+    url: /getting-started/index.html
+  - text: Features
+    url: /features/index.html
+  - text: ---
+  - text: Developer
+    url: /dev/index.html
+---
+
+<!DOCTYPE html>
+<html dir="ltr" lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <title>{% if page.title %} {{ page.title }} - {% endif %} {{ site.name }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Isabelle/Eclipse Prover IDE">
+  <meta name="author" content="Andrius Velykis">
+  <link rel="author" href="http://plus.google.com/109737404465892813363"/>
+
+  <!-- Need for SVG loading in IE9 -->
+  <meta http-equiv="X-UA-Compatible" content="IE=9">
+
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <!-- <link href="{{ site.baseurl }}/css/bootstrap.min.css" rel="stylesheet"> -->
+  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-responsive.min.css" rel="stylesheet">
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
+  <!--[if IE 7]>
+  <link href="//netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome-ie7.css" rel="stylesheet">
+  <![endif]-->
+
+  <link href="{{ site.baseurl }}/css/style.css" rel="stylesheet">
+
+  <link href="{{ site.baseurl }}/css/print.css" media="print" rel="stylesheet" />
+
+  <link rel="icon" type="image/png" href="{{ site.baseurl }}/images/isabelle16.png" />
+
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-1402675-8']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+
+</head>
+<body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="{{ site.baseurl }}/">
+          <span class="isabelle-eclipse">Isabelle<span class="slash-eclipse">/<span class="eclipse">Eclipse</span></span></span>
+        </a>
+        <div class="nav-collapse collapse" id="main-menu">
+          <ul class="nav pull-right">
+            <li><a href="{{ site.repository_url }}"><i class="icon-github icon-large"></i> View on GitHub</a></li>
+            <li class="divider-vertical"></li>
+          {% for link in page.topnav %}
+            {% assign current = nil %}
+            {% assign icon = '' %}
+            {% if page.url == link.url %}
+              {% assign current = 'active' %}
+            {% endif %}
+            {% if link.category != nil and page.category == link.category %}
+              {% assign current = 'active' %}
+            {% endif %}
+            {% if link.icon != nil %}
+              {% capture icon %}<i class="{{ link.icon }} icon-large"></i> {% endcapture %}
+            {% endif %}
+            {% if link.children == nil %}
+            <li class="{{ current }}"><a href="{{ site.baseurl }}{{ link.url }}">{{ icon }}{{ link.text }}</a></li>
+            {% else %}
+            <li class="dropdown {{ current }}">
+              <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">{{ icon }}{{ link.text }} <b class="caret"></b></a>
+              <ul class="dropdown-menu" role="menu">
+              {% for sublink in link.children %}
+                {% if '---' == sublink.text %}
+                  <li class="divider"></li>
+                {% else %}
+                  {% assign current = nil %}
+                  {% if page.url == sublink.url %}
+                    {% assign current = 'active' %}
+                  {% endif %}
+                  {% if sublink.category != nil and page.category == sublink.category %}
+                    {% assign current = 'active' %}
+                  {% endif %}
+                  <li class="{{ current }}"><a role="menuitem" tabindex="-1" href="{{ site.baseurl }}{{ sublink.url }}">{{ sublink.text }}</a></li>
+                {% endif %}
+              {% endfor %}
+              </ul>
+            </li>
+            {% endif %}
+          {% endfor %}
+            <li><a href="http://github.com/andriusvelykis/isabelle-eclipse/issues">Issues</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" id="top">
+
+
+{{ content }}
+
+  </div><!-- /container -->
+
+  <!-- Footer
+  ================================================== -->
+  <footer class="well">
+    <div class="container">			
+      <div class="row">
+        <div class="span5">
+          <div class="pull-left isabelle-logo">
+            <img src="{{ site.baseurl }}/images/isabelle-logo-bw.svg" type="image/svg+xml" class="isabelle-svg" />
+          </div>
+          <p>Isabelle/Eclipse provides Prover IDE for Isabelle proof assistant.</p>
+          <p>Developed and maintained by <a href="http://andrius.velykis.lt">Andrius Velykis</a>.</p>
+        </div>
+        <div class="span7">
+          <div class="pagination pagination-right">
+            <ul>
+              {% for link in page.topnav %}
+              {% assign current = nil %}
+              {% if page.url == link.url %}
+              {% assign current = 'active' %}
+              {% endif %}
+              <li class="{{ current }}"><a href="{{ site.baseurl }}{{ link.url }}">{{ link.text }}</a></li>
+              {% endfor %}
+              <li><a href="#top">Page Top &uarr;</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- Le javascript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script src="{{ site.baseurl }}/js/email.js" type="text/javascript"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+  <script src="{{ site.baseurl }}/js/main.js" type="text/javascript"></script>
+
+</body>
+</html>
