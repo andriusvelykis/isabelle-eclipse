@@ -2,9 +2,9 @@
 <?compositeMetadataRepository version='1.0.0'?>
 <repository name='Isabelle/Eclipse Nightly Updates' type='org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository' version='1.0.0'>
   <properties size='1'>
-    <property name='p2.timestamp' value='201303270506'/>
+    <property name='p2.timestamp' value='201304021001'/>
   </properties>
   <children size='1'>
-    <child location='http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/updates/nightly/201303270506'/>
+    <child location='http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/updates/nightly/201304021001'/>
   </children>
 </repository>
