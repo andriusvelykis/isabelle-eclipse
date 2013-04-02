@@ -9,6 +9,10 @@
 
 Isabelle/Eclipse started as a port of Isabelle/jEdit Prover IDE to integrate with Eclipse IDE as plug-ins. The integration uses common Eclipse components to provide theory editing, correct symbols, completion assistance, prover output and other features. By building on Eclipse it inherits various IDE goodies out of the box.
 
+Visit [Isabelle/Eclipse website][isabelle-eclipse] for more details.
+
+[isabelle-eclipse]: http://andriusvelykis.github.com/isabelle-eclipse
+
 ## Downloads (nightly)
 
 Isabelle/Eclipse is available both as standalone **Isabelle/Eclipse IDE** and as **plug-ins for Eclipse** to be installed via _Update Manager_.
@@ -49,13 +53,19 @@ An older version of Isabelle/Eclipse plug-ins is available for **Isabelle 2012**
     
 ## Contributing
 
-Please report bugs, feature requests and other issues using the GitHub tracker:
+Please report bugs, feature requests, questions and other issues using the GitHub tracker:
 
-[http://github.com/andriusvelykis/isabelle-eclipse/issues](http://github.com/andriusvelykis/isabelle-eclipse/issues)
+[`http://github.com/andriusvelykis/isabelle-eclipse/issues`](http://github.com/andriusvelykis/isabelle-eclipse/issues)
 
-You can contribute to the project by forking the repository and sending [pull requests][pull-req] with your changes. The plug-ins are built using Maven - will try adding installation/building instructions next. Feel free to contact the author for assistance. 
+You can also contribute to the project by forking the repository and sending [pull requests][pull-req] with your changes. We welcome various contributions!
+
+Isabelle/Eclipse is built on Eclipse platform using Scala and Java programming languages. It is built using Maven and Eclipse Tycho. Refer to the [Developer documentation][developer] for hints on building Isabelle/Eclipse yourself.
+
+Feel free to contact the author for assistance. 
 
 [pull-req]: https://help.github.com/articles/using-pull-requests/
+[developer]: http://andriusvelykis.github.com/isabelle-eclipse/dev/index.html
+
 
 ## Authors
 
