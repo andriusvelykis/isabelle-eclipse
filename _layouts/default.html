@@ -1,72 +1,29 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>{{ site.project_title }} by {{ site.owner_name }}</title>
-    <link rel="icon" type="image/png" href="{{ site.baseurl }}/images/isabelle16.png" />
-    <link rel="stylesheet" href="{{ site.baseurl }}/stylesheets/pygment_trac.css">
-    <link rel="stylesheet" href="{{ site.baseurl }}/stylesheets/styles.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="{{ site.baseurl }}/javascripts/main.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+---
+layout: top
+---
 
-    <!-- Google Analytics -->
-    <script type="text/javascript">
-
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-1402675-8']);
-      _gaq.push(['_trackPageview']);
-
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-
-    </script>
-
-  </head>
-  <body>
-
-      <header>
-        <a href="{{ site.baseurl }}/" title="Home"><h1>Isabelle<span class="slash-eclipse">/<span class="eclipse">Eclipse</span></span></h1></a>
-        <p>{{ site.tagline }}</p>
-      </header>
-
-      <div id="banner">
-        <span id="logo"></span>
-
-        <a href="{{ site.repository_url }}" class="button fork"><strong>View on GitHub</strong></a>
-        <div class="downloads">
-          <span>Downloads (<em>nightly!</em>):</span>
-          <ul>
-            <li><a href="{{ site.download1_url }}" class="button">{{ site.download1_title }}</a></li>
-            <li><a href="{{ site.download2_url }}" class="button">{{ site.download2_title }}</a></li>
-          </ul>
-        </div>
-
-      </div><!-- end banner -->
-
-    <div class="wrapper">
-      <nav>
-        <ul></ul>
-      </nav>
-      {% if page.content_type && page.content_type != "html" %}
-        <section class="content">
-          {{ content }}
-        </section>
-      {% else %}
-        {{content}}
-      {% endif %}
-      <footer>
-        <p>Project maintained by <a href="{{ site.owner_url }}">{{ site.owner_name }}</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a> modified by <a href="{{site.owner_url}}">{{ site.owner_name }}</a></small></p>
-      </footer>
+<!-- Masthead
+  ================================================== -->
+  <header class="jumbotron subhead" id="overview">
+    <div class="row">
+      <div class="span9">
+        <h1>
+          <img src="{{ site.baseurl }}/images/isabelle-logo.svg" type="image/svg+xml" class="isabelle-svg" />
+          <span class="isabelle-eclipse">Isabelle<span class="slash-eclipse">/<span class="eclipse">Eclipse</span></span></span>
+        </h1>
+        <p class="lead">{{site.description}}</p>
+      </div>
+      <div class="span3 download-area">
+        <p>
+          <a class="btn btn-large btn-primary btn-block" type="button" href="http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/isabelle-eclipse-ide/nightly/">Get Isabelle/Eclipse IDE</a>
+        </p>
+        <p>
+          <a class="btn btn-large btn-info btn-block" type="button" href="http://andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2013/nightly/">Use update site</a>
+        </p>
+      </div>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
-  </body>
-</html>
+  </header>
+
+  <div id="content">
+{{ content }}
+  </div>
