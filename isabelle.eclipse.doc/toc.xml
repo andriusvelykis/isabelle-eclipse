@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+<!-- ============================================================================= -->
+<!-- Define the top level topics                                                   -->
+<!-- ============================================================================= -->
+
+<toc label="Isabelle/Eclipse User Guide">
+  <topic label="Getting started" href="target/generated-docs/getting-started/index.html" />
+  <topic label="Features" href="target/generated-docs/features/index.html">
+     <anchor id="features"/>
+  </topic>
+</toc>

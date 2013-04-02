@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+   <context id="isabelle-launch-config">
+      <description>Learn more about Isabelle launch configurations.</description>
+      <topic label="Isabelle launch configurations" href="target/generated-docs/features/launch-config.html"/>
+   </context>
+</contexts>

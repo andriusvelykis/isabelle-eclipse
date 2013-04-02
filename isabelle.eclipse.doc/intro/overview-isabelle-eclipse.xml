@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+  	<extensionContent id="isabelle-eclipse-overview" style="css/first-steps-isabelle-eclipse.css" name="Isabelle/Eclipse" path="overview/@">
+		<group style-id="content-group" id="isabelle-eclipse-overview">
+			<link style-id="content-link" label="Isabelle/Eclipse features" url="http://org.eclipse.ui.intro/showHelpTopic?id=/isabelle.eclipse.doc/target/generated-docs/features/index.html" id="isabelle-eclipse">
+          		<text>Learn about some of the features of Isabelle/Eclipse.</text>
+       		</link>
+       	</group>
+  	</extensionContent>
+</introContent>
