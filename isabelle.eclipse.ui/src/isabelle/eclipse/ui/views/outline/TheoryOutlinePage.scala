@@ -81,7 +81,6 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
   lazy val theoryRawLabel = new TheoryRawLabelProvider(resourceManager)
   
   
-  // TODO update after editing - currently it is reloaded on initialisation only
   def reload() {
     
     val newJob = new OutlineParseJob(rawTree)
