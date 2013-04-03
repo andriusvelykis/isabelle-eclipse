@@ -26,6 +26,7 @@
       <import plugin="org.eclipse.ui" version="3.3.0" match="compatible"/>
       <import plugin="com.ibm.icu"/>
       <import feature="org.eclipse.platform"/>
+      <import feature="in.iitd.mldev.feature"/>
    </requires>
 
    <plugin
