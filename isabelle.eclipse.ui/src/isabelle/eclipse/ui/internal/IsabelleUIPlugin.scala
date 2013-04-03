@@ -54,6 +54,8 @@ class IsabelleUIPlugin extends AbstractUIPlugin {
   @throws[Exception]
   override def start(context: BundleContext) {
 
+    super.start(context)
+
     Option(Display.getCurrent) match {
       // already UI thread - use it without postponing
       // to avoid editors initialising with incorrect font
