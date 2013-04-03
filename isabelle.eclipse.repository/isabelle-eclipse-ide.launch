@@ -27,6 +27,7 @@
 <stringAttribute key="product" value="isabelle.eclipse.product"/>
 <stringAttribute key="productFile" value="/isabelle.eclipse.repository/isabelle-eclipse-ide.product"/>
 <setAttribute key="selected_features">
+<setEntry value="in.iitd.mldev.feature:default"/>
 <setEntry value="isabelle.eclipse.feature:default"/>
 <setEntry value="isabelle.eclipse.product.feature:default"/>
 <setEntry value="org.eclipse.e4.rcp:default"/>
