@@ -226,7 +226,7 @@
                 <configuration>
                   <fromDir>${project.build.directory}/products</fromDir>
                   <includes>*linux.gtk.x86.tar.gz</includes>
-                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}/linux</url>
+                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}/linux-32bit</url>
                   <serverId>sourceforge</serverId>
                 </configuration>
               </execution>
