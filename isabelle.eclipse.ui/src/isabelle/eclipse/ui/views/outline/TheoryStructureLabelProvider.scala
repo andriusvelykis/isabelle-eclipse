@@ -54,9 +54,49 @@ class TheoryStructureLabelProvider(resourceManager: ResourceManager) extends Lab
 
   override def getText(obj: AnyRef): String = obj match {
     case entry: TheoryStructureEntry => entry.entry match {
-      case Structure.Block(name, body) => Library.first_line(name)
+      case Structure.Block(nameText, body) => {
+        val name = flattenTrim(nameText)
+        
+        if (name.startsWith("text")) {
+          // get just the text
+          textContents(name)
+        } else {
+          name
+        }
+      }
       case Structure.Atom(command) => command.name
     }
     case _ => super.getText(obj)
   }
+
+  /**
+   * Trims the text of whitespace and compacts/replaces all consecutive whitespace (including linebreaks)
+   * with single space - flattens the text. 
+   */
+  private def flattenTrim(text: String) =
+    text.trim.replaceAll("\\s+", " ")
+
+  /**
+   * Extracts contents of `text {* *}` command
+   */
+  private def textContents(text: String): String = {
+    // get just the text
+    val offset = (text.indexOf("{*") + 2) max 4
+    val endOffset = {
+      val end = text.lastIndexOf("*}")
+      if (end < 0) text.length else end
+    }
+
+    val textContents = text.substring(offset, endOffset)
+    val trimmed = textContents.trim
+
+    // replace text that is too long with ellipsis
+    val limit = 50
+    if (trimmed.length > limit) {
+      trimmed.substring(0, limit - 3) + "..."
+    } else {
+      trimmed
+    }
+  }
+    
 }
