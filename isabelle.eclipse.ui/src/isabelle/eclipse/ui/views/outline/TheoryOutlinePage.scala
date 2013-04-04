@@ -178,8 +178,21 @@ class TheoryOutlinePage(editor: TheoryEditor, editorViewer: => ITextViewer)
 
   def selectedRegionInEditor: Option[IRegion] = getSelection match {
     case ss: IStructuredSelection => ss.getFirstElement match {
-      case struct: TheoryStructureEntry => Some(new Region(struct.offset, struct.entry.length))
+
+      case struct: TheoryStructureEntry => struct.entry match {
+        // use proper range for command selections (issue #47)
+        case Structure.Atom(cmd) => Some(new Region(struct.offset, cmd.proper_range.length))
+
+        // select just the name for now - trim it to disregard whitespace
+        // this assumes that the block region always starts at the command
+        case Structure.Block(name, _) => Some(new Region(struct.offset, name.trim.length))
+        
+        // generic catchall - if new types are added
+        case _ => Some(new Region(struct.offset, struct.entry.length))
+      }
+
       case raw: TheoryRawEntry => Some(new Region(raw.range.start, raw.range.stop - raw.range.start))
+
       case _ => None
     }
     case _ => None
