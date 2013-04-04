@@ -162,16 +162,71 @@
                 </configuration>
               </execution>
 
+              <!-- Upload products - each to its platform directory
+                   (long names are confusing otherwise).
+                   Upload them in reverse alphabetical order to get correct one on SourceForge. -->
               <execution>
-                <id>upload-products</id>
+                <id>upload-product-win64</id>
                 <phase>deploy</phase>
                 <goals>
                   <goal>upload</goal>
                 </goals>
                 <configuration>
                   <fromDir>${project.build.directory}/products</fromDir>
-                  <includes>*.zip,*.tar.gz</includes>
-                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}</url>
+                  <includes>*win32.x86_64.zip</includes>
+                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}/windows-64bit</url>
+                  <serverId>sourceforge</serverId>
+                </configuration>
+              </execution>
+              <execution>
+                <id>upload-product-win32</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>upload</goal>
+                </goals>
+                <configuration>
+                  <fromDir>${project.build.directory}/products</fromDir>
+                  <includes>*win32.x86.zip</includes>
+                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}/windows</url>
+                  <serverId>sourceforge</serverId>
+                </configuration>
+              </execution>
+              <execution>
+                <id>upload-product-mac</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>upload</goal>
+                </goals>
+                <configuration>
+                  <fromDir>${project.build.directory}/products</fromDir>
+                  <includes>*macosx.cocoa.x86_64.tar.gz</includes>
+                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}/mac</url>
+                  <serverId>sourceforge</serverId>
+                </configuration>
+              </execution>
+              <execution>
+                <id>upload-product-linux64</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>upload</goal>
+                </goals>
+                <configuration>
+                  <fromDir>${project.build.directory}/products</fromDir>
+                  <includes>*linux.gtk.x86_64.tar.gz</includes>
+                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}/linux-64bit</url>
+                  <serverId>sourceforge</serverId>
+                </configuration>
+              </execution>
+              <execution>
+                <id>upload-product-linux32</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>upload</goal>
+                </goals>
+                <configuration>
+                  <fromDir>${project.build.directory}/products</fromDir>
+                  <includes>*linux.gtk.x86.tar.gz</includes>
+                  <url>${deploy.host}${deploy.dir}/${nightly.product.path}/linux</url>
                   <serverId>sourceforge</serverId>
                 </configuration>
               </execution>
