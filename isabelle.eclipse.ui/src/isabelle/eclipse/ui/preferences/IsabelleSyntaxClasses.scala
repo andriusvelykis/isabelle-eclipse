@@ -31,7 +31,7 @@ object IsabelleSyntaxClasses {
   val VAR = IsabelleSyntaxClass("Variables", "syntax.var")
   val DYN_FACT = IsabelleSyntaxClass("Dynamic Facts", "syntax.dynFact")
   val ANTIQ = IsabelleSyntaxClass("Antiquotations", "syntax.antiq")
-  val CLASS = IsabelleSyntaxClass("Class Entities", "syntax.entity.class")
+//  val CLASS = IsabelleSyntaxClass("Class Entities", "syntax.entity.class")
   
   val CMD = IsabelleSyntaxClass("Proof Commands", "syntax.cmd.cmd")
   val CMD_SCRIPT = IsabelleSyntaxClass("Proof Script Commands", "syntax.cmd.script")
@@ -44,12 +44,30 @@ object IsabelleSyntaxClasses {
   
   val ACTIVE = IsabelleSyntaxClass("Isabelle Action Links", "syntax.active")
   val DIALOG_SELECTED = IsabelleSyntaxClass("Isabelle Selected Dialog", "syntax.dialog.selected")
-  
-  val ALL_SYNTAX_CLASSES = List(DEFAULT, COMMENT, INNER_COMMENT, VERBATIM, STRING, INNER_STRING,
-      KEYWORD, KEYWORD2,
-      LITERAL, DELIMITER, TYPE, FREE, SKOLEM, BOUND, VAR, DYN_FACT, ANTIQ, 
-      ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT,
-      ACTIVE)
+
+
+  case class Category(name: String, children: List[IsabelleSyntaxClass])
+
+  val isabelleCategory = Category("Isabelle", List(
+    STRING, INNER_STRING,
+    KEYWORD, KEYWORD2,
+    OPERATOR, LITERAL, DELIMITER, TYPE, FREE, SKOLEM, BOUND, VAR, DYN_FACT, ANTIQ,
+    CMD, CMD_SCRIPT, CMD_GOAL,
+    DEFAULT))
+
+  val mlCategory = Category("ML", List(
+    ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT))
+
+  val commentsCategory = Category("Comments", List(
+    COMMENT, INNER_COMMENT, VERBATIM))
+
+  val actionsCategory = Category("Actions", List(
+    ACTIVE, DIALOG_SELECTED))
+
+  val categories = List(isabelleCategory, mlCategory, commentsCategory, actionsCategory)
+
+  val ALL_SYNTAX_CLASSES = (categories map (_.children)).flatten.distinct
+
 
   val COLOR_SUFFIX = ".color"
   val COLOR_ENABLED_SUFFIX = ".colorEnabled"
