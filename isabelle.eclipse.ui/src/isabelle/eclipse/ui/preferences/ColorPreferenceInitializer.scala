@@ -20,7 +20,7 @@ object ColorPreferenceInitializer {
     DefaultScope.INSTANCE.getNode(IsabelleUIPlugin.plugin.pluginId)
 
   def initializeDefaultPreferences() {
-    setDefaultsForSyntaxClasses(defaultPrefs)
+    putSyntaxColoringPreferences(defaultPrefs)
   }
   
   private def setDefaultsForSyntaxClass(
@@ -48,7 +48,50 @@ object ColorPreferenceInitializer {
       underlineStyle foreach (style => prefs.putInt(syntaxClass.underlineStyleKey, style))
     }
 
-  private def setDefaultsForSyntaxClasses(implicit prefs: IEclipsePreferences) {
+  def putSyntaxColoringPreferences(implicit prefs: IEclipsePreferences) {
+    
+    val black = rgb(0, 0, 0)
+    val red = rgb(255, 0, 0)
+    val green = rgb(0, 128, 0)
+    val blue = rgb(0, 0, 255)
+    val chocolate = rgb(210, 105, 30)
+    val darkRed = rgb(139, 0, 0)
+    val keyword1 = rgb(127, 0, 85)
+    val comment = rgb(63, 127, 95)
+    val quoted = rgb(240, 240, 240)
+    
+    setDefaultsForSyntaxClass(COMMENT, comment)
+    setDefaultsForSyntaxClass(VERBATIM, rgb(63, 95, 191))//, quoted)
+    setDefaultsForSyntaxClass(STRING, black, quoted)
+    setDefaultsForSyntaxClass(KEYWORD, keyword1, bold = true)
+    setDefaultsForSyntaxClass(KEYWORD2, keyword1, bold = true)
+    setDefaultsForSyntaxClass(OPERATOR, black, bold = true)
+    setDefaultsForSyntaxClass(LITERAL, keyword1)
+    setDefaultsForSyntaxClass(DELIMITER, black)
+    setDefaultsForSyntaxClass(TYPE, rgb(160, 32, 240))
+    setDefaultsForSyntaxClass(FREE, blue)
+    setDefaultsForSyntaxClass(SKOLEM, chocolate)
+    setDefaultsForSyntaxClass(BOUND, green)
+    setDefaultsForSyntaxClass(VAR, rgb(0, 0, 155))
+    setDefaultsForSyntaxClass(INNER_STRING, chocolate)
+    setDefaultsForSyntaxClass(INNER_COMMENT, darkRed)
+    setDefaultsForSyntaxClass(DYN_FACT, rgb(123, 164, 40))
+    setDefaultsForSyntaxClass(ANTIQ, rgb(63, 63, 191))
+    setDefaultsForSyntaxClass(ML_KEYWORD, keyword1, bold = true)
+    setDefaultsForSyntaxClass(ML_NUMERAL, blue)
+    setDefaultsForSyntaxClass(ML_STRING, blue)
+    setDefaultsForSyntaxClass(ML_COMMENT, comment)
+    
+    setDefaultsForSyntaxClass(CMD, keyword1, bold = true)
+    setDefaultsForSyntaxClass(CMD_SCRIPT, keyword1)
+    setDefaultsForSyntaxClass(CMD_GOAL, keyword1, bold = true)
+
+    setDefaultsForSyntaxClass(ACTIVE, underline = true, underlineStyle = Some(SWT.UNDERLINE_LINK))
+    setDefaultsForSyntaxClass(DIALOG_SELECTED,
+      underline = true, underlineStyle = Some(SWT.UNDERLINE_DOUBLE))
+  }
+  
+  def putSyntaxColoringPreferencesJEdit(implicit prefs: IEclipsePreferences) {
     
     val black = rgb(0, 0, 0)
     val red = rgb(255, 0, 0)
