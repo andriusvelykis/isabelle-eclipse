@@ -11,6 +11,7 @@ import org.eclipse.jface.dialogs.MessageDialog
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
 import org.eclipse.jface.text.{IDocument, IRegion, ITextViewerExtension2, Region}
 import org.eclipse.jface.text.source.IAnnotationModel
+import org.eclipse.jface.util.PropertyChangeEvent
 import org.eclipse.jface.viewers.{ISelectionChangedListener, SelectionChangedEvent}
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.{IEditorInput, IEditorSite, PartInitException}
@@ -231,6 +232,20 @@ class TheoryEditor extends TextEditor {
 
   private def reloadOutline() = outlinePage.reload()
 
+  override protected def handlePreferenceStoreChanged(event: PropertyChangeEvent) {
+    try {
+      // notify configuration to update syntax highlighting
+      val conf = getSourceViewerConfiguration.asInstanceOf[IsabelleTheoryViewerConfiguration]
+      conf.handlePropertyChangeEvent(event)
+      
+      // invalidate text presentation, otherwise the syntax highlighting does not get changed
+      // TODO investigate a more precise refresh (not on every preference change)
+      getSourceViewer.invalidateTextPresentation()
+
+    } finally {
+      super.handlePreferenceStoreChanged(event)
+    }
+  }
 
   override def dispose() {
 

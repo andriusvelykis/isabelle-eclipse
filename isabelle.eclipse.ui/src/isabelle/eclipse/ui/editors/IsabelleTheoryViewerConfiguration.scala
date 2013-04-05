@@ -7,6 +7,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector
 import org.eclipse.jface.text.presentation.{IPresentationReconciler, PresentationReconciler}
 import org.eclipse.jface.text.rules.ITokenScanner
 import org.eclipse.jface.text.source.{Annotation, ISourceViewer}
+import org.eclipse.jface.util.PropertyChangeEvent
 import org.eclipse.swt.SWT
 import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.editors.text.{EditorsUI, TextSourceViewerConfiguration}
@@ -63,39 +64,46 @@ class IsabelleTheoryViewerConfiguration(
   override def getConfiguredContentTypes(sourceViewer: ISourceViewer): Array[String] =
     // add Isabelle content types
     super.getConfiguredContentTypes(sourceViewer) ++ IsabellePartitions.contentTypes
-    
+
+
+  private var codeHighlightingScanners: List[AbstractIsabelleScanner] = Nil
 
   override def getPresentationReconciler(sourceViewer: ISourceViewer): IPresentationReconciler = {
     val reconciler = super.getPresentationReconciler(sourceViewer).asInstanceOf[PresentationReconciler]
 
     /** Sets damager/repairer for the given partition type */
-    def handlePartition(partitionType: String, scanner: Option[ITokenScanner] = None) {
+    def handlePartition(partitionType: String,
+                        scanners: List[ITokenScanner with AbstractIsabelleScanner] = Nil):
+        List[AbstractIsabelleScanner] = {
       
       // always initialise a scanner for the whole partition
       val partScanner = partitionScanner(partitionType)
       
-      // check if another scanner was given - if so, join it on top of the partition scanner
-      val fullScanner = scanner match {
-        case Some(sc) => join (sc, partScanner)
-        case None => partScanner
-      }
+      // check if other scanners were given - if so, join them on top of the partition scanner
+      val fullScanner = (scanners foldRight (partScanner: ITokenScanner))(join)
       
       val dr = new ExtendedStylesDamagerRepairer(fullScanner)
       reconciler.setDamager(dr, partitionType)
       reconciler.setRepairer(dr, partitionType)
+      
+      scanners ::: List(partScanner)
     }
 
     // set damager/repairer for each content type
     val contentTypes = getConfiguredContentTypes(sourceViewer)
-    
+
+    // assign scanners to all partitions and collect them
     import IsabellePartitions._
-    contentTypes foreach {
+    val partitionScanners = contentTypes.toList map {
       // for comments, only use the partition scanner - no need to display further scanning
       case ISABELLE_COMMENT => handlePartition(ISABELLE_COMMENT)
       // for other content types, use markup & token scanners in addition to partition scanner
-      case contentType => handlePartition(contentType, 
-          Some(join(markupScanner(), join(actionMarkupScanner(), tokenScanner()))))
+      case contentType => handlePartition(contentType, List(
+          markupScanner(), actionMarkupScanner(), tokenScanner()))
     }
+    
+    // record the scanners used - they will be refreshed upon preference change
+    this.codeHighlightingScanners = partitionScanners.flatten
 
     reconciler
   }
@@ -116,32 +124,36 @@ class IsabelleTheoryViewerConfiguration(
     new ChainedTokenScanner(top, bottom, TokenUtil.Merge.mergeTextTokens)
 
   /** Creates a single-token partition scanner which provides tokens for different partition types */
-  private def partitionScanner(partition: String): ITokenScanner =
+  private def partitionScanner(partition: String): ITokenScanner with AbstractIsabelleScanner =
     new SingleTokenScanner with IsabelleScanner {
       override def getToken() =
         getToken(IsabellePartitionToSyntaxClass(partition))
     }
 
   /** Creates a scanner for Isabelle tokens */
-  private def tokenScanner(): ITokenScanner =
+  private def tokenScanner(): ITokenScanner with AbstractIsabelleScanner =
     new IsabelleTokenScanner(session) with IsabelleScanner {
       override def getToken(syntax: Outer_Syntax, token: isabelle.Token) =
         getToken(IsabelleTokenToSyntaxClass(syntax, token))
     }
   
   /** Creates a scanner for Isabelle markup information */
-  private def markupScanner(): ITokenScanner =
+  private def markupScanner(): ITokenScanner with AbstractIsabelleScanner =
     new IsabelleMarkupScanner(snapshot) with IsabelleScanner {
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }
   
   /** Creates a scanner for Isabelle markup information for action links */
-  private def actionMarkupScanner(): ITokenScanner =
+  private def actionMarkupScanner(): ITokenScanner with AbstractIsabelleScanner =
     new IsabelleActionMarkupScanner(snapshot) with IsabelleScanner {
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }
+
+  def handlePropertyChangeEvent(event: PropertyChangeEvent) {
+    codeHighlightingScanners foreach (_ adaptToPreferenceChange event)
+  }
 
 
   override def getHyperlinkDetectors(sourceViewer: ISourceViewer): Array[IHyperlinkDetector] = {
