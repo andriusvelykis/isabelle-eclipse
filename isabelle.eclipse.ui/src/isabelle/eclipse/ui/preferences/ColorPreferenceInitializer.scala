@@ -66,7 +66,7 @@ object ColorPreferenceInitializer {
     setDefaultsForSyntaxClass(VERBATIM, rgb(63, 95, 191))//, quoted)
     setDefaultsForSyntaxClass(STRING, black, quoted)
     setDefaultsForSyntaxClass(KEYWORD, keyword1, bold = true)
-    setDefaultsForSyntaxClass(KEYWORD2, keyword1, bold = true)
+    setDefaultsForSyntaxClass(KEYWORD2, rgb(162, 46, 0), bold = true)
     setDefaultsForSyntaxClass(OPERATOR, black, bold = true)
     setDefaultsForSyntaxClass(LITERAL, keyword1)
     setDefaultsForSyntaxClass(DELIMITER, black)
@@ -86,7 +86,7 @@ object ColorPreferenceInitializer {
     
     setDefaultsForSyntaxClass(CMD, keyword1, bold = true)
     setDefaultsForSyntaxClass(CMD_SCRIPT, keyword1)
-    setDefaultsForSyntaxClass(CMD_GOAL, keyword1, bold = true)
+    setDefaultsForSyntaxClass(CMD_GOAL, rgb(190, 0, 85), bold = true)
 
     setDefaultsForSyntaxClass(ACTIVE, underline = true, underlineStyle = Some(SWT.UNDERLINE_LINK))
     setDefaultsForSyntaxClass(DIALOG_SELECTED,
