@@ -236,6 +236,9 @@ class SyntaxColoringPreferencePage extends PreferencePage with IWorkbenchPrefere
     underlineCheckBox.setText("&Underline")
     underlineCheckBox.setLayoutData(indented2.create)
     
+
+    setUpSelectionListeners()
+
     treeViewer.setSelection(new StructuredSelection(isabelleCategory))
 
     outerComposite.layout(false)
