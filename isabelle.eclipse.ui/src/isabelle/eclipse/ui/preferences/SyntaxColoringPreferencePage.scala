@@ -45,9 +45,7 @@ class SyntaxColoringPreferencePage extends PreferencePage with IWorkbenchPrefere
   setPreferenceStore(IsabelleUIPlugin.plugin.getPreferenceStore)
   private val overlayStore = makeOverlayPreferenceStore
 
-  private var foregroundColorEditorLabel: Label = _
   private var syntaxForegroundColorEditor: ColorSelector = _
-  private var backgroundColorEditorLabel: Label = _
   private var syntaxBackgroundColorEditor: ColorSelector = _
   private var foregroundColorEnabledCheckBox: Button = _
   private var backgroundColorEnabledCheckBox: Button = _
@@ -193,37 +191,27 @@ class SyntaxColoringPreferencePage extends PreferencePage with IWorkbenchPrefere
     stylesComposite.setLayout(GridLayoutFactory.fillDefaults.numColumns(2).create)
     stylesComposite.setLayoutData(GridDataFactory.fillDefaults.grab(true, true).create)
 
-    foregroundColorEditorLabel = new Label(stylesComposite, SWT.LEFT)
-    foregroundColorEditorLabel.setText("Foreground:")
-
     // do not indent (Scala preferences had the 'enabled' button as well)
     def indented = GridDataFactory.swtDefaults//.indent(20, SWT.DEFAULT)
     def indented2 = indented.span(2, 1)
 
-    foregroundColorEditorLabel.setLayoutData(indented.create)
+    foregroundColorEnabledCheckBox = new Button(stylesComposite, SWT.CHECK)
+    foregroundColorEnabledCheckBox.setText("Foreground:")
+    foregroundColorEnabledCheckBox.setLayoutData(indented.create)
 
     syntaxForegroundColorEditor = new ColorSelector(stylesComposite)
     foregroundColorButton = syntaxForegroundColorEditor.getButton
     foregroundColorButton.setLayoutData(GridDataFactory.swtDefaults.create)
 
-    foregroundColorEnabledCheckBox = new Button(stylesComposite, SWT.CHECK)
-    foregroundColorEnabledCheckBox.setText("Paint foreground")
 
-    foregroundColorEnabledCheckBox.setLayoutData(indented2.create)
-
-    backgroundColorEditorLabel = new Label(stylesComposite, SWT.LEFT)
-    backgroundColorEditorLabel.setText("Background:")
-
-    backgroundColorEditorLabel.setLayoutData(indented.create)
+    backgroundColorEnabledCheckBox = new Button(stylesComposite, SWT.CHECK)
+    backgroundColorEnabledCheckBox.setText("Background:")
+    backgroundColorEnabledCheckBox.setLayoutData(indented.create)
 
     syntaxBackgroundColorEditor = new ColorSelector(stylesComposite)
     backgroundColorButton = syntaxBackgroundColorEditor.getButton
     backgroundColorButton.setLayoutData(GridDataFactory.swtDefaults.create)
 
-    backgroundColorEnabledCheckBox = new Button(stylesComposite, SWT.CHECK)
-    backgroundColorEnabledCheckBox.setText("Paint background")
-
-    backgroundColorEnabledCheckBox.setLayoutData(indented2.create)
 
     boldCheckBox = new Button(stylesComposite, SWT.CHECK)
     boldCheckBox.setText("&Bold")
@@ -290,10 +278,8 @@ class SyntaxColoringPreferencePage extends PreferencePage with IWorkbenchPrefere
   private def massSetEnablement(enabled: Boolean) = {
     val widgets = List(
       syntaxForegroundColorEditor.getButton,
-      foregroundColorEditorLabel,
       foregroundColorEnabledCheckBox,
       syntaxBackgroundColorEditor.getButton,
-      backgroundColorEditorLabel,
       backgroundColorEnabledCheckBox,
       boldCheckBox,
       italicCheckBox,
