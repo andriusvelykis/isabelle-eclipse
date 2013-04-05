@@ -235,7 +235,11 @@ class SyntaxColoringPreferencePage extends PreferencePage with IWorkbenchPrefere
     underlineCheckBox = new Button(stylesComposite, SWT.CHECK)
     underlineCheckBox.setText("&Underline")
     underlineCheckBox.setLayoutData(indented2.create)
-    
+
+    val setJEditColorsButton = new Button(outerComposite, SWT.PUSH)
+    setJEditColorsButton.setText("Set Isabelle/jEdit syntax colors")
+    setJEditColorsButton.setLayoutData(GridDataFactory.swtDefaults.create)
+    setJEditColorsButton.addSelectionListener { () => setJEditPreferences() }
 
     setUpSelectionListeners()
 
@@ -321,6 +325,15 @@ class SyntaxColoringPreferencePage extends PreferencePage with IWorkbenchPrefere
       syntaxForegroundColorEditor.getButton.setEnabled(foregroundColorEnabled)
       syntaxBackgroundColorEditor.getButton.setEnabled(backgroundColorEnabled)
   }
+
+  /**
+   * Loads and sets Isabelle/jEdit syntax colours. 
+   */
+  private def setJEditPreferences() {
+    ColorPreferenceInitializer.putSyntaxColoringPreferencesJEdit(overlayStore)
+    handleSyntaxColorListSelection()
+  }
+  
 
   implicit def noArgFnToSelectionAdapter(p: () => Any): SelectionAdapter =
     new SelectionAdapter() {
