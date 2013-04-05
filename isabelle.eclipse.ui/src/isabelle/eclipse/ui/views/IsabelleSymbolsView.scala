@@ -34,7 +34,7 @@ import isabelle.eclipse.core.util.LoggingActor
 import isabelle.eclipse.ui.editors.EditorUtil2.replaceSelected
 import isabelle.eclipse.ui.editors.TheoryEditor
 import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
-import isabelle.eclipse.ui.util.{EclipseBug154341Hack, SWTUtil}
+import isabelle.eclipse.ui.util.{SWTUtil, TreeRowHeight}
 
 
 /**
@@ -144,7 +144,8 @@ class IsabelleSymbolsView extends ViewPart {
    * A customised FilteredTree with Symbol renderers and content providers
    */
   private class SymbolFilteredTree(parent: Composite, treeStyle: Int)
-      extends FilteredTree(parent, treeStyle, new SymbolPatternFilter, true) {
+      extends FilteredTree(parent, treeStyle, new SymbolPatternFilter, true)
+      with TreeRowHeight {
 
     getViewer.setContentProvider(new SymbolTreeContentProvider)
     val defaultRowHeight = getViewer.getTree.getItemHeight
@@ -178,6 +179,7 @@ class IsabelleSymbolsView extends ViewPart {
       } 
     })
 
+    def tree = getViewer.getTree
 
     def updateRowHeight() {
       val fontMetrics = SWTUtil.initializeFontMetrics(getViewer.getTree, isabelleFont)
@@ -185,7 +187,7 @@ class IsabelleSymbolsView extends ViewPart {
       
       val rowHeight = fontRowHeight max defaultRowHeight
       
-      EclipseBug154341Hack.setItemHeight(getViewer, rowHeight)
+      setItemHeight(rowHeight)
     }
   }
 
