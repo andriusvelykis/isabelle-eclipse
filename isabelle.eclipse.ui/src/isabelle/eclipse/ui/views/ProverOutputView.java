@@ -16,7 +16,7 @@ public class ProverOutputView extends PageBookView {
 	protected IPage createDefaultPage(PageBook book) {
 		MessagePage messagePage = new MessagePage();
 		initPage(messagePage);
-		messagePage.setMessage("No interested in this part");
+		messagePage.setMessage("Prover output is not available for this part.");
 		messagePage.createControl(book);
 		return messagePage;
 	}
