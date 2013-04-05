@@ -15,6 +15,7 @@ title: Features
 -   [Go to definition]( go-to-definition.html )
 -   [Content assist]( content-assist.html )
 -   [Tooltips]( tooltips.html )
+-   [Syntax colouring]( syntax-coloring.html )
 -   [Adjust Isabelle font]( adjust-font.html )
 -   [Outline]( outline.html )
 -   [Symbols view]( symbols-view.html )
