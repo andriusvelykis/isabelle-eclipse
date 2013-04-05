@@ -30,10 +30,14 @@ object ColourPreferenceInitializer {
     underline: Boolean = false,
     underlineStyle: Option[Int] = None)(implicit prefs: IPreferenceStore) =
     {
-      foreground foreach (fg =>
-        prefs.setDefault(syntaxClass.foregroundKey, StringConverter.asString(fg)))
-      background foreach (bg =>
-        prefs.setDefault(syntaxClass.backgroundKey, StringConverter.asString(bg)))
+      lazy val WHITE = new RGB(255, 255, 255)
+      lazy val BLACK = new RGB(0, 0, 0)
+      val defaultForegroundColour = StringConverter.asString(foreground getOrElse BLACK)
+      prefs.setDefault(syntaxClass.foregroundColorKey, defaultForegroundColour)
+      prefs.setDefault(syntaxClass.foregroundColorEnabledKey, foreground.isDefined)
+      val defaultBackgroundColour = StringConverter.asString(background getOrElse WHITE)
+      prefs.setDefault(syntaxClass.backgroundColorKey, defaultBackgroundColour)
+      prefs.setDefault(syntaxClass.backgroundColorEnabledKey, background.isDefined)
       prefs.setDefault(syntaxClass.boldKey, bold)
       prefs.setDefault(syntaxClass.italicKey, italic)
       prefs.setDefault(syntaxClass.strikethroughKey, strikethrough)

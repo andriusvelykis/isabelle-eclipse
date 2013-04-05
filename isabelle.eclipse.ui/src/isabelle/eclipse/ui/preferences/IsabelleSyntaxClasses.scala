@@ -52,7 +52,9 @@ object IsabelleSyntaxClasses {
       ACTIVE)
 
   val COLOR_SUFFIX = ".color"
+  val COLOR_ENABLED_SUFFIX = ".colorEnabled"
   val BACKGROUND_COLOR_SUFFIX = ".bgColor"
+  val BACKGROUND_COLOR_ENABLED_SUFFIX = ".bgColorEnabled"
   val BOLD_SUFFIX = ".bold"
   val ITALIC_SUFFIX = ".italic"
   val STRIKETHROUGH_SUFFIX = ".strikethrough"
