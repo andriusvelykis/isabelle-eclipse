@@ -49,6 +49,6 @@ class IsabelleUIPreferenceInitializer extends AbstractPreferenceInitializer {
     // do not show raw outline tree by default
     prefDefaults.putBoolean(OUTLINE_RAW_TREE, false)
     
-    ColourPreferenceInitializer.initializeDefaultPreferences()
+    ColorPreferenceInitializer.initializeDefaultPreferences()
   }
 }
