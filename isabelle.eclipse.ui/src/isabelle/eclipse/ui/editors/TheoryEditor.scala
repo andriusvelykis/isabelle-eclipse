@@ -91,9 +91,13 @@ class TheoryEditor extends TextEditor {
   }
 
   {
-    setSourceViewerConfiguration(new IsabelleTheoryConfiguration(this, resourceManager))
+    val conf = new IsabelleTheoryConfiguration(this, resourceManager)
+    setSourceViewerConfiguration(conf)
+    // reuse preference store with the editor
+    setPreferenceStore(conf.preferenceStore)
     setDocumentProvider(new IsabelleFileDocumentProvider)
   }
+
 
   @throws(classOf[PartInitException])
   override def init(site: IEditorSite, input: IEditorInput) {
