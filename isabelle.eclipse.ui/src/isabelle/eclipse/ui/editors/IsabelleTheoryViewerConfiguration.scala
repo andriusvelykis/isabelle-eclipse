@@ -8,6 +8,7 @@ import org.eclipse.jface.text.presentation.{IPresentationReconciler, Presentatio
 import org.eclipse.jface.text.rules.ITokenScanner
 import org.eclipse.jface.text.source.{Annotation, ISourceViewer}
 import org.eclipse.swt.SWT
+import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.editors.text.{EditorsUI, TextSourceViewerConfiguration}
 import org.eclipse.ui.texteditor.ChainedPreferenceStore
 
@@ -50,7 +51,8 @@ class IsabelleTheoryViewerConfiguration(
   extends TextSourceViewerConfiguration(new ChainedPreferenceStore(Array(
       // chain the preference store to get default editor preference values as well as Isabelle-specific
       IsabelleUIPlugin.plugin.getPreferenceStore,
-      EditorsUI.getPreferenceStore()))) {
+      EditorsUI.getPreferenceStore(),
+      PlatformUI.getPreferenceStore()))) {
 
     
   def preferenceStore() = fPreferenceStore
