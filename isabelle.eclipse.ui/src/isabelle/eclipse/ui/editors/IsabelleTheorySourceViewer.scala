@@ -14,6 +14,7 @@ import org.eclipse.jface.text.source.{
   OverviewRuler,
   SourceViewer
 }
+import org.eclipse.jface.util.{IPropertyChangeListener, PropertyChangeEvent}
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.texteditor.{
   AnnotationPreference,
@@ -68,6 +69,11 @@ class IsabelleTheorySourceViewer private (
   
   def fontKey = IsabelleUIPreferences.ISABELLE_FONT
 
+  val preferenceListener = new IPropertyChangeListener {
+    override def propertyChange(event: PropertyChangeEvent) = handlePreferenceStoreChanged(event)
+  }
+  configuration.preferenceStore.addPropertyChangeListener(preferenceListener)
+
   
   private def configureDecorationSupport(): SourceViewerDecorationSupport = {
 
@@ -95,8 +101,21 @@ class IsabelleTheorySourceViewer private (
 
 
   private def disposeViewer() {
+    configuration.preferenceStore.removePropertyChangeListener(preferenceListener)
     resourceManager.dispose()
     decorationSupport.dispose()
+  }
+  
+  private def handlePreferenceStoreChanged(event: PropertyChangeEvent) {
+    // notify configuration to update syntax highlighting
+    configuration.handlePropertyChangeEvent(event)
+    
+    // invalidate text presentation, otherwise the syntax highlighting does not get changed
+    // TODO investigate a more precise refresh (not on every preference change)
+    invalidateTextPresentation()
+
+    // TODO support other preference changes (see TextEditor#handlePreferenceStoreChanged
+    // and its parents) - issue #37
   }
 }
 

@@ -23,8 +23,10 @@ case class IsabelleSyntaxClass(displayName: String, baseName: String) {
   
   val baseKey = IsabelleUIPlugin.plugin.pluginId + "." + baseName
   
-  def foregroundKey = baseKey + COLOR_SUFFIX
-  def backgroundKey = baseKey + BACKGROUND_COLOR_SUFFIX
+  def foregroundColorKey = baseKey + COLOR_SUFFIX
+  def foregroundColorEnabledKey = baseKey + COLOR_ENABLED_SUFFIX
+  def backgroundColorKey = baseKey + BACKGROUND_COLOR_SUFFIX
+  def backgroundColorEnabledKey = baseKey + BACKGROUND_COLOR_ENABLED_SUFFIX
   def boldKey = baseKey + BOLD_SUFFIX
   def italicKey = baseKey + ITALIC_SUFFIX
   def underlineKey = baseKey + UNDERLINE_SUFFIX
@@ -39,8 +41,11 @@ case class IsabelleSyntaxClass(displayName: String, baseName: String) {
         Some(resourceManager.createColor(PreferenceConverter.getColor(preferenceStore, colorKey)))
       else None
 
-    val foreground = prefColor(foregroundKey)
-    val background = prefColor(backgroundKey)
+    val foregroundEnabled = preferenceStore.getBoolean(foregroundColorEnabledKey)
+    val foreground = if (foregroundEnabled) prefColor(foregroundColorKey) else None
+
+    val backgroundEnabled = preferenceStore.getBoolean(backgroundColorEnabledKey)
+    val background = if (backgroundEnabled) prefColor(backgroundColorKey) else None
 
     val style: Int = makeStyle(
       preferenceStore.getBoolean(boldKey),

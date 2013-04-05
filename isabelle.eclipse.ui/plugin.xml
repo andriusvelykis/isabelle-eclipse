@@ -567,5 +567,19 @@
          </perspectiveShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="isabelle.eclipse.ui.preferences.IsabelleBasePreferencePage"
+            id="isabelle.eclipse.ui.preferences.IsabelleBasePreferencePage"
+            name="Isabelle">
+      </page>
+      <page
+            category="isabelle.eclipse.ui.preferences.IsabelleBasePreferencePage"
+            class="isabelle.eclipse.ui.preferences.SyntaxColoringPreferencePage"
+            id="isabelle.eclipse.ui.preferences.SyntaxColoringPreferencePage"
+            name="Syntax Coloring">
+      </page>
+   </extension>
 
 </plugin>
