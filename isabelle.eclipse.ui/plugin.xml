@@ -567,5 +567,13 @@
          </perspectiveShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="isabelle.eclipse.ui.preferences.IsabelleBasePreferencePage"
+            id="isabelle.eclipse.ui.preferences.IsabelleBasePreferencePage"
+            name="Isabelle">
+      </page>
+   </extension>
 
 </plugin>
