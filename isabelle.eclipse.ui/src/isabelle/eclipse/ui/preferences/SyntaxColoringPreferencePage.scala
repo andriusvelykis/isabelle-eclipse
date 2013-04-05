@@ -25,6 +25,7 @@ import org.eclipse.swt.events.{SelectionAdapter, SelectionEvent}
 import org.eclipse.swt.widgets.{Button, Composite, Control, Label, Link, Scrollable}
 import org.eclipse.ui.{IWorkbench, IWorkbenchPreferencePage}
 import org.eclipse.ui.dialogs.PreferencesUtil
+import org.eclipse.ui.preferences.ScopedPreferenceStore
 
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin
 
@@ -42,7 +43,16 @@ import OverlayPreferenceStore._
  */
 class SyntaxColoringPreferencePage extends PreferencePage with IWorkbenchPreferencePage {
 
-  setPreferenceStore(IsabelleUIPlugin.plugin.getPreferenceStore)
+  /*
+   * Make sure to create a new Scoped preference store - do not reuse the one from plugin.
+   * This is because changes in ScopedPreferenceStore do not get notified. Instead we need
+   * a different ScopedPreferenceStore to push changes to IEclipsePreferences node, which
+   * is then picked up by Plugin preference store.
+   */
+  val writePrefStore = new ScopedPreferenceStore(
+      InstanceScope.INSTANCE, IsabelleUIPlugin.plugin.pluginId)
+
+  setPreferenceStore(writePrefStore)
   private val overlayStore = makeOverlayPreferenceStore
 
   private var syntaxForegroundColorEditor: ColorSelector = _
