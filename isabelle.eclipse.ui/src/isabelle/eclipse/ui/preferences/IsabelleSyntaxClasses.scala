@@ -35,7 +35,7 @@ object IsabelleSyntaxClasses {
   
   val CMD = IsabelleSyntaxClass("Proof Commands", "syntax.cmd.cmd")
   val CMD_SCRIPT = IsabelleSyntaxClass("Proof Script Commands", "syntax.cmd.script")
-  val CMD_GOAL = IsabelleSyntaxClass("Proof Goal Commands", "syntax.cmd.goal")
+  val CMD_GOAL = IsabelleSyntaxClass("Structured Proof Commands", "syntax.cmd.goal")
   
   val ML_KEYWORD = IsabelleSyntaxClass("ML Keywords", "syntax.ml.keyword")
   val ML_NUMERAL = IsabelleSyntaxClass("ML Numerals", "syntax.ml.num")
