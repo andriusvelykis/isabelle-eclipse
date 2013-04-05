@@ -1,6 +1,6 @@
 package isabelle.eclipse.ui.preferences
 
-import org.eclipse.jface.preference.IPreferenceStore
+import org.eclipse.core.runtime.preferences.{DefaultScope, IEclipsePreferences}
 import org.eclipse.jface.resource.StringConverter
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.RGB
@@ -16,8 +16,11 @@ import isabelle.eclipse.ui.preferences.IsabelleSyntaxClasses._
   */
 object ColorPreferenceInitializer {
 
+  private def defaultPrefs: IEclipsePreferences = 
+    DefaultScope.INSTANCE.getNode(IsabelleUIPlugin.plugin.pluginId)
+
   def initializeDefaultPreferences() {
-    setDefaultsForSyntaxClasses(IsabelleUIPlugin.plugin.getPreferenceStore)
+    setDefaultsForSyntaxClasses(defaultPrefs)
   }
   
   private def setDefaultsForSyntaxClass(
@@ -28,24 +31,24 @@ object ColorPreferenceInitializer {
     italic: Boolean = false,
     strikethrough: Boolean = false,
     underline: Boolean = false,
-    underlineStyle: Option[Int] = None)(implicit prefs: IPreferenceStore) =
+    underlineStyle: Option[Int] = None)(implicit prefs: IEclipsePreferences) =
     {
       lazy val WHITE = new RGB(255, 255, 255)
       lazy val BLACK = new RGB(0, 0, 0)
       val defaultForegroundColour = StringConverter.asString(foreground getOrElse BLACK)
-      prefs.setDefault(syntaxClass.foregroundColorKey, defaultForegroundColour)
-      prefs.setDefault(syntaxClass.foregroundColorEnabledKey, foreground.isDefined)
+      prefs.put(syntaxClass.foregroundColorKey, defaultForegroundColour)
+      prefs.putBoolean(syntaxClass.foregroundColorEnabledKey, foreground.isDefined)
       val defaultBackgroundColour = StringConverter.asString(background getOrElse WHITE)
-      prefs.setDefault(syntaxClass.backgroundColorKey, defaultBackgroundColour)
-      prefs.setDefault(syntaxClass.backgroundColorEnabledKey, background.isDefined)
-      prefs.setDefault(syntaxClass.boldKey, bold)
-      prefs.setDefault(syntaxClass.italicKey, italic)
-      prefs.setDefault(syntaxClass.strikethroughKey, strikethrough)
-      prefs.setDefault(syntaxClass.underlineKey, underline)
-      underlineStyle foreach (style => prefs.setDefault(syntaxClass.underlineStyleKey, style))
+      prefs.put(syntaxClass.backgroundColorKey, defaultBackgroundColour)
+      prefs.putBoolean(syntaxClass.backgroundColorEnabledKey, background.isDefined)
+      prefs.putBoolean(syntaxClass.boldKey, bold)
+      prefs.putBoolean(syntaxClass.italicKey, italic)
+      prefs.putBoolean(syntaxClass.strikethroughKey, strikethrough)
+      prefs.putBoolean(syntaxClass.underlineKey, underline)
+      underlineStyle foreach (style => prefs.putInt(syntaxClass.underlineStyleKey, style))
     }
 
-  private def setDefaultsForSyntaxClasses(implicit prefs: IPreferenceStore) {
+  private def setDefaultsForSyntaxClasses(implicit prefs: IEclipsePreferences) {
     
     val black = rgb(0, 0, 0)
     val red = rgb(255, 0, 0)
