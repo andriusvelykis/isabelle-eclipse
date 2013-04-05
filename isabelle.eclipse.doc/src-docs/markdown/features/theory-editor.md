@@ -23,7 +23,7 @@ Note that only the visible editor contents are sent to the prover to avoid unnec
 
 The theory editor provides a number of features found in modern IDEs:
 
--   **Syntax highlighting** - note that semantic highlights (e.g. variable types) are only shown for parts submitted to the prover.
+-   [**Syntax highlighting**](syntax-coloring.html) - note that semantic highlights (e.g. variable types) are only shown for parts submitted to the prover.
 -   **Problem markers** - proof errors, warnings and prover messages are displayed in the editor and the Problems view.
 -   [**Go to definition**](go-to-definition.html) - jump to the definitions of data types, operators, lemmas, proof commands, etc.
 -   [**Content assist**](content-assist.html) - completion suggestions for commands and symbols can be triggered using hotkey.
