@@ -99,7 +99,7 @@ class IsabelleTheoryViewerConfiguration(
       case ISABELLE_COMMENT => handlePartition(ISABELLE_COMMENT)
       // for other content types, use markup & token scanners in addition to partition scanner
       case contentType => handlePartition(contentType, List(
-          markupScanner(), actionMarkupScanner(), tokenScanner()))
+          markupScanner(), actionMarkupScanner(), sourceMarkupScanner(), tokenScanner()))
     }
     
     // record the scanners used - they will be refreshed upon preference change
@@ -139,7 +139,16 @@ class IsabelleTheoryViewerConfiguration(
   
   /** Creates a scanner for Isabelle markup information */
   private def markupScanner(): ITokenScanner with AbstractIsabelleScanner =
-    new IsabelleMarkupScanner(snapshot) with IsabelleScanner {
+    new IsabelleMarkupScanner(snapshot, IsabelleMarkupToSyntaxClass.markupClasses.keySet)
+        with IsabelleScanner {
+      override def getToken(markupType: String) =
+        getToken(IsabelleMarkupToSyntaxClass(markupType))
+    }
+
+  /** Creates a scanner for Isabelle markup information for document source */
+  private def sourceMarkupScanner(): ITokenScanner with AbstractIsabelleScanner =
+    new IsabelleMarkupScanner(snapshot, IsabelleMarkupToSyntaxClass.sourceMarkupClasses.keySet)
+        with IsabelleScanner {
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }
