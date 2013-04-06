@@ -32,11 +32,13 @@ object IsabelleSyntaxClasses {
   val DYN_FACT = IsabelleSyntaxClass("Dynamic Facts", "syntax.dynFact")
   val ANTIQ = IsabelleSyntaxClass("Antiquotations", "syntax.antiq")
 //  val CLASS = IsabelleSyntaxClass("Class Entities", "syntax.entity.class")
+  val DOCUMENT_SOURCE = IsabelleSyntaxClass("Document Source", "syntax.docSource")
   
   val CMD = IsabelleSyntaxClass("Proof Commands", "syntax.cmd.cmd")
   val CMD_SCRIPT = IsabelleSyntaxClass("Proof Script Commands", "syntax.cmd.script")
   val CMD_GOAL = IsabelleSyntaxClass("Structured Proof Commands", "syntax.cmd.goal")
   
+  val ML_SOURCE = IsabelleSyntaxClass("ML Source", "syntax.ml.source")
   val ML_KEYWORD = IsabelleSyntaxClass("ML Keywords", "syntax.ml.keyword")
   val ML_NUMERAL = IsabelleSyntaxClass("ML Numerals", "syntax.ml.num")
   val ML_STRING = IsabelleSyntaxClass("ML Strings", "syntax.ml.string")
@@ -56,10 +58,10 @@ object IsabelleSyntaxClasses {
     DEFAULT))
 
   val mlCategory = Category("ML", List(
-    ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT))
+    ML_SOURCE, ML_KEYWORD, ML_NUMERAL, ML_STRING, ML_COMMENT))
 
   val commentsCategory = Category("Comments", List(
-    COMMENT, INNER_COMMENT, VERBATIM))
+    COMMENT, INNER_COMMENT, VERBATIM, DOCUMENT_SOURCE))
 
   val actionsCategory = Category("Actions", List(
     ACTIVE, DIALOG_SELECTED))
@@ -140,9 +142,6 @@ object IsabelleMarkupToSyntaxClass {
   val markupClasses: Map[String, IsabelleSyntaxClass] = Map(
     KEYWORD1 -> IsabelleSyntaxClasses.KEYWORD,
     KEYWORD2 -> IsabelleSyntaxClasses.KEYWORD2,
-    STRING -> IsabelleSyntaxClasses.STRING,
-    ALTSTRING -> IsabelleSyntaxClasses.STRING,
-    VERBATIM -> IsabelleSyntaxClasses.VERBATIM,
     LITERAL -> IsabelleSyntaxClasses.LITERAL,
     DELIMITER -> IsabelleSyntaxClasses.DELIMITER,
     TFREE -> IsabelleSyntaxClasses.TYPE,
@@ -161,18 +160,31 @@ object IsabelleMarkupToSyntaxClass {
     ML_CHAR -> IsabelleSyntaxClasses.ML_STRING,
     ML_STRING -> IsabelleSyntaxClasses.ML_STRING,
     ML_COMMENT -> IsabelleSyntaxClasses.ML_COMMENT
-    ).withDefaultValue(IsabelleSyntaxClasses.UNDEFINED)
+    )
 
-  val extendedMarkupClasses: Map[String, IsabelleSyntaxClass] = markupClasses ++ Map(
+  val actionMarkupClasses: Map[String, IsabelleSyntaxClass] = Map(
     BROWSER -> IsabelleSyntaxClasses.ACTIVE,
     GRAPHVIEW -> IsabelleSyntaxClasses.ACTIVE,
     SENDBACK -> IsabelleSyntaxClasses.ACTIVE,
     DIALOG -> IsabelleSyntaxClasses.ACTIVE,
     DIALOG_SELECTED -> IsabelleSyntaxClasses.DIALOG_SELECTED
     )
-  
-  val markups = markupClasses.keySet
 
-  def apply(markupType: String): IsabelleSyntaxClass = extendedMarkupClasses(markupType)
+  val sourceMarkupClasses: Map[String, IsabelleSyntaxClass] = Map(
+//    VERBATIM -> IsabelleSyntaxClasses.VERBATIM,
+//    STRING -> IsabelleSyntaxClasses.STRING,
+//    ALTSTRING -> IsabelleSyntaxClasses.STRING,
+    // `doc_source` is used in Isabelle2013, will change to `DOCUMENT_SOURCE` in the next release.
+    // see http://isabelle.in.tum.de/repos/isabelle/rev/e09446d3caca
+    "doc_source" -> IsabelleSyntaxClasses.DOCUMENT_SOURCE,
+    DOCUMENT_SOURCE -> IsabelleSyntaxClasses.DOCUMENT_SOURCE,
+    ML_SOURCE -> IsabelleSyntaxClasses.ML_SOURCE
+    )
+
+  val allMarkupClasses: Map[String, IsabelleSyntaxClass] =
+    (markupClasses ++ sourceMarkupClasses ++ actionMarkupClasses).
+      withDefaultValue(IsabelleSyntaxClasses.UNDEFINED)
+  
+  def apply(markupType: String): IsabelleSyntaxClass = allMarkupClasses(markupType)
 }
 

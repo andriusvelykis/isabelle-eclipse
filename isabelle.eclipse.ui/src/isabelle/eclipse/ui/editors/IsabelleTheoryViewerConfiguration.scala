@@ -5,7 +5,7 @@ import org.eclipse.jface.text.ITextHover
 import org.eclipse.jface.text.ITextViewerExtension2.DEFAULT_HOVER_STATE_MASK
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector
 import org.eclipse.jface.text.presentation.{IPresentationReconciler, PresentationReconciler}
-import org.eclipse.jface.text.rules.ITokenScanner
+import org.eclipse.jface.text.rules.{IToken, ITokenScanner}
 import org.eclipse.jface.text.source.{Annotation, ISourceViewer}
 import org.eclipse.jface.util.PropertyChangeEvent
 import org.eclipse.swt.SWT
@@ -72,21 +72,10 @@ class IsabelleTheoryViewerConfiguration(
     val reconciler = super.getPresentationReconciler(sourceViewer).asInstanceOf[PresentationReconciler]
 
     /** Sets damager/repairer for the given partition type */
-    def handlePartition(partitionType: String,
-                        scanners: List[ITokenScanner with AbstractIsabelleScanner] = Nil):
-        List[AbstractIsabelleScanner] = {
-      
-      // always initialise a scanner for the whole partition
-      val partScanner = partitionScanner(partitionType)
-      
-      // check if other scanners were given - if so, join them on top of the partition scanner
-      val fullScanner = (scanners foldRight (partScanner: ITokenScanner))(join)
-      
-      val dr = new ExtendedStylesDamagerRepairer(fullScanner)
+    def handlePartition(partitionType: String, scanner: ITokenScanner) {
+      val dr = new ExtendedStylesDamagerRepairer(scanner)
       reconciler.setDamager(dr, partitionType)
       reconciler.setRepairer(dr, partitionType)
-      
-      scanners ::: List(partScanner)
     }
 
     // set damager/repairer for each content type
@@ -96,10 +85,27 @@ class IsabelleTheoryViewerConfiguration(
     import IsabellePartitions._
     val partitionScanners = contentTypes.toList map {
       // for comments, only use the partition scanner - no need to display further scanning
-      case ISABELLE_COMMENT => handlePartition(ISABELLE_COMMENT)
+      case ISABELLE_COMMENT => {
+        val partScanner = partitionScanner(ISABELLE_COMMENT)
+        handlePartition(ISABELLE_COMMENT, partScanner)
+        List(partScanner)
+      }
       // for other content types, use markup & token scanners in addition to partition scanner
-      case contentType => handlePartition(contentType, List(
-          markupScanner(), actionMarkupScanner(), tokenScanner()))
+      case contentType => {
+        val sourceScanners = List(sourceMarkupScanner, tokenScanner, partitionScanner(contentType))
+        val semanticScanners = List(markupScanner, actionMarkupScanner)
+
+        // join the source scanners without merging - make source tokens exclusive. For example, if
+        // document_markup token is found, it overrides string token completely.
+        val sourceScanner = join(sourceScanners, false)
+
+        // merge semantic scanners since they can represent different things of the same element
+        val semanticScanner = join(semanticScanners, true)
+        val fullScanner = join(List(sourceScanner, semanticScanner), true)
+        
+        handlePartition(contentType, fullScanner)
+        semanticScanners ::: sourceScanners
+      }
     }
     
     // record the scanners used - they will be refreshed upon preference change
@@ -119,9 +125,17 @@ class IsabelleTheoryViewerConfiguration(
     def preferenceStore = prefs
   }
 
+  private def join(scanners: List[ITokenScanner], merge: Boolean): ITokenScanner =
+    scanners.reduceRight(join(merge))
+
   /** Joins the scanners in a chained composite scanner */
-  private def join(top: ITokenScanner, bottom: ITokenScanner): ITokenScanner =
-    new ChainedTokenScanner(top, bottom, TokenUtil.Merge.mergeTextTokens)
+  private def join(merge: Boolean)(top: ITokenScanner, bottom: ITokenScanner): ITokenScanner = {
+    val mergeStrat =
+      if (merge) TokenUtil.Merge.mergeTextTokens _
+      else TokenUtil.Merge.takeTopToken _
+
+    new ChainedTokenScanner(top, bottom, mergeStrat)
+  }
 
   /** Creates a single-token partition scanner which provides tokens for different partition types */
   private def partitionScanner(partition: String): ITokenScanner with AbstractIsabelleScanner =
@@ -139,7 +153,16 @@ class IsabelleTheoryViewerConfiguration(
   
   /** Creates a scanner for Isabelle markup information */
   private def markupScanner(): ITokenScanner with AbstractIsabelleScanner =
-    new IsabelleMarkupScanner(snapshot) with IsabelleScanner {
+    new IsabelleMarkupScanner(snapshot, IsabelleMarkupToSyntaxClass.markupClasses.keySet)
+        with IsabelleScanner {
+      override def getToken(markupType: String) =
+        getToken(IsabelleMarkupToSyntaxClass(markupType))
+    }
+
+  /** Creates a scanner for Isabelle markup information for document source */
+  private def sourceMarkupScanner(): ITokenScanner with AbstractIsabelleScanner =
+    new IsabelleMarkupScanner(snapshot, IsabelleMarkupToSyntaxClass.sourceMarkupClasses.keySet)
+        with IsabelleScanner {
       override def getToken(markupType: String) =
         getToken(IsabelleMarkupToSyntaxClass(markupType))
     }

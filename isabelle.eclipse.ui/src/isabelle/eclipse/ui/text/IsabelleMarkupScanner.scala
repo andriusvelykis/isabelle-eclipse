@@ -13,10 +13,10 @@ import isabelle.eclipse.ui.preferences.IsabelleMarkupToSyntaxClass
  *
  * @author Andrius Velykis
  */
-class IsabelleMarkupScanner(snapshot: => Option[Snapshot])
+class IsabelleMarkupScanner(snapshot: => Option[Snapshot], markups: Set[String])
     extends AbstractMarkupScanner(snapshot) {
 
-  override val supportedMarkups: Set[String] = IsabelleMarkupToSyntaxClass.markups
+  override val supportedMarkups: Set[String] = markups
 
   override def markupMatch(state: Command.State)
       : PartialFunction[(Option[IToken], Text.Markup), Option[IToken]] = {
