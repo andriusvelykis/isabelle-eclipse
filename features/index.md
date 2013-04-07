@@ -19,3 +19,5 @@ title: Features
 -   [Adjust Isabelle font]( adjust-font.html )
 -   [Outline]( outline.html )
 -   [Symbols view]( symbols-view.html )
+-   [Theories view]( theories-view.html )
+-   [Controlling Isabelle execution]( isabelle-execution.html )
