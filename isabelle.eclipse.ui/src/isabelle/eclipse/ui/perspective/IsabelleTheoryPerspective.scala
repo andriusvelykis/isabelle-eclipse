@@ -25,6 +25,7 @@ class IsabelleTheoryPerspective extends IPerspectiveFactory {
   
   private def outputViewId = "isabelle.eclipse.ui.proverOutputView"
   private def symbolsViewId = "isabelle.eclipse.ui.symbolsView"
+  private def theoriesViewId = "isabelle.eclipse.ui.theoriesView"
 
   override def createInitialLayout(layout: IPageLayout) {
     val editorArea = layout.getEditorArea
@@ -35,9 +36,9 @@ class IsabelleTheoryPerspective extends IPerspectiveFactory {
     navFolder.addPlaceholder(navigatorViewId)
 
     // will put theories view below the navigator
-//    val theoriesFolder = layout.createFolder(
-//      theoriesFolderId, IPageLayout.BOTTOM, 0.5f, navigatorFolderId)
-//    theoriesFolder.addView(theoriesViewId)
+    val theoriesFolder = layout.createFolder(
+      theoriesFolderId, IPageLayout.BOTTOM, 0.5f, navigatorFolderId)
+    theoriesFolder.addView(theoriesViewId)
 
     // put outline on the right
     val outlineFolder = layout.createFolder(outlineFolderId, IPageLayout.RIGHT, 0.75f, editorArea)
@@ -64,7 +65,7 @@ class IsabelleTheoryPerspective extends IPerspectiveFactory {
 
     // views - Isabelle
     layout.addShowViewShortcut(outputViewId)
-//    layout.addShowViewShortcut(theoriesViewId)
+    layout.addShowViewShortcut(theoriesViewId)
     layout.addShowViewShortcut(symbolsViewId)
 
     // views - search

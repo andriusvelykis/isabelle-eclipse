@@ -36,6 +36,8 @@ object IsabelleImages {
   lazy val COMMAND_PROOF = create("command_proof.png")
   lazy val ISABELLE_ITEM = create("isabelle_item.png")
 
+  lazy val PROGRESS = create("progress.png")
+
 
   private def create(iconPath: String) = {
     try {
