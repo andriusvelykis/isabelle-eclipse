@@ -12,7 +12,13 @@ import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
  *
  * @author Andrius Velykis
  */
-class FontHeightChangeCommand(step: Int) extends AbstractHandler {
+class FontHeightChangeCommand(change: Int => Int) extends AbstractHandler {
+
+  /** Minimum allowed font size */
+  private def MIN = 5
+
+  /** Maximum allowed font size */
+  private def MAX = 250
 
   @throws[ExecutionException]
   override def execute(event: ExecutionEvent): AnyRef = {
@@ -21,33 +27,40 @@ class FontHeightChangeCommand(step: Int) extends AbstractHandler {
     // use theme font registry, otherwise preferences do not reflect change
     val fontRegistry = PlatformUI.getWorkbench.getThemeManager.getCurrentTheme.getFontRegistry
 
-    val isaFontDescriptor = fontRegistry.getDescriptor(isabelleFont)
+    val isaFontData = fontRegistry.getDescriptor(isabelleFont).getFontData
     
-    // make sure the font does not go below 1
-    val min = isaFontDescriptor.getFontData exists (_.getHeight + step < 1)
-    if (!min) {
-      val modifiedFont = isaFontDescriptor.increaseHeight(step).getFontData
+    // make sure the font does not go beyond minimum and maximum
+    val canChange = isaFontData forall (d => validChange(d.getHeight))
+    if (canChange) {
+      
+      // modify the font (working on a copy here)
+      isaFontData foreach (d => d.setHeight(change(d.getHeight)))
 
       // TODO set descendants (fonts that use Isabelle as default substitution)
-      PreferenceConverter.putValue(JFacePreferences.getPreferenceStore, isabelleFont, modifiedFont)
-      fontRegistry.put(isabelleFont, modifiedFont)
+      PreferenceConverter.putValue(JFacePreferences.getPreferenceStore, isabelleFont, isaFontData)
+      fontRegistry.put(isabelleFont, isaFontData)
     }
     
     null
+  }
+
+  private def validChange(height: Int): Boolean = {
+    val nextHeight = change(height)
+    nextHeight >= MIN && nextHeight <= MAX
   }
   
 }
 
 /**
- * Instance of height change command that increases Isabelle font by 1 point.
+ * Instance of height change command that increases Isabelle font by 1/10 of the size
  * 
  * @author Andrius Velykis
  */
-class FontIncreaseCommand extends FontHeightChangeCommand(1)
+class FontIncreaseCommand extends FontHeightChangeCommand( h => h + (h / 10 max 1) )
 
 /**
- * Instance of height change command that decreases Isabelle font by 1 point.
+ * Instance of height change command that decreases Isabelle font by 1/10 of the size
  * 
  * @author Andrius Velykis
  */
-class FontDecreaseCommand extends FontHeightChangeCommand(-1)
+class FontDecreaseCommand extends FontHeightChangeCommand( h => h - (h / 10 max 1) )
