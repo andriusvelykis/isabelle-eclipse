@@ -27,6 +27,7 @@ import isabelle.eclipse.core.resource.URIThyLoad._
 import isabelle.eclipse.core.text.{DocumentModel, EditDocumentModel, IsabelleDocument, ReadOnlyDocumentModel}
 import isabelle.eclipse.core.util.AdapterUtil.adapt
 import isabelle.eclipse.core.util.LoggingActor
+import isabelle.eclipse.ui.annotations.{IsabelleAnnotations, TheoryViewerAnnotations}
 import isabelle.eclipse.ui.editors.EditorUtil2.preserveScroll
 import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
@@ -98,6 +99,9 @@ class TheoryEditor extends TextEditor {
     setPreferenceStore(conf.preferenceStore)
     setDocumentProvider(new IsabelleFileDocumentProvider)
   }
+
+  private def documentProvider: IsabelleFileDocumentProvider =
+    getDocumentProvider.asInstanceOf[IsabelleFileDocumentProvider]
 
 
   @throws(classOf[PartInitException])
@@ -207,8 +211,8 @@ class TheoryEditor extends TextEditor {
 
   def document: IDocument = getDocumentProvider.getDocument(getEditorInput)
   
-  private[editors] def annotationModel: Option[IAnnotationModel] = 
-    Option(getDocumentProvider) flatMap (p => Option(p.getAnnotationModel(getEditorInput)))
+  private[editors] def annotationModel: Option[IAnnotationModel with IsabelleAnnotations] = 
+    Option(documentProvider) flatMap (p => Option(p.getAnnotationModel(getEditorInput)))
 
   def isabelleModel: Option[DocumentModel] = state.map(_.isabelleModel)
 
@@ -343,9 +347,7 @@ class TheoryEditor extends TextEditor {
 
     val markers = new TheoryViewerAnnotations(
       Some(isabelleModel.snapshot),
-      isabelleModel.document,
-      annotationModel,
-      Option(EditorUtil.getResource(getEditorInput)))
+      annotationModel)
 
     def init() {
       

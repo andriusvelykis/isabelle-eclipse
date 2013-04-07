@@ -19,9 +19,10 @@ import isabelle.{Future, Linear_Set, Pretty, Protocol, Session, Text, XML}
 import isabelle.Command
 import isabelle.Document.Snapshot
 import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.internal.{IsabelleImages, IsabelleUIPlugin}
-import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{log, error}
+import isabelle.eclipse.ui.annotations.IsabelleAnnotations
 import isabelle.eclipse.ui.editors.{IsabellePartitions, IsabelleTheorySourceViewer, TheoryEditor}
+import isabelle.eclipse.ui.internal.{IsabelleImages, IsabelleUIPlugin}
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
 import isabelle.eclipse.ui.util.SWTUtil
 
 
@@ -118,11 +119,13 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     val viewer = IsabelleTheorySourceViewer(parent, session, snapshot, targetEditor, styles)
     viewer.setEditable(false)
 
-    val document = new Document with IsabellePartitions
-    val annotationModel = new AnnotationModel
-    annotationModel.connect(document)
+    val doc = new Document with IsabellePartitions
+    val annotationModel = new AnnotationModel with IsabelleAnnotations {
+      override val document = doc
+    }
+    annotationModel.connect(doc)
     
-    viewer.setDocument(document, annotationModel)
+    viewer.setDocument(doc, annotationModel)
     viewer.showAnnotations(true)
 
     viewer

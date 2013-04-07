@@ -26,6 +26,11 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants
 
 import isabelle.Document.Snapshot
 import isabelle.Session
+import isabelle.eclipse.ui.annotations.{
+  IsabelleAnnotationConstants,
+  IsabelleAnnotations,
+  TheoryViewerAnnotations
+}
 import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
 import isabelle.eclipse.ui.util.SWTUtil.Disposable
 
@@ -61,10 +66,12 @@ class IsabelleTheorySourceViewer private (
   
   private val decorationSupport = configureDecorationSupport()
 
-  private val annotations = new TheoryViewerAnnotations(
-    snapshot,
-    getDocument,
-    Option(getAnnotationModel))
+  private val annotations = new TheoryViewerAnnotations(snapshot, annotationModel)
+
+  def annotationModel: Option[IsabelleAnnotations] = Option(getAnnotationModel) match {
+    case Some(isa: IsabelleAnnotations) => Some(isa)
+    case _ => None
+  }
 
   
   def fontKey = IsabelleUIPreferences.ISABELLE_FONT
@@ -158,7 +165,7 @@ object IsabelleTheorySourceViewer {
     // add types explicitly
     // TODO load from preferences?
     anotationRulerColumn.addAnnotationType(Annotation.TYPE_UNKNOWN)
-    val annotationTypes = IsabelleAnnotationConstants.ANNOTATION_TYPES.keySet.asScala
+    val annotationTypes = IsabelleAnnotationConstants.annotationTypes.keySet
     annotationTypes foreach anotationRulerColumn.addAnnotationType
     
     // temporarily remove Info annotations
