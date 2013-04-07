@@ -155,8 +155,8 @@ class IsabelleSymbolsView extends ViewPart {
     treeComposite.setLayout(treeLayout)
     
     val symbolColumn = {
-      val col = new TreeViewerColumn(treeViewer, SWT.CENTER)
-      col.getColumn.setAlignment(SWT.CENTER)
+      val col = new TreeViewerColumn(treeViewer, SWT.LEFT)
+      col.getColumn.setAlignment(SWT.LEFT)
       col.setLabelProvider(new SymbolLabelProvider)
       treeLayout.setColumnData(col.getColumn, new ColumnWeightData(100, false))
       col
