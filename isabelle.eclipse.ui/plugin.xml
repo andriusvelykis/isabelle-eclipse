@@ -57,6 +57,15 @@
             name="Symbols"
             restorable="true">
       </view>
+      <view
+            allowMultiple="true"
+            category="isabelle.eclipse.ui"
+            class="isabelle.eclipse.ui.views.TheoriesView"
+            icon="icons/theories_view.png"
+            id="isabelle.eclipse.ui.theoriesView"
+            name="Theories"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.themes">
