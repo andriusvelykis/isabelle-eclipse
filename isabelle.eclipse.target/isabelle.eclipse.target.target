@@ -9,7 +9,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="in.iitd.mldev.feature.feature.group" version="0.0.0"/>
-<repository location="http://andriusvelykis.github.com/ml-dev/updates/nightly/"/>
+<repository location="http://andriusvelykis.github.io/ml-dev/updates/nightly/"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>

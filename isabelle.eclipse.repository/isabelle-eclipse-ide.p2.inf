@@ -1,8 +1,8 @@
 instructions.configure=\
-  addRepository(type:0,location:http${#58}//andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2013/nightly/,name:Isabelle/Eclipse Nightly Updates);\
-  addRepository(type:1,location:http${#58}//andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2013/nightly/,name:Isabelle/Eclipse Nightly Updates);\
-  addRepository(type:0,location:http${#58}//andriusvelykis.github.com/ml-dev/updates/nightly/,name:ML-Dev Nightly Updates);\
-  addRepository(type:1,location:http${#58}//andriusvelykis.github.com/ml-dev/updates/nightly/,name:ML-Dev Nightly Updates);\
+  addRepository(type:0,location:http${#58}//andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/,name:Isabelle/Eclipse Nightly Updates);\
+  addRepository(type:1,location:http${#58}//andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/,name:Isabelle/Eclipse Nightly Updates);\
+  addRepository(type:0,location:http${#58}//andriusvelykis.github.io/ml-dev/updates/nightly/,name:ML-Dev Nightly Updates);\
+  addRepository(type:1,location:http${#58}//andriusvelykis.github.io/ml-dev/updates/nightly/,name:ML-Dev Nightly Updates);\
   addRepository(type:0,location:http${#58}//download.eclipse.org/releases/juno,name:Juno);\
   addRepository(type:1,location:http${#58}//download.eclipse.org/releases/juno,name:Juno);\
   addRepository(type:0,location:http${#58}//download.eclipse.org/eclipse/updates/4.2,name:The Eclipse Project Updates);\

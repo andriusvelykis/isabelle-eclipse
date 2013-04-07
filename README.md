@@ -1,4 +1,4 @@
-# [Isabelle/Eclipse]( http://andriusvelykis.github.com/isabelle-eclipse )
+# [Isabelle/Eclipse]( http://andriusvelykis.github.io/isabelle-eclipse )
 
 [Eclipse][eclipse] plug-ins that provide Prover IDE for [Isabelle proof assistant][isabelle], based on Isabelle/Scala framework.
 
@@ -11,7 +11,7 @@ Isabelle/Eclipse started as a port of Isabelle/jEdit Prover IDE to integrate wit
 
 Visit [Isabelle/Eclipse website][isabelle-eclipse] for more details.
 
-[isabelle-eclipse]: http://andriusvelykis.github.com/isabelle-eclipse
+[isabelle-eclipse]: http://andriusvelykis.github.io/isabelle-eclipse
 
 ## Downloads (nightly)
 
@@ -22,10 +22,10 @@ The current version has not been officially released yet, but nightly builds are
 -   [**Download standalone Isabelle/Eclipse IDE**][download-standalone-nightly] (use latest build)
 -   [**Isabelle/Eclipse update site**][download-updates-nightly] (use [_Update Manager_][update-manager] in Eclipse):
 
-    [`http://andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2013/nightly/`][download-updates-nightly]
+    [`http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/`][download-updates-nightly]
 
 [download-standalone-nightly]: http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/isabelle-eclipse-ide/nightly/
-[download-updates-nightly]: http://andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2013/nightly/
+[download-updates-nightly]: http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/
 [update-manager]: http://www.vogella.com/articles/Eclipse/article.html#updatemanager
 
 ### Requirements
@@ -46,9 +46,9 @@ The current version has not been officially released yet, but nightly builds are
 
 An older version of Isabelle/Eclipse plug-ins is available for **Isabelle 2012**. Get them from the update site:
 
-[`http://andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2012/releases/`][download-updates-2012]
+[`http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2012/releases/`][download-updates-2012]
 
-[download-updates-2012]: http://andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2012/releases/
+[download-updates-2012]: http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2012/releases/
 
     
 ## Contributing
@@ -64,7 +64,7 @@ Isabelle/Eclipse is built on Eclipse platform using Scala and Java programming l
 Feel free to contact the author for assistance. 
 
 [pull-req]: https://help.github.com/articles/using-pull-requests/
-[developer]: http://andriusvelykis.github.com/isabelle-eclipse/dev/index.html
+[developer]: http://andriusvelykis.github.io/isabelle-eclipse/dev/index.html
 
 
 ## Authors
