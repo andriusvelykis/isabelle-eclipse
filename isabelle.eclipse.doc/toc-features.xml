@@ -12,4 +12,6 @@
   <topic label="Adjust Isabelle font" href="target/generated-docs/features/adjust-font.html" />
   <topic label="Outline" href="target/generated-docs/features/outline.html" />
   <topic label="Symbols view" href="target/generated-docs/features/symbols-view.html" />
+  <topic label="Theories view" href="target/generated-docs/features/theories-view.html" />
+  <topic label="Controlling Isabelle execution" href="target/generated-docs/features/isabelle-execution.html" />
 </toc>
