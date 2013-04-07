@@ -10,17 +10,22 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider.DocumentProviderOper
 import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel
 
 import isabelle.eclipse.core.text.IsabelleDocument
+import isabelle.eclipse.ui.annotations.{IsabelleAnnotations, IsabelleMarkerAnnotations}
+
 
 /**
  * A file provider for Isabelle theory files that wraps each document into IsabelleDocument,
  * which performs conversion of special characters.
+ * 
+ * Also provides annotation models with special support for Isabelle annotation replacement.
  * 
  * @author Andrius Velykis
  */
 class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
 
   private val isabelleDocuments: mutable.Map[Any, IsabelleDocument] = mutable.Map()
-  private val annotationModels: mutable.Map[Any, IAnnotationModel] = mutable.Map()
+  private val annotationModels: mutable.Map[Any, IAnnotationModel with IsabelleAnnotations] = 
+    mutable.Map()
 
 
   @throws[CoreException]
@@ -30,7 +35,7 @@ class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
     Option(getDocument(element)) foreach { baseDocument =>
       {
         val document = new IsabelleDocument(baseDocument) with IsabellePartitions
-        val annotationModel = createAnnotationModel(element)
+        val annotationModel = createAnnotationModel(element, document)
         annotationModel.connect(document)
 
         isabelleDocuments += (element -> document)
@@ -39,18 +44,23 @@ class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
     }
   }
 
-
-  private def createAnnotationModel(element: Any): IAnnotationModel = {
+  private def createAnnotationModel(element: Any,
+                                    doc: IDocument): IAnnotationModel with IsabelleAnnotations = {
     // TODO use annotation model factories, as in TextFileBufferManager#createAnnotationModel()?
 
     // check if we can find a resource for the given element
     Option(EditorUtil.getResource(element)) match {
 
       // resource located: use resource marker model
-      case Some(resource) => new ResourceMarkerAnnotationModel(resource)
+      case Some(res) => new ResourceMarkerAnnotationModel(res) with IsabelleMarkerAnnotations {
+        override val document = doc
+        override val markerResource = res
+      }
 
       // no resource available: use plain model
-      case None => new AnnotationModel
+      case None => new AnnotationModel with IsabelleAnnotations {
+        override val document = doc
+      }
     }
   }
 
@@ -74,7 +84,7 @@ class IsabelleFileDocumentProvider extends TextFileDocumentProvider {
   override def getDocument(element: Any): IDocument =
     isabelleDocuments.get(element) getOrElse super.getDocument(element)
 
-  override def getAnnotationModel(element: Any): IAnnotationModel =
+  override def getAnnotationModel(element: Any): IAnnotationModel with IsabelleAnnotations =
     annotationModels.get(element).orNull
 
 

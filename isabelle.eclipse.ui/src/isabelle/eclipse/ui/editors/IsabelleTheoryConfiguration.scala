@@ -4,13 +4,21 @@ import org.eclipse.core.runtime.IAdaptable
 import org.eclipse.jface.resource.ResourceManager
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.contentassist.{ContentAssistant, IContentAssistant}
+import org.eclipse.jface.text.reconciler.{IReconciler, MonoReconciler}
 import org.eclipse.jface.text.source.ISourceViewer
+import org.eclipse.swt.widgets.Widget
+import org.eclipse.ui.editors.text.EditorsUI
+import org.eclipse.ui.texteditor.spelling.{SpellingReconcileStrategy, SpellingService}
 
+import isabelle.eclipse.ui.annotations.TheoryViewerAnnotations
 import java.{util => ju}
 
 
 /** @author Andrius Velykis */
-class IsabelleTheoryConfiguration(editor: TheoryEditor, resourceManager: ResourceManager)
+class IsabelleTheoryConfiguration(editor: TheoryEditor,
+                                  resourceManager: ResourceManager,
+                                  widget: => Option[Widget],
+                                  annotations: => Option[TheoryViewerAnnotations])
     extends IsabelleTheoryViewerConfiguration(
       editor.isabelleModel map (_.session),
       editor.isabelleModel map (_.snapshot),
@@ -44,6 +52,39 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor, resourceManager: Resourc
     // (attaches the detector to the editor)
     targets.put(ISABELLE_THEORY_HYPERLINK_TARGET, editor)
     targets
+  }
+
+  override def getReconciler(sourceViewer: ISourceViewer): IReconciler = {
+
+    // reimplement spelling service from the parent
+    val spellingService = Option(preferenceStore).filter {
+      _.getBoolean(SpellingService.PREFERENCE_SPELLING_ENABLED)
+    } flatMap { prefs =>
+      val spelling = EditorsUI.getSpellingService
+      Option(spelling.getActiveSpellingEngineDescriptor(prefs)) match {
+        case Some(_) => Some(spelling)
+        case _ => None
+      }
+    }
+
+    // add a reconciler that refreshes annotations
+    // this is necessary to avoid missing events from Isabelle which do not remove annotations
+    val annRefresh = new AnnotationRefreshReconcilingStrategy(widget, annotations)
+    val spelling = spellingService map { spelling =>
+      new SpellingReconcileStrategy(sourceViewer, spelling)
+    } 
+
+
+    val strategies = annRefresh :: spelling.toList
+
+    val compositeStrategy = strategies match {
+      case single :: Nil => single
+      case multiple => new CompositeReconcilingStrategy(multiple)
+    }
+
+    val reconciler = new MonoReconciler(compositeStrategy, true)
+    reconciler.setDelay(500)
+    reconciler
   }
 
 }
