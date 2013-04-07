@@ -384,13 +384,13 @@
       </command>
       <command
             categoryId="isabelle.eclipse.ui.category.theory"
-            description="Increase Isabelle editor font by 1 point"
+            description="Increase Isabelle editor font"
             id="isabelle.eclipse.ui.editor.fontIncrease"
             name="Increase Isabelle Font">
       </command>
       <command
             categoryId="isabelle.eclipse.ui.category.theory"
-            description="Decrease Isabelle editor font by 1 point"
+            description="Decrease Isabelle editor font"
             id="isabelle.eclipse.ui.editor.fontDecrease"
             name="Decrease Isabelle Font">
       </command>
