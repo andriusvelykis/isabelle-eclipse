@@ -394,6 +394,13 @@
             id="isabelle.eclipse.ui.editor.fontDecrease"
             name="Decrease Isabelle Font">
       </command>
+      <command
+            categoryId="isabelle.eclipse.ui.category.theory"
+            defaultHandler="isabelle.eclipse.ui.actions.CancelExecutionCommand"
+            description="Cancel current Isabelle execution"
+            id="isabelle.eclipse.ui.cancelExecution"
+            name="Cancel Execution">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -487,7 +494,27 @@
                   icon="icons/font_decrease.gif"
                   style="push">
             </command>
+            <separator
+                  name="isabelle.eclipse.ui.system"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="isabelle.eclipse.ui.cancelExecution"
+                  icon="icons/cancel.gif"
+                  style="push"
+                  tooltip="Cancel current Isabelle execution">
+            </command>
          </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:isabelle.eclipse.ui.theoriesView">
+         <command
+               commandId="isabelle.eclipse.ui.cancelExecution"
+               icon="icons/cancel.gif"
+               style="push"
+               tooltip="Cancel current Isabelle execution">
+         </command>
       </menuContribution>
    </extension>
    <extension
