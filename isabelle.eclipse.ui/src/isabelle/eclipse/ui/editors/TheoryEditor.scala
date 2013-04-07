@@ -299,6 +299,12 @@ class TheoryEditor extends TextEditor {
       "Submitting to selection is currently disabled in favour of submitting active view.")
   }
 
+  def submitFull() = state.foreach {
+    _.isabelleModel match {
+      case edit: EditDocumentModel => edit.submitFullPerspective()
+    }
+  }
+
   /**
    * Selects and reveals the range in the editor.
    *

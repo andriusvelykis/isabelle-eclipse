@@ -84,7 +84,7 @@ class EditDocumentModel(val session: Session,
     pendingEdits.flushDelayed()
   }
 
-  private def submitFullPerspective(monitor: IProgressMonitor) {
+  def submitFullPerspective(monitor: IProgressMonitor = new NullProgressMonitor) {
 
     // force flush current edits
     pendingEdits.doFlush(monitor)

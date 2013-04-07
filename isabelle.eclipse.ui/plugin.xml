@@ -396,6 +396,12 @@
       </command>
       <command
             categoryId="isabelle.eclipse.ui.category.theory"
+            description="Commence full checking the active editor"
+            id="isabelle.eclipse.ui.editor.submitFull"
+            name="Check Active Editor">
+      </command>
+      <command
+            categoryId="isabelle.eclipse.ui.category.theory"
             defaultHandler="isabelle.eclipse.ui.actions.CancelExecutionCommand"
             description="Cancel current Isabelle execution"
             id="isabelle.eclipse.ui.cancelExecution"
@@ -443,6 +449,18 @@
       <handler
             class="isabelle.eclipse.ui.actions.FontDecreaseCommand"
             commandId="isabelle.eclipse.ui.editor.fontDecrease">
+      </handler>
+      <handler
+            class="isabelle.eclipse.ui.actions.SubmitFullEditorCommand"
+            commandId="isabelle.eclipse.ui.editor.submitFull">
+         <enabledWhen>
+            <with
+                  variable="activeEditorId">
+               <equals
+                     value="isabelle.eclipse.ui.theoryEditor">
+               </equals>
+            </with>
+         </enabledWhen>
       </handler>
    </extension>
    <extension
@@ -499,6 +517,12 @@
                   visible="true">
             </separator>
             <command
+                  commandId="isabelle.eclipse.ui.editor.submitFull"
+                  icon="icons/resume.gif"
+                  style="push"
+                  tooltip="Commence full checking of active editor">
+            </command>
+            <command
                   commandId="isabelle.eclipse.ui.cancelExecution"
                   icon="icons/cancel.gif"
                   style="push"
@@ -509,6 +533,12 @@
       <menuContribution
             allPopups="false"
             locationURI="toolbar:isabelle.eclipse.ui.theoriesView">
+         <command
+               commandId="isabelle.eclipse.ui.editor.submitFull"
+               icon="icons/resume.gif"
+               style="push"
+               tooltip="Commence full checking of active editor">
+         </command>
          <command
                commandId="isabelle.eclipse.ui.cancelExecution"
                icon="icons/cancel.gif"
