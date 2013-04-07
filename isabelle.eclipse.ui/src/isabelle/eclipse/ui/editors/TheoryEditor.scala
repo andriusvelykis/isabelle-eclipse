@@ -93,7 +93,12 @@ class TheoryEditor extends TextEditor {
   }
 
   {
-    val conf = new IsabelleTheoryConfiguration(this, resourceManager)
+    val conf = new IsabelleTheoryConfiguration(
+      this,
+      resourceManager,
+      control,
+      state map (_.markers))
+
     setSourceViewerConfiguration(conf)
     // reuse preference store with the editor
     setPreferenceStore(conf.preferenceStore)
@@ -215,6 +220,8 @@ class TheoryEditor extends TextEditor {
     Option(documentProvider) flatMap (p => Option(p.getAnnotationModel(getEditorInput)))
 
   def isabelleModel: Option[DocumentModel] = state.map(_.isabelleModel)
+
+  private def control = Option(getSourceViewer) flatMap (v => Option(v.getTextWidget))
 
 
   /**
@@ -342,8 +349,6 @@ class TheoryEditor extends TextEditor {
     val commandChange = new CommandChangeHelper(isabelleModel)(refreshViewUI)
 
     override protected def textViewer = getSourceViewer
-    
-    private def control = Option(getSourceViewer) flatMap (v => Option(v.getTextWidget))
 
     val markers = new TheoryViewerAnnotations(
       Some(isabelleModel.snapshot),
