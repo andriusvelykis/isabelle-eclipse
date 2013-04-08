@@ -22,10 +22,29 @@ To use Isabelle/Eclipse, download it either as standalone **Isabelle/Eclipse IDE
 
 After downloading/installing Isabelle/Eclipse, open Isabelle perspective, create projects for your Isabelle theory files, launch the Isabelle prover and start proving! Read more about the first steps in the [Getting started][getting-started] page.
 
-Isabelle/Eclipse provides a familiar Eclipse-based prover IDE with numerous features. Read about some of the [features here][features].
-
 [download]: download.html
 [getting-started]: getting-started/index.html
+
+
+## Features
+
+Isabelle/Eclipse provides a familiar Eclipse-based prover IDE with numerous features. Read about some of the [features here][features].
+
+-   [Isabelle launch configurations]( features/launch-config.html )
+-   [Theory editor]( features/theory-editor.html )
+-   [Prover output]( features/prover-output.html )
+-   [Go to definition]( features/go-to-definition.html )
+-   [Content assist]( features/content-assist.html )
+-   [Tooltips]( features/tooltips.html )
+-   [Syntax colouring]( features/syntax-coloring.html )
+-   [Adjust Isabelle font]( features/adjust-font.html )
+-   [Outline]( features/outline.html )
+-   [Symbols view]( features/symbols-view.html )
+-   [Theories view]( features/theories-view.html )
+-   [Controlling Isabelle execution]( features/isabelle-execution.html )
+-   ... [and more!][features]
+
+
 [features]: features/index.html
 
     
