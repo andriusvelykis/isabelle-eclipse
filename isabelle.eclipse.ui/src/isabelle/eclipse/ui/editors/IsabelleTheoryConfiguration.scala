@@ -28,6 +28,9 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor,
   override def getContentAssistant(sourceViewer: ISourceViewer): IContentAssistant = {
 
     val ca = new ContentAssistant()
+    ca.enableAutoActivation(true)
+    ca.enableAutoInsert(true)
+    
     ca.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer))
     
     val pr = new IsabelleContentAssistProcessor(
