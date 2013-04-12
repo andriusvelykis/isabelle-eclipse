@@ -30,7 +30,9 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor,
     val ca = new ContentAssistant()
     ca.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer))
     
-    val pr = new IsabelleContentAssistProcessor(editor, resourceManager)
+    val pr = new IsabelleContentAssistProcessor(
+        editor.isabelleModel map (_.session) map (_.recent_syntax),
+        resourceManager)
     ca.setContentAssistProcessor(pr, IDocument.DEFAULT_CONTENT_TYPE)
     
     // set the same content assistant on all partition types
