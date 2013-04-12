@@ -171,6 +171,8 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
     removeEditorListener(editorListener)
     disposeSessionEvents()
+
+    outputViewer.dispose()
     
     super.dispose()
   }

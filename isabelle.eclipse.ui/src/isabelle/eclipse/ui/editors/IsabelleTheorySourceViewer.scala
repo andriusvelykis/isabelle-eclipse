@@ -56,9 +56,6 @@ class IsabelleTheorySourceViewer private (
   targetEditor: => Option[TheoryEditor])
     extends SourceViewer(parent, verticalRuler, overviewRuler, true, style) with FontUpdates {
 
-  // cleanup on control dispose
-  getControl onDispose disposeViewer()
-
 
   private val configuration = new IsabelleTheoryViewerConfiguration(
       session, snapshot, targetEditor, resourceManager)
@@ -107,7 +104,7 @@ class IsabelleTheorySourceViewer private (
   def updateAnnotations() = annotations.updateAnnotations()
 
 
-  private def disposeViewer() {
+  def dispose() {
     configuration.preferenceStore.removePropertyChangeListener(preferenceListener)
     resourceManager.dispose()
     decorationSupport.dispose()
