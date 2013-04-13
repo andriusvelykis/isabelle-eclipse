@@ -32,4 +32,6 @@ Import-Package: scala;version="2.10.0",
  scala.math;version="2.10.0",
  scala.reflect;version="2.10.0",
  scala.runtime;version="2.10.0",
- scala.util;version="2.10.0"
+ scala.util;version="2.10.0",
+ scala.util.matching;version="2.10.0",
+ scala.util.parsing.combinator;version="2.10.0"
