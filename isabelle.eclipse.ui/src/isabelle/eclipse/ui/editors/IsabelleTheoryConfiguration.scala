@@ -2,7 +2,7 @@ package isabelle.eclipse.ui.editors
 
 import org.eclipse.core.runtime.IAdaptable
 import org.eclipse.jface.resource.ResourceManager
-import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.{IAutoEditStrategy, IDocument}
 import org.eclipse.jface.text.contentassist.{ContentAssistant, IContentAssistant}
 import org.eclipse.jface.text.reconciler.{IReconciler, MonoReconciler}
 import org.eclipse.jface.text.source.ISourceViewer
@@ -45,6 +45,13 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor,
     ca.setInformationControlCreator(getInformationControlCreator(sourceViewer))
     ca
   }
+
+  override def getAutoEditStrategies(sourceViewer: ISourceViewer,
+                                     contentType: String): Array[IAutoEditStrategy] = {
+    val strats = super.getAutoEditStrategies(sourceViewer, contentType)
+    strats :+ new IsabelleAutoEditStrategy
+  }
+
 
   /** The hyperlink detector target ID, as defined in plugin.xml */
   val ISABELLE_THEORY_HYPERLINK_TARGET = "isabelle.eclipse.ui.theoryEditor"
