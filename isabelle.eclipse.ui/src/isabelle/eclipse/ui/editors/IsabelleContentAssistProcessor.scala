@@ -134,7 +134,7 @@ class IsabelleContentAssistProcessor(syntax: => Option[Outer_Syntax],
    * Returns the longest-matching completions only (to avoid sub-completions).
    */
   private def calculateCompletions(syntax: Outer_Syntax, text: String): List[CompletionInfo] = {
-    val lastWord = text.reverse.takeWhile(c => !c.isWhitespace).reverse
+    val lastWord = text.reverseIterator.takeWhile(c => !c.isWhitespace).mkString.reverse
     if (lastWord.isEmpty) Nil
     else {
       val abbrevCs = abbrevCompletions(lastWord).sortBy(abbrevSort)
