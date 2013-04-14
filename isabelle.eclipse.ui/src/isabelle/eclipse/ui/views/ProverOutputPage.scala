@@ -82,7 +82,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   @volatile private var currentCommand: Option[Command] = None
   @volatile private var currentResultsSnapshot: Option[Snapshot] = None
 
-  private var updateJob: Job = new UpdateOutputJob(_ => None);
+  private var updateJob: Job = new UpdateOutputJob(_ => None, showTrace);
 
   // selection listener to update output when editor selection changes
   val editorListener = selectionListener { _ => updateOutputAtCaret() }
@@ -185,7 +185,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
   private def updateOutput(cmdProvider: (Unit => Option[Command]), delay: Long = 0) {
-    val updateJob = new UpdateOutputJob(cmdProvider)
+    val updateJob = new UpdateOutputJob(cmdProvider, showTrace)
 
     // cancel the previous job
     this.updateJob.cancel()
@@ -199,7 +199,9 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     editor.isabelleModel flatMap { _.snapshot.node.command_at(offset).map(_._1) }
   }
 
-  private def renderOutput(cmd: Command, monitor: IProgressMonitor): Option[(String, Snapshot)] = {
+  private def renderOutput(cmd: Command,
+                           showTrace: Boolean,
+                           monitor: IProgressMonitor): Option[(String, Snapshot)] = {
 
     // TODO do not output when invisible?
 
@@ -210,7 +212,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
         val snapshot = model.snapshot
         
         val cmdState = snapshot.state.command_state(snapshot.version, cmd)
-        val resultsMarkup = commandStateMarkup(cmdState)
+        val resultsMarkup = commandStateMarkup(cmdState, showTrace)
         
         // TODO compare resultsMarkup with current before rendering to avoid replacement?
 
@@ -226,11 +228,20 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   }
 
 
-  private def commandStateMarkup(st: Command.State): List[XML.Tree] =
-    st.results.entries.map(_._2).filterNot(Protocol.is_result(_)).toList
+  private def commandStateMarkup(st: Command.State, showTrace: Boolean): List[XML.Tree] = {
+    val msgs = st.results.entries.map(_._2).filterNot(Protocol.is_result)
+    val traceFiltered = if (showTrace) {
+      msgs
+    } else {
+      msgs.filterNot(Protocol.is_tracing)
+    }
+    
+    traceFiltered.toList
+  }
 
-  private def renderDocument(base_snapshot: isabelle.Document.Snapshot, base_results: Command.Results,
-    formatted_body: XML.Body): (String, isabelle.Document.Snapshot) = {
+  private def renderDocument(base_snapshot: isabelle.Document.Snapshot,
+                             base_results: Command.Results,
+                             formatted_body: XML.Body): (String, isabelle.Document.Snapshot) = {
 
     val command = Command.rich_text(isabelle.Document.new_id(), base_results, formatted_body)
     val node_name = command.node_name
@@ -283,7 +294,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     }
   }
 
-  private class UpdateOutputJob(cmdProvider: (Unit => Option[Command]))
+  private class UpdateOutputJob(cmdProvider: (Unit => Option[Command]), showTrace: Boolean)
     extends Job("Updating prover output") {
 //    setPriority(Job.INTERACTIVE)
 
@@ -297,7 +308,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
       currentCommand = cmdProvider()
 
       // render the command if available
-      val result = currentCommand flatMap { cmd => renderOutput(cmd, monitor) }
+      val result = currentCommand flatMap { cmd => renderOutput(cmd, showTrace, monitor) }
 
       // check if cancelled - then do not set the output
       if (monitor.isCanceled()) {
