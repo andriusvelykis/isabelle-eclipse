@@ -311,7 +311,10 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     }
   }
 
-  private class ToggleShowTraceAction extends ToggleAction("Show Trace", "Show Proof Trace", propShowTrace, showTrace) {
+  private class ToggleShowTraceAction
+      extends ToggleAction("Show Trace", "Show Proof Trace",
+                           propShowTrace, showTrace) {
+
     setImageDescriptor(IsabelleImages.SHOW_TRACE)
 //    setDisabledImageDescriptor(null)
 
@@ -322,9 +325,12 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
       updateOutput(_ => currentCommand)
     }
   }
-  
+
   /** Action to toggle linking with selection. */
-  private class ToggleLinkAction extends ToggleAction("Link with Editor", "Link with Editor", propLinkEditor, followSelection) {
+  private class ToggleLinkAction
+      extends ToggleAction("Link with Editor", "Link with Editor",
+                           propLinkEditor, followSelection) {
+
     private def images = PlatformUI.getWorkbench().getSharedImages();
     setImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED));
     setDisabledImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED_DISABLED));
