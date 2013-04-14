@@ -9,7 +9,7 @@ name: Isabelle/Eclipse
 # Short description (goes below the title; it will also be used in the RSS feed)
 description: Eclipse integration for Isabelle proof assistant
 
-url: http://andriusvelykis.github.com/isabelle-eclipse
+url: http://andriusvelykis.github.io/isabelle-eclipse
 baseurl: /isabelle-eclipse
 
 repository_url: http://github.com/andriusvelykis/isabelle-eclipse

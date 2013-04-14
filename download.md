@@ -14,7 +14,7 @@ The current version has not been officially released yet, but nightly builds are
 -   [**Download standalone Isabelle/Eclipse IDE**][download-standalone-nightly] (use latest build)
 -   [**Isabelle/Eclipse update site**][download-updates-nightly] (use [_Update Manager_][update-manager] in Eclipse):
 
-    [`http://andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2013/nightly/`][download-updates-nightly]
+    [`http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/`][download-updates-nightly]
 
 [download-standalone-nightly]: http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/isabelle-eclipse-ide/nightly/
 [download-updates-nightly]: updates/isabelle2013/nightly/
@@ -38,6 +38,6 @@ The current version has not been officially released yet, but nightly builds are
 
 An older version of Isabelle/Eclipse plug-ins is available for **Isabelle 2012**. Get them from the update site:
 
-[`http://andriusvelykis.github.com/isabelle-eclipse/updates/isabelle2012/releases/`][download-updates-2012]
+[`http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2012/releases/`][download-updates-2012]
 
 [download-updates-2012]: updates/isabelle2012/releases/
