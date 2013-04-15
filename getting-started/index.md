@@ -14,6 +14,37 @@ To get started with Isabelle/Eclipse, open Isabelle perspective, create projects
 [isabelle]: http://isabelle.in.tum.de
 
 
+## Starting Isabelle/Eclipse
+
+[Download][download] Isabelle/Eclipse IDE and unpack the archive. Launch the application by double-clicking the executable file:
+
+-   _isabelle-eclipse.exe_ on Windows
+-   _isabelle-eclipse_ on Linux
+-   _isabelle-eclipse.app_ on Mac OS X
+
+Isabelle/Eclipse is based on Eclipse IDE, so refer to [information on running Eclipse][running-eclipse] for details on allocating available memory, indicating Java executable, etc. For configuration, use the corresponding _isabelle-eclipse.ini_ file instead of _eclipse.ini_.
+
+### Troubleshooting startup
+
+When downloading, make sure to select a correct version for your system (32-bit or 64-bit), otherwise the application will fail.
+
+
+#### Java 7
+
+**Make sure [Java 7][java] is used to start Isabelle/Eclipse**. If the application does not look correct, or Isabelle/Eclipse views and perspective are missing, it is most likely that **Java 7** is not available. If the correct Java runtime is not detected automatically, [indicate it explicitly][running-eclipse].
+
+
+#### "Damaged" application on Mac OS X
+
+If you encounter the _"Isabelle/Eclipse is damaged and can't be opened"_ message when starting Isabelle/Eclipse on Mac OS X, [adjust your Gatekeeper settings temporarily][gatekeeper-mac] to allow the application to run. You only need to do this once.
+
+
+[download]: ../download.html
+[running-eclipse]: http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2Ftasks%2Frunning_eclipse.htm
+[java]: http://www.java.com/getjava
+[gatekeeper-mac]: http://apple.stackexchange.com/questions/58087/eclipse-4-2-on-mountain-lion-gatekeeper-rejects-as-unidentified-developer
+
+
 ## Isabelle perspective
 
 To use Isabelle/Eclipse, switch to Isabelle perspective: **Window > Open Perspective > Other... > Isabelle** or use the perspective selector in the top-right corner. This will open and arrange all Isabelle/Eclipse views.

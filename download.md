@@ -32,7 +32,9 @@ The current version has not been officially released yet, but nightly builds are
 
 -   **Java 7**
 
-    Isabelle/Scala requires Java 7 runtime - the plug-ins will be disabled if older Java version is used.
+    Isabelle/Scala requires [Java 7 runtime][java] - the plug-ins will be disabled if older Java version is used.
+
+[java]: http://www.java.com/getjava
 
 # Previous versions
 
