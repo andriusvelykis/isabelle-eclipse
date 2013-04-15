@@ -3,21 +3,23 @@ package isabelle.eclipse.ui.editors
 import scala.util.{Either, Failure, Success, Try}
 import scala.util.parsing.combinator.RegexParsers
 
-import org.eclipse.jface.resource.ResourceManager
+import org.eclipse.jface.resource.{FontDescriptor, JFaceResources, ResourceManager}
 import org.eclipse.jface.text.{IDocument, ITextViewer}
 import org.eclipse.jface.text.contentassist.{
-  CompletionProposal,
   ICompletionProposal,
   IContentAssistProcessor,
   IContextInformation,
   IContextInformationValidator
 }
-import org.eclipse.swt.graphics.Image
+import org.eclipse.jface.viewers.StyledString
+import org.eclipse.jface.viewers.StyledString.Styler
+import org.eclipse.swt.graphics.{Image, TextStyle}
 
 import isabelle.{Outer_Syntax, Scan, Symbol}
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
+import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
 
 
 /**
@@ -225,15 +227,75 @@ class IsabelleContentAssistProcessor(syntax: => Option[Outer_Syntax],
 
     val replaceStr = info.decoded
 
-    new CompletionProposal(replaceStr, replaceOffset, matched.length, replaceStr.length,
-                           image, displayStr, null, null)
+    new StyledCompletionProposal(
+      replaceStr, replaceOffset, matched.length, replaceStr.length,
+      Some(image), displayStr, None, None)
   }
 
 
-  private def completionDisplay(info: CompletionInfo): String = {
-    val strs = List(info.word, info.decoded, info.raw).distinct
+  /**
+   * Renders a text to display in completion proposals.
+   * 
+   * Uses a styled string to display symbols using Isabelle font. 
+   */
+  private def completionDisplay(info: CompletionInfo): StyledString = {
+    val decodedStyle = if (info.isSymbol) Some(IsabelleFontStyler) else None
+    val strs = List(
+      StyledText(info.word),
+      StyledText(info.decoded, decodedStyle),
+      StyledText(info.raw)).distinct
 
-    strs mkString " : "
+    // join all styles with separators
+    val concat = (strs.tail foldLeft strs.head.asStyledString) { (acc, str) =>
+      acc.append(" : ")
+      acc.append(str.asStyledString)
+    }
+
+    concat
+  }
+
+  private def isabelleFont: FontDescriptor =
+    JFaceResources.getFontRegistry.getDescriptor(IsabelleUIPreferences.ISABELLE_FONT)
+
+  private def defaultFont: FontDescriptor = JFaceResources.getDefaultFontDescriptor
+
+  // use some not-too-large maximum, otherwise the text disappears..
+  private def isabelleFontMax = 14
+
+  private case class StyledText(text: String, style: Option[Styler] = None) {
+    def asStyledString = new StyledString(text, style.orNull)
+  }
+
+  private object IsabelleFontStyler extends Styler {
+    override def applyStyles(textStyle: TextStyle) {
+      
+      // adjust Isabelle font size maximum.
+      // Otherwise the proposals become invisible in the small rows if the Isabelle font is
+      // too large, and we do not have easy access to the proposal table to adjust the table size.
+
+      // the maximum is either predefined, or whatever is the default font size
+      val fontMax = isabelleFontMax max fontHeight(defaultFont)
+      
+      val isaFont = isabelleFont
+      val isaFontHeight = fontHeight(isaFont)
+      
+      val normalisedIsabelleFont = if (isaFontHeight > fontMax) {
+        isaFont.setHeight(fontMax)
+      } else {
+        isaFont
+      }
+
+      textStyle.font = resourceManager.createFont(normalisedIsabelleFont)
+    }
+  }
+
+  private def fontHeight(desc: FontDescriptor) = desc.getFontData()(0).getHeight
+
+
+  private case class CompletionInfo(matched: String, word: String, raw: String) {
+    lazy val decoded = Symbol.decode(raw)
+
+    def isSymbol = decoded != raw
   }
 
 
@@ -246,9 +308,6 @@ class IsabelleContentAssistProcessor(syntax: => Option[Outer_Syntax],
 
   override def getContextInformationValidator: IContextInformationValidator = null
 
-  private case class CompletionInfo(matched: String, word: String, raw: String) {
-    lazy val decoded = Symbol.decode(raw)
-  }
 
 }
 

@@ -30,6 +30,8 @@ class IsabelleTheoryConfiguration(editor: TheoryEditor,
     val ca = new ContentAssistant()
     ca.enableAutoActivation(true)
     ca.enableAutoInsert(true)
+    // enable styled text
+    ca.enableColoredLabels(true)
     
     ca.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer))
     
