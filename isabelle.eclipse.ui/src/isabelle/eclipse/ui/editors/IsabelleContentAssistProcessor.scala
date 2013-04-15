@@ -3,7 +3,7 @@ package isabelle.eclipse.ui.editors
 import scala.util.{Either, Failure, Success, Try}
 import scala.util.parsing.combinator.RegexParsers
 
-import org.eclipse.jface.resource.{JFaceResources, ResourceManager}
+import org.eclipse.jface.resource.{FontDescriptor, JFaceResources, ResourceManager}
 import org.eclipse.jface.text.{IDocument, ITextViewer}
 import org.eclipse.jface.text.contentassist.{
   ICompletionProposal,
@@ -13,7 +13,7 @@ import org.eclipse.jface.text.contentassist.{
 }
 import org.eclipse.jface.viewers.StyledString
 import org.eclipse.jface.viewers.StyledString.Styler
-import org.eclipse.swt.graphics.{Font, Image, TextStyle}
+import org.eclipse.swt.graphics.{Image, TextStyle}
 
 import isabelle.{Outer_Syntax, Scan, Symbol}
 import isabelle.eclipse.core.IsabelleCore
@@ -254,8 +254,13 @@ class IsabelleContentAssistProcessor(syntax: => Option[Outer_Syntax],
     concat
   }
 
-  private def isabelleFont: Font =
-    JFaceResources.getFontRegistry.get(IsabelleUIPreferences.ISABELLE_FONT)
+  private def isabelleFont: FontDescriptor =
+    JFaceResources.getFontRegistry.getDescriptor(IsabelleUIPreferences.ISABELLE_FONT)
+
+  private def defaultFont: FontDescriptor = JFaceResources.getDefaultFontDescriptor
+
+  // use some not-too-large maximum, otherwise the text disappears..
+  private def isabelleFontMax = 14
 
   private case class StyledText(text: String, style: Option[Styler] = None) {
     def asStyledString = new StyledString(text, style.orNull)
@@ -263,9 +268,28 @@ class IsabelleContentAssistProcessor(syntax: => Option[Outer_Syntax],
 
   private object IsabelleFontStyler extends Styler {
     override def applyStyles(textStyle: TextStyle) {
-      textStyle.font = isabelleFont
+      
+      // adjust Isabelle font size maximum.
+      // Otherwise the proposals become invisible in the small rows if the Isabelle font is
+      // too large, and we do not have easy access to the proposal table to adjust the table size.
+
+      // the maximum is either predefined, or whatever is the default font size
+      val fontMax = isabelleFontMax max fontHeight(defaultFont)
+      
+      val isaFont = isabelleFont
+      val isaFontHeight = fontHeight(isaFont)
+      
+      val normalisedIsabelleFont = if (isaFontHeight > fontMax) {
+        isaFont.setHeight(fontMax)
+      } else {
+        isaFont
+      }
+
+      textStyle.font = resourceManager.createFont(normalisedIsabelleFont)
     }
   }
+
+  private def fontHeight(desc: FontDescriptor) = desc.getFontData()(0).getHeight
 
 
   private case class CompletionInfo(matched: String, word: String, raw: String) {
