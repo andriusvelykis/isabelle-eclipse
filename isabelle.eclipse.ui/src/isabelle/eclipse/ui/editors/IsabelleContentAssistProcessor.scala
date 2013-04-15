@@ -3,21 +3,23 @@ package isabelle.eclipse.ui.editors
 import scala.util.{Either, Failure, Success, Try}
 import scala.util.parsing.combinator.RegexParsers
 
-import org.eclipse.jface.resource.ResourceManager
+import org.eclipse.jface.resource.{JFaceResources, ResourceManager}
 import org.eclipse.jface.text.{IDocument, ITextViewer}
 import org.eclipse.jface.text.contentassist.{
-  CompletionProposal,
   ICompletionProposal,
   IContentAssistProcessor,
   IContextInformation,
   IContextInformationValidator
 }
-import org.eclipse.swt.graphics.Image
+import org.eclipse.jface.viewers.StyledString
+import org.eclipse.jface.viewers.StyledString.Styler
+import org.eclipse.swt.graphics.{Font, Image, TextStyle}
 
 import isabelle.{Outer_Syntax, Scan, Symbol}
 import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.ui.internal.IsabelleImages
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
+import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
 
 
 /**
@@ -225,15 +227,44 @@ class IsabelleContentAssistProcessor(syntax: => Option[Outer_Syntax],
 
     val replaceStr = info.decoded
 
-    new CompletionProposal(replaceStr, replaceOffset, matched.length, replaceStr.length,
-                           image, displayStr, null, null)
+    new StyledCompletionProposal(
+      replaceStr, replaceOffset, matched.length, replaceStr.length,
+      Some(image), displayStr, None, None)
   }
 
 
-  private def completionDisplay(info: CompletionInfo): String = {
-    val strs = List(info.word, info.decoded, info.raw).distinct
+  /**
+   * Renders a text to display in completion proposals.
+   * 
+   * Uses a styled string to display symbols using Isabelle font. 
+   */
+  private def completionDisplay(info: CompletionInfo): StyledString = {
+    val decodedStyle = if (info.isSymbol) Some(IsabelleFontStyler) else None
+    val strs = List(
+      StyledText(info.word),
+      StyledText(info.decoded, decodedStyle),
+      StyledText(info.raw)).distinct
 
-    strs mkString " : "
+    // join all styles with separators
+    val concat = (strs.tail foldLeft strs.head.asStyledString) { (acc, str) =>
+      acc.append(" : ")
+      acc.append(str.asStyledString)
+    }
+
+    concat
+  }
+
+  private def isabelleFont: Font =
+    JFaceResources.getFontRegistry.get(IsabelleUIPreferences.ISABELLE_FONT)
+
+  private case class StyledText(text: String, style: Option[Styler] = None) {
+    def asStyledString = new StyledString(text, style.orNull)
+  }
+
+  private object IsabelleFontStyler extends Styler {
+    override def applyStyles(textStyle: TextStyle) {
+      textStyle.font = isabelleFont
+    }
   }
 
 
