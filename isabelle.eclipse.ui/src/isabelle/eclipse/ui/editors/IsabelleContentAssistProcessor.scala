@@ -237,6 +237,13 @@ class IsabelleContentAssistProcessor(syntax: => Option[Outer_Syntax],
   }
 
 
+  private case class CompletionInfo(matched: String, word: String, raw: String) {
+    lazy val decoded = Symbol.decode(raw)
+
+    def isSymbol = decoded != raw
+  }
+
+
   /* Not supporting context information at the moment: */
 
   override def computeContextInformation(viewer: ITextViewer,
@@ -246,9 +253,6 @@ class IsabelleContentAssistProcessor(syntax: => Option[Outer_Syntax],
 
   override def getContextInformationValidator: IContextInformationValidator = null
 
-  private case class CompletionInfo(matched: String, word: String, raw: String) {
-    lazy val decoded = Symbol.decode(raw)
-  }
 
 }
 
