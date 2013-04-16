@@ -25,6 +25,10 @@ object IsabelleAnnotationConstants {
   val ANNOTATION_LEGACY = "isabelle.eclipse.ui.annotation.legacy"
   val ANNOTATION_INFO = "isabelle.eclipse.ui.annotation.info"
   val ANNOTATION_TRACING = "isabelle.eclipse.ui.annotation.tracing"
+
+  val ANNOTATION_PROVER_OUTPUT_ERROR = "isabelle.eclipse.ui.annotation.proveroutput.error"
+  val ANNOTATION_PROVER_OUTPUT_WARNING = "isabelle.eclipse.ui.annotation.proveroutput.warning"
+  val ANNOTATION_PROVER_OUTPUT_INFO = "isabelle.eclipse.ui.annotation.proveroutput.info"
   
   // TODO foreground colours, Isabelle_Markup.foreground? Or actually syntax colours?
   val ANNOTATION_BAD = "isabelle.eclipse.ui.annotation.markup.bad"
@@ -51,6 +55,12 @@ object IsabelleAnnotationConstants {
     STATUS_OUTDATED -> ANNOTATION_OUTDATED,
     STATUS_UNFINISHED -> ANNOTATION_UNFINISHED,
     STATUS_UNPROCESSED -> ANNOTATION_UNPROCESSED
+    )
+
+  val proverOutputAnnotationTypes = annotationTypes ++ Map(
+    MESSAGE_ERROR -> ANNOTATION_PROVER_OUTPUT_ERROR,
+    MESSAGE_WARNING -> ANNOTATION_PROVER_OUTPUT_WARNING,
+    MESSAGE_WRITELN -> ANNOTATION_PROVER_OUTPUT_INFO
     )
 
 

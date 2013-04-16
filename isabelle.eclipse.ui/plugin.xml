@@ -179,6 +179,75 @@
             colorPreferenceValue="240,248,255">
       </specification>
       <specification
+            annotationType="isabelle.eclipse.ui.annotation.proveroutput.error"
+            label="Prover Output Errors"
+            colorPreferenceKey="proverOutputErrorColor"
+            colorPreferenceValue="255,204,204"
+            highlightPreferenceKey="proverOutputErrorHighlighting"
+            highlightPreferenceValue="true"
+            isGoToNextNavigationTargetKey="isProverOutputErrorGoToNextNavigationTarget"
+            isGoToNextNavigationTargetValue="true"
+            isGoToPreviousNavigationTargetKey="isProverOutputErrorGoToPreviousNavigationTarget"
+            isGoToPreviousNavigationTargetValue="true"
+            overviewRulerPreferenceKey="proverOutputErrorInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="6"
+            showInNextPrevDropdownToolbarActionKey="showProverOutputErrorInNextPrevDropdownToolbarAction"
+            showInNextPrevDropdownToolbarActionValue="true"
+            textPreferenceKey="proverOutputError"
+            textPreferenceValue="false"
+            textStylePreferenceKey="proverOutputErrorTextStyle"
+            textStylePreferenceValue="NONE"
+            verticalRulerPreferenceKey="proverOutputErrorInVerticalRuler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+      <specification
+            annotationType="isabelle.eclipse.ui.annotation.proveroutput.warning"
+            label="Prover Output Warnings"
+            colorPreferenceKey="proverOutputWarningColor"
+            colorPreferenceValue="244,200,45"
+            highlightPreferenceKey="proverOutputWarningHighlighting"
+            highlightPreferenceValue="true"
+            isGoToNextNavigationTargetKey="isProverOutputWarningGoToNextNavigationTarget"
+            isGoToNextNavigationTargetValue="true"
+            isGoToPreviousNavigationTargetKey="isProverOutputWarningGoToPreviousNavigationTarget"
+            isGoToPreviousNavigationTargetValue="true"
+            overviewRulerPreferenceKey="proverOutputWarningInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="5"
+            showInNextPrevDropdownToolbarActionKey="showProverOutputWarningInNextPrevDropdownToolbarAction"
+            showInNextPrevDropdownToolbarActionValue="true"
+            textPreferenceKey="proverOutputWarning"
+            textPreferenceValue="false"
+            textStylePreferenceKey="proverOutputWarningTextStyle"
+            textStylePreferenceValue="NONE"
+            verticalRulerPreferenceKey="proverOutputWarningInVerticalRuler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+      <specification
+            annotationType="isabelle.eclipse.ui.annotation.proveroutput.info"
+            label="Prover Output Info"
+            colorPreferenceKey="proverOutputInfoColor"
+            colorPreferenceValue="244,200,45"
+            highlightPreferenceKey="proverOutputInfoHighlighting"
+            highlightPreferenceValue="false"
+            isGoToNextNavigationTargetKey="isProverOutputInfoGoToNextNavigationTarget"
+            isGoToNextNavigationTargetValue="true"
+            isGoToPreviousNavigationTargetKey="isProverOutputInfoGoToPreviousNavigationTarget"
+            isGoToPreviousNavigationTargetValue="true"
+            overviewRulerPreferenceKey="proverOutputInfoInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="4"
+            showInNextPrevDropdownToolbarActionKey="showProverOutputInfoInNextPrevDropdownToolbarAction"
+            showInNextPrevDropdownToolbarActionValue="true"
+            textPreferenceKey="proverOutputInfo"
+            textPreferenceValue="false"
+            textStylePreferenceKey="proverOutputInfoTextStyle"
+            textStylePreferenceValue="NONE"
+            verticalRulerPreferenceKey="proverOutputInfoInVerticalRuler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+      <specification
             annotationType="isabelle.eclipse.ui.annotation.markup.bad"
             colorPreferenceKey="markupBadColor"
             colorPreferenceValue="255,204,204"
@@ -332,6 +401,18 @@
       </type>
       <type
             name="isabelle.eclipse.ui.annotation.tracing">
+      </type>
+      <type
+            name="isabelle.eclipse.ui.annotation.proveroutput.error"
+            super="org.eclipse.ui.workbench.texteditor.error">
+      </type>
+      <type
+            name="isabelle.eclipse.ui.annotation.proveroutput.warning"
+            super="org.eclipse.ui.workbench.texteditor.warning">
+      </type>
+      <type
+            name="isabelle.eclipse.ui.annotation.proveroutput.info"
+            super="isabelle.eclipse.ui.annotation.info">
       </type>
       <type
             name="isabelle.eclipse.ui.annotation.markup.bad">

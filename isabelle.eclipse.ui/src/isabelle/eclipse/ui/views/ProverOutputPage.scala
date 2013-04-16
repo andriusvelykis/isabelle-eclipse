@@ -15,11 +15,10 @@ import org.eclipse.ui.{IActionBars, ISharedImages, IWorkbenchCommandConstants, P
 import org.eclipse.ui.handlers.IHandlerService
 import org.eclipse.ui.part.{IPageSite, Page}
 
-import isabelle.{Future, Linear_Set, Pretty, Protocol, Session, Text, XML}
-import isabelle.Command
+import isabelle.{Command, Future, Linear_Set, Pretty, Protocol, Session, Text, XML}
 import isabelle.Document.Snapshot
 import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.annotations.IsabelleAnnotations
+import isabelle.eclipse.ui.annotations.{IsabelleAnnotationConstants, IsabelleAnnotations}
 import isabelle.eclipse.ui.editors.{IsabellePartitions, IsabelleTheorySourceViewer, TheoryEditor}
 import isabelle.eclipse.ui.internal.{IsabelleImages, IsabelleUIPlugin}
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
@@ -122,6 +121,9 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     val doc = new Document with IsabellePartitions
     val annotationModel = new AnnotationModel with IsabelleAnnotations {
       override val document = doc
+      // use prover output annotation types
+      // (different rendering than editor annotations, e.g. no squiggles)
+      override def annotationTypes = IsabelleAnnotationConstants.proverOutputAnnotationTypes
     }
     annotationModel.connect(doc)
     
