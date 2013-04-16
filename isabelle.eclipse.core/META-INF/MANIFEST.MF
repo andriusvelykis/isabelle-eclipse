@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Isabelle Core
 Bundle-SymbolicName: isabelle.eclipse.core;singleton:=true
-Bundle-Version: 1.2.0.qualifier
+Bundle-Version: 1.3.0.qualifier
 Bundle-Activator: isabelle.eclipse.core.internal.IsabelleCorePlugin
 Require-Bundle: org.eclipse.core.runtime,
  isabelle.pure;bundle-version="[2013.0.1,2013.1.0)",
