@@ -18,6 +18,10 @@
       %license
    </license>
 
+   <url>
+      <update label="%updateSiteName" url="http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/"/>
+   </url>
+
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.text"/>
