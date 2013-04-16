@@ -65,6 +65,8 @@ Please report bugs, feature requests, questions and other issues using the GitHu
 
 You can also contribute to the project by forking the repository and sending [pull requests][pull-req] with your changes. We welcome various contributions!
 
+**Note that `master` branch is used to track release code. The new development is added to the [`develop`][develop-branch] branch!**
+
 Isabelle/Eclipse is built on Eclipse platform using Scala and Java programming languages. It is built using Maven and Eclipse Tycho. Refer to the [Developer documentation][developer] for hints on building Isabelle/Eclipse yourself.
 
 Feel free to contact the author for assistance. 
