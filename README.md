@@ -13,19 +13,19 @@ Visit [Isabelle/Eclipse website][isabelle-eclipse] for more details.
 
 [isabelle-eclipse]: http://andriusvelykis.github.io/isabelle-eclipse
 
-## Downloads (nightly)
+## Downloads
 
 Isabelle/Eclipse is available both as standalone **Isabelle/Eclipse IDE** and as **plug-ins for Eclipse** to be installed via _Update Manager_.
 
-The current version has not been officially released yet, but nightly builds are available from the following links:
+The latest stable version is **1.2.0** for Isabelle 2013. Download it from the following links:
 
--   [**Download standalone Isabelle/Eclipse IDE**][download-standalone-nightly] (use latest build)
--   [**Isabelle/Eclipse update site**][download-updates-nightly] (use [_Update Manager_][update-manager] in Eclipse):
+-   [**Download standalone Isabelle/Eclipse IDE**][download-standalone-120]
+-   [**Isabelle/Eclipse update site**][download-updates-release] (use [_Update Manager_][update-manager] in Eclipse):
 
-    [`http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/`][download-updates-nightly]
+    [`http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/releases/`][download-updates-release]
 
-[download-standalone-nightly]: http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/isabelle-eclipse-ide/nightly/
-[download-updates-nightly]: http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/
+[download-standalone-120]: http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/isabelle-eclipse-ide/1.2.0/
+[download-updates-release]: http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/releases/
 [update-manager]: http://www.vogella.com/articles/Eclipse/article.html#updatemanager
 
 ### Requirements
@@ -42,7 +42,13 @@ The current version has not been officially released yet, but nightly builds are
 
     Isabelle/Scala requires Java 7 runtime - the plug-ins will be disabled if older Java version is used.
 
-## Previous versions
+### Nightly builds
+
+Nightly builds are available to test the cutting-edge features of Isabelle/Eclipse. Refer to the [`develop`][develop-branch] branch for details.
+
+[develop-branch]: http://github.com/andriusvelykis/isabelle-eclipse/tree/develop/
+
+### Previous versions
 
 An older version of Isabelle/Eclipse plug-ins is available for **Isabelle 2012**. Get them from the update site:
 
@@ -58,6 +64,8 @@ Please report bugs, feature requests, questions and other issues using the GitHu
 [`http://github.com/andriusvelykis/isabelle-eclipse/issues`](http://github.com/andriusvelykis/isabelle-eclipse/issues)
 
 You can also contribute to the project by forking the repository and sending [pull requests][pull-req] with your changes. We welcome various contributions!
+
+**Note that `master` branch is used to track release code. The new development is added to the [`develop`][develop-branch] branch!**
 
 Isabelle/Eclipse is built on Eclipse platform using Scala and Java programming languages. It is built using Maven and Eclipse Tycho. Refer to the [Developer documentation][developer] for hints on building Isabelle/Eclipse yourself.
 
