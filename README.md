@@ -44,17 +44,15 @@ The latest stable version is **1.2.0** for Isabelle 2013. Download it from the f
 
 ### Nightly builds
 
-Nightly builds are available to test the cutting-edge features of Isabelle/Eclipse. Refer to the [`develop`][develop-branch] branch for details.
+Nightly builds are available to test the cutting-edge features of Isabelle/Eclipse. Use the following links to download:
 
-[develop-branch]: http://github.com/andriusvelykis/isabelle-eclipse/tree/develop/
+-   [**Download standalone Isabelle/Eclipse IDE (nightly)**][download-standalone-nightly] (use the latest build)
+-   [**Isabelle/Eclipse nightly update site**][download-updates-nightly] (use [_Update Manager_][update-manager] in Eclipse):
 
-### Previous versions
+    [`http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/`][download-updates-nightly]
 
-An older version of Isabelle/Eclipse plug-ins is available for **Isabelle 2012**. Get them from the update site:
-
-[`http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2012/releases/`][download-updates-2012]
-
-[download-updates-2012]: http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2012/releases/
+[download-standalone-nightly]: http://sourceforge.net/projects/isabelleeclipse/files/isabelle2013/isabelle-eclipse-ide/nightly/
+[download-updates-nightly]: http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/
 
     
 ## Contributing
