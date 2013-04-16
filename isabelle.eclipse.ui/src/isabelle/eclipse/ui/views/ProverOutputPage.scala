@@ -53,20 +53,20 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   override protected val sessionActor = LoggingActor {
     loop {
       react {
-        case changed: Session.Commands_Changed => {
+        // only update if the current command has changed
+        case changed: Session.Commands_Changed => currentCommand match {
+            case Some(curr)
+              if changed.nodes.contains(curr.node_name) && changed.commands.contains(curr) =>
+                updateOutput(_ => Some(curr))
 
-          // check if current command is among the changed ones
-          val cmd = currentCommand filter { changed.commands.contains }
-
-          if (cmd.isDefined) {
-            // the command has changed - update using it
-            updateOutput(_ => cmd)
-          }
+          case _ => // ignore
         }
+
         case bad => log(error(msg = Some("Bad message received in output page: " + bad)))
       }
     }
   }
+
 
   // subscribe to commands change session events
   override protected def sessionEvents(session: Session) = List(session.commands_changed)
