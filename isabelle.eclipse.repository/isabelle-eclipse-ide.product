@@ -14,7 +14,7 @@
    </configIni>
 
    <launcherArgs>
-      <vmArgs>-Xms40m -Xmx512m</vmArgs>
+      <vmArgs>-Xms128m -Xmx1024m -Xss2m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
