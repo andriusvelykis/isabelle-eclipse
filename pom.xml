@@ -33,6 +33,7 @@
 
     <!-- The build ID - normally the qualifier, but can be e.g. "M2" for milestone builds -->
     <isabelle.buildId>${buildQualifier}</isabelle.buildId>
+    <isabelle.product.qualifier>.${isabelle.buildId}</isabelle.product.qualifier>
   </properties>
 
   <dependencies>

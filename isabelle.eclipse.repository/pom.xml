@@ -66,7 +66,7 @@
           <products>
             <product>
               <id>isabelle.eclipse.product</id>
-              <archiveFileName>isabelle-eclipse-ide-${unqualifiedVersion}.${isabelle.buildId}</archiveFileName>
+              <archiveFileName>isabelle-eclipse-ide-${unqualifiedVersion}${isabelle.product.qualifier}</archiveFileName>
               <rootFolder>isabelle-eclipse-ide</rootFolder>
             </product>
           </products>
