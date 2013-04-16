@@ -2,8 +2,6 @@ package isabelle.eclipse.ui.views
 
 import scala.actors.Actor._
 
-import org.eclipse.core.runtime.{IProgressMonitor, IStatus, Status}
-import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.action.{Action, GroupMarker, IAction}
 import org.eclipse.jface.commands.ActionHandler
 import org.eclipse.jface.text.Document
@@ -53,20 +51,23 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   override protected val sessionActor = LoggingActor {
     loop {
       react {
-        case changed: Session.Commands_Changed => {
+        // only update if the current command has changed
+        case changed: Session.Commands_Changed => currentCommand match {
+            case Some(curr)
+              if changed.nodes.contains(curr.node_name) && changed.commands.contains(curr) =>
+                SWTUtil.asyncUnlessDisposed(Option(control)){
+                  // ensure updating in UI thread
+                  updateOutput(_ => Some(curr))
+                }
 
-          // check if current command is among the changed ones
-          val cmd = currentCommand filter { changed.commands.contains }
-
-          if (cmd.isDefined) {
-            // the command has changed - update using it
-            updateOutput(_ => cmd)
-          }
+          case _ => // ignore
         }
+
         case bad => log(error(msg = Some("Bad message received in output page: " + bad)))
       }
     }
   }
+
 
   // subscribe to commands change session events
   override protected def sessionEvents(session: Session) = List(session.commands_changed)
@@ -80,8 +81,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
   
   @volatile private var currentCommand: Option[Command] = None
   @volatile private var currentResultsSnapshot: Option[Snapshot] = None
-
-  private var updateJob: Job = new UpdateOutputJob(_ => None, showTrace);
 
   // selection listener to update output when editor selection changes
   val editorListener = selectionListener { _ => updateOutputAtCaret() }
@@ -186,14 +185,24 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     }
   }
 
-  private def updateOutput(cmdProvider: (Unit => Option[Command]), delay: Long = 0) {
-    val updateJob = new UpdateOutputJob(cmdProvider, showTrace)
+  private def updateOutput(cmdProvider: (Unit => Option[Command])) {
+    // retrieve the current command
+    currentCommand = cmdProvider()
 
-    // cancel the previous job
-    this.updateJob.cancel()
-    this.updateJob = updateJob
+    // render the command if available
+    val result = currentCommand flatMap { cmd => renderOutput(cmd, showTrace) }
 
-    this.updateJob.schedule(delay)
+    // set the result if available
+    result match {
+      case None => // ignore - do not update if there is nothing to render
+
+      case Some((resultsText, resultSnapshot)) => {
+
+        this.currentResultsSnapshot = Some(resultSnapshot)
+        outputViewer.getDocument.set(resultsText)
+        outputViewer.updateAnnotations()
+      }
+    }
   }
 
   private def commandAtOffset(offset: Int): Option[Command] = {
@@ -201,14 +210,11 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     editor.isabelleModel flatMap { _.snapshot.node.command_at(offset).map(_._1) }
   }
 
-  private def renderOutput(cmd: Command,
-                           showTrace: Boolean,
-                           monitor: IProgressMonitor): Option[(String, Snapshot)] = {
-
+  private def renderOutput(cmd: Command, showTrace: Boolean): Option[(String, Snapshot)] =
     // TODO do not output when invisible?
-
     editor.isabelleModel match {
       case None => { System.out.println("Isabelle model not available"); None }
+
       case Some(model) => {
         // model is available - get the results and render them
         val snapshot = model.snapshot
@@ -227,7 +233,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
         Some(text, state)
       }
     }
-  }
 
 
   private def commandStateMarkup(st: Command.State, showTrace: Boolean): List[XML.Tree] = {
@@ -263,16 +268,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
     (command.source, state1.snapshot())
   }
-  
-
-  private def setContent(resultsText: String, snapshot: Snapshot) {
-    // set the input in the UI thread
-    SWTUtil.asyncUnlessDisposed(Option(outputViewer.getControl)) {
-      this.currentResultsSnapshot = Some(snapshot)
-      outputViewer.getDocument.set(resultsText)
-      outputViewer.updateAnnotations()
-    }
-  }
 
 
   private def selectionListener(f: (SelectionChangedEvent => Unit)) =
@@ -296,33 +291,6 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     }
   }
 
-  private class UpdateOutputJob(cmdProvider: (Unit => Option[Command]), showTrace: Boolean)
-    extends Job("Updating prover output") {
-//    setPriority(Job.INTERACTIVE)
-
-    override def run(monitor: IProgressMonitor): IStatus = {
-
-      if (monitor.isCanceled()) {
-        return Status.CANCEL_STATUS
-      }
-
-      // retrieve the current command
-      currentCommand = cmdProvider()
-
-      // render the command if available
-      val result = currentCommand flatMap { cmd => renderOutput(cmd, showTrace, monitor) }
-
-      // check if cancelled - then do not set the output
-      if (monitor.isCanceled()) {
-        return Status.CANCEL_STATUS
-      }
-
-      // set the result if available
-      result foreach Function.tupled(setContent)
-
-      Status.OK_STATUS
-    }
-  }
 
   private class ToggleShowTraceAction
       extends ToggleAction("Show Trace", "Show Proof Trace",
