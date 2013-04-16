@@ -101,7 +101,7 @@ class IsabelleTheoryViewerConfiguration(
 
         // merge semantic scanners since they can represent different things of the same element
         val semanticScanner = join(semanticScanners, true)
-        val fullScanner = join(List(sourceScanner, semanticScanner), true)
+        val fullScanner = join(List(semanticScanner, sourceScanner), true)
         
         handlePartition(contentType, fullScanner)
         semanticScanners ::: sourceScanners
