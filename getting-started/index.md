@@ -31,7 +31,7 @@ When downloading, make sure to select a correct version for your system (32-bit 
 
 #### Java 7
 
-**Make sure [Java 7][java] is used to start Isabelle/Eclipse**. If the application does not look correct, or Isabelle/Eclipse views and perspective are missing, it is most likely that **Java 7** is not available. If the correct Java runtime is not detected automatically, [indicate it explicitly][running-eclipse].
+**Make sure [Java 7][java] is used to start Isabelle/Eclipse**. If the application does not look correct, or Isabelle/Eclipse views and perspective are missing, it is most likely that **Java 7** is not available. If the correct Java runtime is not detected automatically, [indicate it explicitly][running-eclipse]. On Mac OS X we recommend installing [Java 7 JDK][jdk].
 
 
 #### "Damaged" application on Mac OS X
@@ -42,6 +42,7 @@ If you encounter the _"Isabelle/Eclipse is damaged and can't be opened"_ message
 [download]: ../download.html
 [running-eclipse]: http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2Ftasks%2Frunning_eclipse.htm
 [java]: http://www.java.com/getjava
+[jdk]: http://www.oracle.com/technetwork/java/javase/downloads
 [gatekeeper-mac]: http://apple.stackexchange.com/questions/58087/eclipse-4-2-on-mountain-lion-gatekeeper-rejects-as-unidentified-developer
 
 

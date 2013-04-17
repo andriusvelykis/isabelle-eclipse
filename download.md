@@ -32,13 +32,14 @@ Make sure the requirements below are satisfied and [get started using Isabelle/E
     
 -   **Eclipse 3.7 (Indigo) or 4.2 (Juno)**
 
-    Isabelle/Eclipse should work with any Eclipse distribution (e.g. Eclipse Classic or just the minimal Platform Runtime). The required Scala library is currently distributed together with the plug-ins.
+    Isabelle/Eclipse should work with any Eclipse distribution (e.g. Eclipse Classic or just the minimal Platform Runtime). The required Scala library is currently distributed together with the plug-ins. _Note that Eclipse 3.7 has issues using Java 7 on Mac OS X._
 
 -   **Java 7**
 
-    Isabelle/Scala requires [Java 7 runtime][java] - the plug-ins will be disabled if older Java version is used.
+    Isabelle/Scala requires [Java 7 runtime][java] - the plug-ins will be disabled if older Java version is used. On Mac OS X we recommend installing [Java 7 JDK][jdk].
 
 [java]: http://www.java.com/getjava
+[jdk]: http://www.oracle.com/technetwork/java/javase/downloads
 
 
 ## Nightly builds
