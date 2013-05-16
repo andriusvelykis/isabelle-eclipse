@@ -239,7 +239,7 @@
                  update site. -->
             <groupId>com.github.github</groupId>
             <artifactId>site-maven-plugin</artifactId>
-            <version>0.7</version>
+            <version>0.8</version>
             <executions>
               <execution>
                 <id>upload-nightly-composite-github</id>
