@@ -2,6 +2,16 @@ package isabelle.eclipse.ui.editors
 
 import scala.collection.JavaConverters._
 
+import isabelle.Document.Snapshot
+import isabelle.Session
+import isabelle.eclipse.ui.annotations.{
+  IsabelleAnnotationConstants,
+  IsabelleAnnotations,
+  TheoryViewerAnnotations
+}
+import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
+
+import org.eclipse.jface.preference.{IPreferenceStore, PreferenceConverter}
 import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager, ResourceManager}
 import org.eclipse.jface.text.source.{
   Annotation,
@@ -15,6 +25,7 @@ import org.eclipse.jface.text.source.{
   SourceViewer
 }
 import org.eclipse.jface.util.{IPropertyChangeListener, PropertyChangeEvent}
+import org.eclipse.swt.graphics.Color
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.ui.texteditor.{
   AnnotationPreference,
@@ -23,16 +34,7 @@ import org.eclipse.ui.texteditor.{
   SourceViewerDecorationSupport
 }
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants
-
-import isabelle.Document.Snapshot
-import isabelle.Session
-import isabelle.eclipse.ui.annotations.{
-  IsabelleAnnotationConstants,
-  IsabelleAnnotations,
-  TheoryViewerAnnotations
-}
-import isabelle.eclipse.ui.preferences.IsabelleUIPreferences
-import isabelle.eclipse.ui.util.SWTUtil.Disposable
+import org.eclipse.ui.texteditor.AbstractTextEditor._
 
 
 /**
@@ -78,6 +80,8 @@ class IsabelleTheorySourceViewer private (
   }
   configuration.preferenceStore.addPropertyChangeListener(preferenceListener)
 
+  initializeViewerColors()
+
   
   private def configureDecorationSupport(): SourceViewerDecorationSupport = {
 
@@ -113,7 +117,11 @@ class IsabelleTheorySourceViewer private (
   private def handlePreferenceStoreChanged(event: PropertyChangeEvent) {
     // notify configuration to update syntax highlighting
     configuration.handlePropertyChangeEvent(event)
-    
+
+    if (viewerColorPrefs(event.getProperty)) {
+      initializeViewerColors()
+    }
+
     // invalidate text presentation, otherwise the syntax highlighting does not get changed
     // TODO investigate a more precise refresh (not on every preference change)
     invalidateTextPresentation()
@@ -121,6 +129,65 @@ class IsabelleTheorySourceViewer private (
     // TODO support other preference changes (see TextEditor#handlePreferenceStoreChanged
     // and its parents) - issue #37
   }
+
+  private val viewerColorPrefs = Set(
+    PREFERENCE_COLOR_FOREGROUND, PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT,
+    PREFERENCE_COLOR_BACKGROUND, PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT,
+    PREFERENCE_COLOR_SELECTION_FOREGROUND, PREFERENCE_COLOR_SELECTION_FOREGROUND_SYSTEM_DEFAULT,
+    PREFERENCE_COLOR_SELECTION_BACKGROUND, PREFERENCE_COLOR_SELECTION_BACKGROUND_SYSTEM_DEFAULT)
+
+  /**
+   * Initializes the fore- and background colors of the source viewer for both
+   * normal and selected text.
+   */
+  // adapted from AbstractTextEditor.initializeViewerColors
+  private def initializeViewerColors() {
+    val store = configuration.preferenceStore
+
+    val styledText = getTextWidget
+
+    def setColor(setter: Color => Unit, defaultKey: String, prefKey: String) {
+      val col = if (store.getBoolean(defaultKey)) None else color(store, prefKey)
+  
+      setter(col.orNull)
+    }
+
+    setColor(styledText.setForeground,
+      PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT,
+      PREFERENCE_COLOR_FOREGROUND)
+
+    setColor(styledText.setBackground,
+      PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT,
+      PREFERENCE_COLOR_BACKGROUND)
+
+    setColor(styledText.setSelectionForeground,
+      PREFERENCE_COLOR_SELECTION_FOREGROUND_SYSTEM_DEFAULT,
+      PREFERENCE_COLOR_SELECTION_FOREGROUND)
+
+    setColor(styledText.setSelectionBackground,
+      PREFERENCE_COLOR_SELECTION_BACKGROUND_SYSTEM_DEFAULT,
+      PREFERENCE_COLOR_SELECTION_BACKGROUND)
+
+  }
+
+  /**
+   * Creates a color from the information stored in the given preference store.
+   */
+  private def color(store: IPreferenceStore, key: String): Option[Color] =
+    if (store.contains(key)) {
+      val rgb =
+        if (store.isDefault(key)) {
+          PreferenceConverter.getDefaultColor(store, key)
+        } else {
+          PreferenceConverter.getColor(store, key)
+        }
+
+      val color = resourceManager.createColor(rgb)
+      Some(color)
+    } else {
+      None
+    }
+
 }
 
 
