@@ -1,17 +1,20 @@
 package isabelle.eclipse.ui.editors
 
-import org.eclipse.jface.text.BadLocationException
-import org.eclipse.jface.text.DocumentEvent
-import org.eclipse.jface.text.IDocumentListener
-import org.eclipse.jface.text.ITextViewer
-import org.eclipse.jface.text.IViewportListener
-import org.eclipse.jface.text.JFaceTextUtil
-import org.eclipse.swt.events.ControlAdapter
-import org.eclipse.swt.events.ControlEvent
-
 import isabelle.eclipse.core.text.DocumentModel
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
-import isabelle.eclipse.ui.util.JobUtil.uiJob
+import isabelle.eclipse.ui.util.SWTUtil
+
+import org.eclipse.jface.text.{
+  BadLocationException,
+  DocumentEvent,
+  IDocumentListener,
+  ITextViewer,
+  IViewportListener,
+  JFaceTextUtil
+}
+import org.eclipse.swt.custom.StyledText
+import org.eclipse.swt.events.{ControlAdapter, ControlEvent}
+
 
 /** Tracker for changes in editor/document - upon change, updates the active perspective
   * in the Isabelle document model.
@@ -41,13 +44,17 @@ trait DocumentPerspectiveTracker {
   
   protected def isabelleModel(): DocumentModel
   
-  protected def textViewer(): ITextViewer
+  protected def textViewer(): Option[ITextViewer]
+
+  private def textViewerControl: Option[StyledText] =
+    textViewer flatMap (v => Option(v.getTextWidget))
 
   def initPerspective() {
 
     // listen to scroll and resize events
-    textViewer.addViewportListener(viewerViewportListener)
-    textViewer.getTextWidget.addControlListener(viewerControlListener)
+    // (text viewer must be available for init)
+    textViewer.get.addViewportListener(viewerViewportListener)
+    textViewer.get.getTextWidget.addControlListener(viewerControlListener)
     isabelleModel.document.addDocumentListener(documentListener)
 
     // update perspective with initial values
@@ -55,31 +62,32 @@ trait DocumentPerspectiveTracker {
   }
   
   def disposePerspective() {
-    
-    textViewer.removeViewportListener(viewerViewportListener)
+
+    textViewer foreach (_.removeViewportListener(viewerViewportListener))
     // the widget may be null during disposal
-    Option(textViewer.getTextWidget).foreach(_.removeControlListener(viewerControlListener))
+    textViewerControl foreach (_.removeControlListener(viewerControlListener))
     isabelleModel.document.removeDocumentListener(documentListener)
   }
 
   /**
-   * Updated the active perspective in the model. Finds the region currently
+   * Updates the active perspective in the model. Finds the region currently
    * visible in the editor and marks that in the model as its perspective -
    * the area that should be submitted to the prover.
    */
-  def updateActivePerspective() {
+  def updateActivePerspective() = SWTUtil.asyncUnlessDisposed(textViewerControl) {
 
-    uiJob("Updating active proof perspective") {
+    // only update if viewer is available
+    textViewer foreach { v =>
       
-      val (start, end) = visibleRange()
+      val (start, end) = visibleRange(v)
       isabelleModel.setActivePerspective(math.max(start, 0), math.max(end - start, 0))
     }
   }
   
   /** Calculates that start and end offsets of the currently visible text range */
-  private def visibleRange(): (Int, Int) = {
+  private def visibleRange(viewer: ITextViewer): (Int, Int) = {
     
-    val visibleLines = JFaceTextUtil.getVisibleModelLines(textViewer)
+    val visibleLines = JFaceTextUtil.getVisibleModelLines(viewer)
 
     if (visibleLines.getNumberOfLines > 0 && visibleLines.getStartLine >= 0) {
       // something is visible

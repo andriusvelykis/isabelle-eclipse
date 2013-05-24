@@ -354,7 +354,7 @@ class TheoryEditor extends TextEditor {
     // e.g. new markups, etc.
     val commandChange = new CommandChangeHelper(isabelleModel)(refreshViewUI)
 
-    override protected def textViewer = getSourceViewer
+    override protected def textViewer = Option(getSourceViewer)
 
     val markers = new TheoryViewerAnnotations(
       Some(isabelleModel.snapshot),
