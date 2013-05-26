@@ -27,8 +27,9 @@ trait AbstractTokenStreamScanner extends ITokenScanner {
     // mark the start of the range as the last token
     lastTokenInfo = undefinedToken(offset, 0)
     
-    // contruct a stream to read tokens
-    tokenStream = tokenStream(document, offset, length)
+    // construct a stream to read tokens
+    val tokens = tokenStream(document, offset, length)
+    tokenStream = normaliseTokenStream(tokens, offset)
   }
   
   /** Constructs a token stream for the given document range, which will then be queried for tokens */
@@ -39,6 +40,28 @@ trait AbstractTokenStreamScanner extends ITokenScanner {
     Stream.cons(undefinedToken(offset, length), Stream.empty)
 
   protected def undefinedToken(offset: Int, length: Int) = TokenInfo(Token.UNDEFINED, offset, length)
+
+
+  /**
+   * Normalise token stream to ensure that the tokens are not overlapping,
+   * otherwise exceptions occur in SWT.
+   */
+  private def normaliseTokenStream(tokens: Stream[TokenInfo],
+                                   offset: Int): Stream[TokenInfo] = if (tokens.isEmpty) {
+    Stream.empty
+  } else {
+    val nextToken = tokens.head
+    val end = nextToken.end
+
+    val newOffset = offset max nextToken.offset
+    val newEnd = end max newOffset
+    val newLength = newEnd - newOffset
+
+    val normToken = nextToken.copy(offset = newOffset, length = newLength)
+
+    normToken #:: normaliseTokenStream(tokens.tail, newEnd)
+  }
+
     
   def nextToken(): IToken = {
     
