@@ -4,6 +4,11 @@ content_type: md
 permalink: /
 ---
 
+<div class="alert alert-block">
+  <h4>Support for Isabelle2013-1</h4>
+  <p>Isabelle/Eclipse does not support Isabelle2013-1 at the moment. The upgrade to support the new version <a href="https://github.com/andriusvelykis/isabelle-eclipse/issues/82">is planned</a>. Unfortunately, due to writing-up of my PhD thesis, the upgrade is likely to be delayed until early next year.</p>
+</div>
+
 # Isabelle/Eclipse
 
 [Eclipse][eclipse] plug-ins that provide Prover IDE for [Isabelle proof assistant][isabelle], based on Isabelle/Scala framework.
