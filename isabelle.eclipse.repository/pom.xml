@@ -13,7 +13,7 @@
   <name>Isabelle/Eclipse Product and p2 Repository</name>
 
   <properties>
-    <isabelle.version>isabelle2013</isabelle.version>
+    <isabelle.version>isabelle2013-2</isabelle.version>
 
     <deploy.host>sftp://frs.sourceforge.net</deploy.host>
     <deploy.dir>/home/frs/project/isabelleeclipse</deploy.dir>
@@ -104,7 +104,7 @@
         <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
-        <isabelle.version>isabelle2013</isabelle.version>
+        <isabelle.version>isabelle2013-2</isabelle.version>
 
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>

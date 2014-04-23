@@ -19,7 +19,7 @@
    </license>
 
    <url>
-      <update label="%updateSiteName" url="http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013/nightly/"/>
+      <update label="%updateSiteName" url="http://andriusvelykis.github.io/isabelle-eclipse/updates/isabelle2013-2/nightly/"/>
    </url>
 
    <requires>
