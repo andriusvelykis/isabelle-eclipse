@@ -9,7 +9,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.help,
  org.eclipse.debug.ui;bundle-version="3.6.1",
- isabelle.pure;bundle-version="[2013.0.1,2013.1.0)",
+ isabelle.pure;bundle-version="[2013.2.1,2013.3.0)",
  isabelle.eclipse.core;bundle-version="1.2.0",
  org.eclipse.core.variables;bundle-version="3.0.0"
 Bundle-ActivationPolicy: lazy
