@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Isabelle/Eclipse IDE" uid="isabelle.eclipse.product" id="isabelle.eclipse.product" application="org.eclipse.ui.ide.workbench" version="1.3.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Isabelle/Eclipse IDE" uid="isabelle.eclipse.product" id="isabelle.eclipse.product" application="org.eclipse.ui.ide.workbench" version="1.4.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/isabelle.eclipse/icons/about.png"/>

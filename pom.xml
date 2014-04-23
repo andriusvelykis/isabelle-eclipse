@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>isabelle.eclipse</groupId>
   <artifactId>isabelle.eclipse-parent</artifactId>
-  <version>1.3.0-SNAPSHOT</version>
+  <version>1.4.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Isabelle/Eclipse Parent</name>
@@ -148,7 +148,7 @@
                 <requireJavaVersion>
                   <version>${java.version}</version>
                 </requireJavaVersion>
-              </rules>    
+              </rules>
             </configuration>
           </execution>
         </executions>
