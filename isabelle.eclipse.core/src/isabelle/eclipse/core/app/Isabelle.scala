@@ -5,7 +5,10 @@ import scala.util.Try
 
 import org.eclipse.core.runtime.IPath
 
-import isabelle.{Event_Bus, Outer_Syntax, Session}
+import isabelle.Event_Bus
+import isabelle.Outer_Syntax
+import isabelle.Session
+import isabelle.eclipse.core.app.IsabelleBuild.IsabellePaths
 import isabelle.eclipse.core.resource.URIThyLoad
 
 
@@ -46,15 +49,13 @@ class Isabelle {
   /** Running if session is available and ready */
   def isRunning = session.map(_.phase == Session.Ready).getOrElse(false)
 
-  def start(isabellePath: String,
+  def start(isabellePath: IsabellePaths,
             sessionName: String,
-            moreSessionDirs: Seq[IPath] = Nil,
-            envMap: Map[String, String] = Map(),
-            systemProperties: Map[String, String] = Map()): Try[Session] = {
+            moreSessionDirs: Seq[IPath] = Nil): Try[Session] = {
 
     // start session if system init is successful
     val sessionTry = for {
-      _ <- IsabelleBuild.init(isabellePath, envMap, systemProperties) map { _ =>
+      _ <- IsabelleBuild.init(isabellePath) map { _ =>
         systemEvents.event(SystemInit)
       }
       session <- startSession(moreSessionDirs, sessionName)

@@ -1,26 +1,37 @@
 package isabelle.eclipse.launch.tabs
 
-import org.eclipse.core.runtime.{IPath, IProgressMonitor, IStatus, Status}
-import org.eclipse.core.runtime.jobs.{ISchedulingRule, Job}
-import org.eclipse.debug.core.{ILaunchConfiguration, ILaunchConfigurationWorkingCopy}
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.ISchedulingRule
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.debug.core.ILaunchConfiguration
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy
 import org.eclipse.jface.dialogs.IDialogConstants
-import org.eclipse.jface.layout.{GridDataFactory, GridLayoutFactory}
-import org.eclipse.jface.resource.{JFaceResources, LocalResourceManager}
-import org.eclipse.jface.viewers.{
-  CheckStateChangedEvent,
-  CheckboxTreeViewer,
-  ICheckStateListener,
-  TreeViewer
-}
+import org.eclipse.jface.layout.GridDataFactory
+import org.eclipse.jface.layout.GridLayoutFactory
+import org.eclipse.jface.resource.JFaceResources
+import org.eclipse.jface.resource.LocalResourceManager
+import org.eclipse.jface.viewers.CheckStateChangedEvent
+import org.eclipse.jface.viewers.CheckboxTreeViewer
+import org.eclipse.jface.viewers.ICheckStateListener
+import org.eclipse.jface.viewers.TreeViewer
 import org.eclipse.jface.wizard.ProgressMonitorPart
 import org.eclipse.swt.SWT
-import org.eclipse.swt.widgets.{Composite, Group}
-import org.eclipse.ui.dialogs.{FilteredTree, PatternFilter}
+import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Group
+import org.eclipse.ui.dialogs.FilteredTree
+import org.eclipse.ui.dialogs.PatternFilter
 
 import isabelle.eclipse.core.app.IsabelleBuild
+import isabelle.eclipse.core.app.IsabelleBuild.IsabellePaths
 import isabelle.eclipse.launch.IsabelleLaunchPlugin
-import isabelle.eclipse.launch.config.{IsabelleLaunch, IsabelleLaunchConstants}
-import isabelle.eclipse.launch.config.LaunchConfigUtil.{configValue, resolvePath, setConfigValue}
+import isabelle.eclipse.launch.config.IsabelleLaunch
+import isabelle.eclipse.launch.config.IsabelleLaunchConstants
+import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
+import isabelle.eclipse.launch.config.LaunchConfigUtil.resolvePath
+import isabelle.eclipse.launch.config.LaunchConfigUtil.setConfigValue
 
 import AccessibleUtil.addControlAccessibleListener
 
@@ -33,10 +44,8 @@ import AccessibleUtil.addControlAccessibleListener
  *
  * @author Andrius Velykis
  */
-class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
-                             sessionDirsObservable: ObservableValue[Seq[String]],
-                             envMapObservable: ObservableValue[Map[String, String]],
-                             systemPropertiesObservable: ObservableValue[Map[String, String]])
+class SessionSelectComponent(isaPathObservable: ObservableValue[Option[IsabellePaths]],
+                             sessionDirsObservable: ObservableValue[Seq[String]])
     extends LaunchComponent[Option[String]] {
 
   def attributeName = IsabelleLaunchConstants.ATTR_SESSION
@@ -85,8 +94,6 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     isaPathObservable subscribe sessionLocsChanged
     // the same for session dirs change
     sessionDirsObservable subscribe sessionLocsChanged
-    
-    envMapObservable subscribe sessionLocsChanged
   }
   
   private def createCheckboxTreeViewer(parent: Composite, style: Int): CheckboxTreeViewer = {
@@ -138,15 +145,8 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     
     val isaPath = isaPathObservable.value
     
-    // if there is a config available, read environment map from it, otherwise ask
+    // if there is a config available, read more dirs from it, otherwise ask
     // the observable (the observable may be uninitialised)
-    val configEnvMap = configuration.map(conf =>
-      IsabelleLaunch.environmentMap(conf).right.toOption).flatten
-    val envMap = configEnvMap getOrElse envMapObservable.value
-
-    val systemProps = systemPropertiesObservable.value 
-    
-    // same for more dirs (observable may be uninitialised)
     val configMoreDirs = configuration.map(conf =>
       configValue(conf, IsabelleLaunchConstants.ATTR_SESSION_DIRS, List[String]()))
     val moreDirs = configMoreDirs getOrElse sessionDirsObservable.value
@@ -163,7 +163,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
       
       case Some(path) => {
         
-        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe, envMap, systemProps))
+        val newLoadJob = Some(SessionLoadJob(path, moreDirsSafe))
         if (lastFinishedJob == newLoadJob) {
           // same job, avoid reloading
           sessionLoadJob = None
@@ -177,10 +177,8 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     }
   }
 
-  private case class SessionLoadJob(isaPath: String,
-                                    moreDirs: Seq[IPath],
-                                    envMap: Map[String, String],
-                                    systemProperties: Map[String, String])
+  private case class SessionLoadJob(isaPath: IsabellePaths,
+                                    moreDirs: Seq[IPath])
     extends Job("Loading available sessions...") {
     
     // avoid parallel loads using the sync rule
@@ -188,8 +186,7 @@ class SessionSelectComponent(isaPathObservable: ObservableValue[Option[String]],
     
     override protected def run(monitor: IProgressMonitor): IStatus = {
 
-      val sessionLoad = IsabelleLaunch.availableSessions(
-        isaPath, moreDirs, envMap, systemProperties)
+      val sessionLoad = IsabelleLaunch.availableSessions(isaPath, moreDirs)
 
       SWTUtil.asyncUnlessDisposed(Option(sessionCheck.viewer.getControl)) {
         finishedLoadingSessions(Some(this), sessionLoad, true)

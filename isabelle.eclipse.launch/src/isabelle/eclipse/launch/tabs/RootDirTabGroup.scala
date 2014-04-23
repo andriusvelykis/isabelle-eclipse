@@ -20,12 +20,12 @@ class RootDirTabGroup extends AbstractLaunchConfigurationTabGroup {
     val dirSelect = new DirSelectComponent with ObservableValue[Option[String]] {
       override def value = selectedDir
     }
+
+    val isaPath = new IsabellePathsObservableValue(dirSelect)
     
     val sessionDirs = new DirListComponent with ObservableValue[Seq[String]] {
       override def value = selectedDirs
     }
-    
-    val envTab = new IsabelleEnvironmentTab
 
     // no additional system properties by default
     val emptySystemProps = new ObservableValue[Map[String, String]] {
@@ -33,13 +33,11 @@ class RootDirTabGroup extends AbstractLaunchConfigurationTabGroup {
     }
     
     // use the selected directory directly as Isabelle path
-    val sessionSelect = new SessionSelectComponent(
-        dirSelect, sessionDirs, envTab, emptySystemProps)
+    val sessionSelect = new SessionSelectComponent(isaPath, sessionDirs)
     
     val tabs = Array[ILaunchConfigurationTab](
       new IsabelleMainTab(List(dirSelect, sessionSelect)),
       new SessionDirsTab(List(sessionDirs)),
-      envTab,
       new IsabelleBuildTab,
       new CommonTab)
 

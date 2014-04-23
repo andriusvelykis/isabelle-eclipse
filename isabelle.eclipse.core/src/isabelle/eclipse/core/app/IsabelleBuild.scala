@@ -17,21 +17,18 @@ import isabelle.eclipse.core.internal.IsabelleCorePlugin.error
  */
 object IsabelleBuild {
 
-  private var currentIsabelleInit: Option[IsabelleInitInfo] = None
+  private var currentIsabelleInit: Option[IsabellePaths] = None
   
   def isInit = currentIsabelleInit.isDefined
 
   /**
    * Initialises Isabelle system at the given path.
    *
-   * Does not re-initialise if a system is already init with the given installation path and
-   * environment options.
+   * Does not re-initialise if a system is already init with the given installation path.
    */
-  def init(isabellePath: String,
-           envMap: Map[String, String] = Map(),
-           systemProperties: Map[String, String] = Map()): Try[Unit] = {
+  def init(isabellePath: IsabellePaths): Try[Unit] = {
     
-    val newInit = Some(IsabelleInitInfo(isabellePath, envMap, systemProperties))
+    val newInit = Some(isabellePath)
     // check if already initialised, then do not reinit, since it can be an expensive operation
     if (currentIsabelleInit != newInit) {
       // different init info - force Isabelle system reinitialisation
@@ -40,13 +37,10 @@ object IsabelleBuild {
       if (IsabelleCore.isabelle.isRunning) {
         Failure(new CoreException(error(msg = Some("Isabelle is running, cannot reinitialise!"))))
       } else {
-        
-        // set the system properties before initialisation, e.g. Cygwin path
-        // TODO somehow remove previously set properties, e.g. to avoid contamination?
-        systemProperties foreach Function.tupled(System.setProperty)
 
         // wrap into Try, since exception can be thrown if the path is wrong, etc
-        val initResult = Try(Isabelle_System.init(isabellePath, envMap, true))
+        val initResult = Try(Isabelle_System.init(
+          isabellePath.path, isabellePath.cygwinRoot.orNull, true))
         
         // if success, mark as current init
         initResult foreach { _ => currentIsabelleInit = newInit }
@@ -59,9 +53,8 @@ object IsabelleBuild {
     }
   }
 
-  private case class IsabelleInitInfo(val path: String,
-                                      val envMap: Map[String, String],
-                                      val systemProperties: Map[String, String])
+  case class IsabellePaths(val path: String,
+                           val cygwinRoot: Option[String] = None)
   
   /**
    * Retrieves the list of sessions in the given Isabelle installation and additional
@@ -69,14 +62,12 @@ object IsabelleBuild {
    * 
    * All paths must be absolute in the filesystem.
    */
-  def sessions(isabellePath: String,
-               moreSessionDirs: Seq[IPath],
-               envMap: Map[String, String],
-               systemProperties: Map[String, String]): Try[List[String]] = {
+  def sessions(isabellePath: IsabellePaths,
+               moreSessionDirs: Seq[IPath]): Try[List[String]] = {
 
     // Before resolving sessions, reinitialise Isabelle_System at the given path.
-    // This will reset correct environment variables and paths for the given Isabelle dir. 
-    init(isabellePath, envMap, systemProperties) flatMap { _ =>
+    // This will reset correct paths and settings for the given Isabelle dir. 
+    init(isabellePath) flatMap { _ =>
       
       // now can load options for the Isabelle system initialised above
       val initOptions = Options.init()

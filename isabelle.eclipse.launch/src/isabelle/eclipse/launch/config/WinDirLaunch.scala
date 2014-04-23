@@ -5,6 +5,7 @@ import java.io.File
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.debug.core.ILaunchConfiguration
 
+import isabelle.eclipse.core.app.IsabelleBuild.IsabellePaths
 import isabelle.eclipse.launch.config.IsabelleLaunch._
 import isabelle.eclipse.launch.config.LaunchConfigUtil.configValue
 
@@ -28,12 +29,6 @@ object WinDirLaunch {
     }
   }
 
-  /**
-   * Creates system properties map with the given cygwin path
-   */
-  def cygwinSystemProperties(cygwinPath: String): Map[String, String] =
-    Map("cygwin.root" -> cygwinPath)
-
 }
 
 /**
@@ -44,9 +39,17 @@ object WinDirLaunch {
  */
 class WinDirLaunch extends RootDirLaunch {
 
-  override def systemProperties(configuration: ILaunchConfiguration):
-      Either[IStatus, Map[String, String]] = {
+  override def installationPath(configuration: ILaunchConfiguration): Either[IStatus, IsabellePaths] = {
+    val dirPath = super.installationPath(configuration)
+    dirPath.right flatMap { dir =>
+      {
+        val cygwinEither = checkCygwin(configuration)
+        cygwinEither.right map { cygwinRoot => IsabellePaths(dir.path, Some(cygwinRoot)) }
+      }
+    }
+  }
 
+  private def checkCygwin(configuration: ILaunchConfiguration): Either[IStatus, String] = {
     val cygwinConfig = configValue(configuration, IsabelleLaunchConstants.ATTR_CYGWIN_LOCATION, "")
 
     if (cygwinConfig.isEmpty) {
@@ -64,8 +67,9 @@ class WinDirLaunch extends RootDirLaunch {
 
       } else {
         // correct location
-        result(WinDirLaunch.cygwinSystemProperties(file.toString))
+        result(file.getPath)
       }
     }
   }
+
 }

@@ -7,6 +7,7 @@ import scala.util.Either
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.debug.core.ILaunchConfiguration
 
+import isabelle.eclipse.core.app.IsabelleBuild.IsabellePaths
 import isabelle.eclipse.launch.config.IsabelleLaunch._
 import isabelle.eclipse.launch.config.LaunchConfigUtil._
 
@@ -19,8 +20,9 @@ import isabelle.eclipse.launch.config.LaunchConfigUtil._
  */
 class RootDirLaunch extends IsabelleLaunch {
 
-  override def installationPath(configuration: ILaunchConfiguration): Either[IStatus, String] =
-    installationDir(configuration).right map (_.getPath)
+  override def installationPath(configuration: ILaunchConfiguration)
+      : Either[IStatus, IsabellePaths] =
+    installationDir(configuration).right map { f => new IsabellePaths(f.getPath) }
 
 
   private def installationDir(configuration: ILaunchConfiguration): Either[IStatus, File] = {
