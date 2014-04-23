@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <parent>
     <groupId>isabelle.eclipse</groupId>
     <artifactId>isabelle.eclipse-parent</artifactId>
@@ -132,13 +132,13 @@
                 </goals>
                 <configuration>
                   <outputDirectory>${project.build.directory}/composite-nightly</outputDirectory>
-                  <resources>          
+                  <resources>
                     <resource>
                       <directory>${project.basedir}/composite-nightly</directory>
                       <filtering>true</filtering>
                     </resource>
-                  </resources>              
-                </configuration>            
+                  </resources>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -146,7 +146,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>wagon-maven-plugin</artifactId>
-            <version>1.0-beta-4</version>
+            <version>1.0-beta-5</version>
             <executions>
               <execution>
                 <id>upload-p2-repo</id>
@@ -239,7 +239,7 @@
                  update site. -->
             <groupId>com.github.github</groupId>
             <artifactId>site-maven-plugin</artifactId>
-            <version>0.8</version>
+            <version>0.9</version>
             <executions>
               <execution>
                 <id>upload-nightly-composite-github</id>
@@ -324,5 +324,5 @@
       </build>
     </profile>
   </profiles>
-  
+
 </project>
