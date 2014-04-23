@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/isabelle.eclipse.feature_1.3.0.qualifier.jar" id="isabelle.eclipse.feature" version="1.3.0.qualifier">
+   <feature url="features/isabelle.eclipse.feature_1.4.0.qualifier.jar" id="isabelle.eclipse.feature" version="1.4.0.qualifier">
       <category name="isabelle.eclipse.category"/>
    </feature>
    <category-def name="isabelle.eclipse.category" label="Isabelle/Eclipse">
