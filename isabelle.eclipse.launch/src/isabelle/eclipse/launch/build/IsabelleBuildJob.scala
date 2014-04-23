@@ -1,18 +1,27 @@
 package isabelle.eclipse.launch.build
 
-import scala.concurrent.{Await, Promise}
+import scala.concurrent.Await
+import scala.concurrent.Promise
 import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success, Try}
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 import org.eclipse.core.resources.ResourcesPlugin
-import org.eclipse.core.runtime.{IPath, IProgressMonitor, IStatus, Status}
+import org.eclipse.core.runtime.IPath
+import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.Status
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.action.Action
 import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.progress.IProgressConstants
 
-import isabelle.{Build, Isabelle_System, Options}
+import isabelle.Build
+import isabelle.Isabelle_System
+import isabelle.Options
 import isabelle.eclipse.core.app.IsabelleBuild
+import isabelle.eclipse.core.app.IsabelleBuild.IsabellePaths
 import isabelle.eclipse.launch.IsabelleLaunchImages
 import isabelle.eclipse.launch.config.IsabelleLaunch.abort
 
@@ -29,17 +38,15 @@ object IsabelleBuildJob {
   /**
    * Runs Isabelle build in a new job and blocks the current thread.
    */
-  def syncExec(isabellePath: String,
+  def syncExec(isabellePath: IsabellePaths,
                moreSessionDirs: Seq[IPath],
                sessionName: String,
-               envMap: Map[String, String],
-               systemProperties: Map[String, String],
                buildToSystem: Boolean = true): IStatus = {
 
     val buildPromise = Promise[IStatus]()
 
     val job = new IsabelleBuildJob(
-      isabellePath, moreSessionDirs, sessionName, envMap, systemProperties,
+      isabellePath, moreSessionDirs, sessionName,
       buildToSystem) {
       
       override protected def run(monitor: IProgressMonitor): IStatus = {
@@ -68,11 +75,9 @@ object IsabelleBuildJob {
  * 
  * @author Andrius Velykis
  */
-class IsabelleBuildJob(isabellePath: String,
+class IsabelleBuildJob(isabellePath: IsabellePaths,
                        moreSessionDirs: Seq[IPath],
                        sessionName: String,
-                       envMap: Map[String, String],
-                       systemProperties: Map[String, String],
                        buildToSystem: Boolean = true)
     extends Job("Building Isabelle/" + sessionName) {
   
@@ -123,7 +128,7 @@ class IsabelleBuildJob(isabellePath: String,
     val dirs = IsabelleBuild.resolvePaths(moreSessionDirs)
 
     // init Isabelle system and launch the build process
-    val buildTry = IsabelleBuild.init(isabellePath, envMap, systemProperties) flatMap { _ =>
+    val buildTry = IsabelleBuild.init(isabellePath) flatMap { _ =>
       
       // try to retrieve ML identifier for log info (only after init)
       val mlId = Isabelle_System.getenv("ML_IDENTIFIER")

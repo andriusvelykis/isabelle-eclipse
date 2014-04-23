@@ -31,25 +31,19 @@ class WinDirTabGroup extends AbstractLaunchConfigurationTabGroup {
       new CygwinDirSelectComponent(dirSelect) with ObservableValue[Option[String]] {
         override def value = selectedDir
       }
-    
+
+    val isaPath = new IsabellePathsObservableValue(dirSelect, Some(cygwinSelect))
+
     val sessionDirs = new DirListComponent with ObservableValue[Seq[String]] {
       override def value = selectedDirs
     }
-
-    // wrap the selected Cygwin path into system properties map
-    val systemProps = new AdapterObservableValue(cygwinSelect)({ dir =>
-      (dir map WinDirLaunch.cygwinSystemProperties) getOrElse Map()
-    })
-    
-    val envTab = new IsabelleEnvironmentTab
     
     // use the selected directory directly as Isabelle path
-    val sessionSelect = new SessionSelectComponent(dirSelect, sessionDirs, envTab, systemProps)
+    val sessionSelect = new SessionSelectComponent(isaPath, sessionDirs)
     
     val tabs = Array[ILaunchConfigurationTab](
       new IsabelleMainTab(List(dirSelect, cygwinSelect, sessionSelect)),
       new SessionDirsTab(List(sessionDirs)),
-      envTab,
       new IsabelleBuildTab,
       new CommonTab)
 
