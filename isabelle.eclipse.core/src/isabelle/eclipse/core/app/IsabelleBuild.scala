@@ -107,7 +107,10 @@ object IsabelleBuild {
       inlinedFiles: Boolean): Try[Build.Session_Content] = {
     
     val dirs = moreSessionDirs map isaPath
-    Try(Build.session_content(inlinedFiles, dirs.toList, sessionName).check_errors)
+
+    // TODO: avoid reinitialising the options and keep them somewhere akin to PIDE.options?
+    val initOptions = Options.init()
+    Try(Build.session_content(initOptions, inlinedFiles, dirs.toList, sessionName))
   }
   
 }
