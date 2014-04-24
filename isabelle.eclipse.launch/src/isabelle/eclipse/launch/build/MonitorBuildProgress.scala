@@ -24,6 +24,6 @@ class MonitorBuildProgress(monitor: IProgressMonitor) extends Build.Progress {
     monitor.worked(10)
   }
 
-  override def cancelled = monitor.isCanceled
+  override def stopped = monitor.isCanceled
 
 }
