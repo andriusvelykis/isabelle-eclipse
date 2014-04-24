@@ -1,25 +1,50 @@
 package isabelle.eclipse.ui.views
 
-import scala.actors.Actor._
+import scala.actors.Actor.loop
+import scala.actors.Actor.react
 
-import org.eclipse.jface.action.{Action, GroupMarker, IAction}
+import org.eclipse.jface.action.Action
+import org.eclipse.jface.action.GroupMarker
+import org.eclipse.jface.action.IAction
 import org.eclipse.jface.commands.ActionHandler
 import org.eclipse.jface.text.Document
+import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.source.AnnotationModel
-import org.eclipse.jface.viewers.{IPostSelectionProvider, ISelectionChangedListener, SelectionChangedEvent}
+import org.eclipse.jface.viewers.IPostSelectionProvider
+import org.eclipse.jface.viewers.ISelectionChangedListener
+import org.eclipse.jface.viewers.SelectionChangedEvent
 import org.eclipse.swt.SWT
-import org.eclipse.swt.widgets.{Composite, Control}
-import org.eclipse.ui.{IActionBars, ISharedImages, IWorkbenchCommandConstants, PlatformUI}
+import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Control
+import org.eclipse.ui.IActionBars
+import org.eclipse.ui.ISharedImages
+import org.eclipse.ui.IWorkbenchCommandConstants
+import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.handlers.IHandlerService
-import org.eclipse.ui.part.{IPageSite, Page}
+import org.eclipse.ui.part.IPageSite
+import org.eclipse.ui.part.Page
 
-import isabelle.{Command, Future, Linear_Set, Pretty, Protocol, Session, Text, XML}
+import isabelle.Command
 import isabelle.Document.Snapshot
-import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.annotations.{IsabelleAnnotationConstants, IsabelleAnnotations}
-import isabelle.eclipse.ui.editors.{IsabellePartitions, IsabelleTheorySourceViewer, TheoryEditor}
-import isabelle.eclipse.ui.internal.{IsabelleImages, IsabelleUIPlugin}
-import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
+import isabelle.Document_ID
+import isabelle.Future
+import isabelle.Linear_Set
+import isabelle.Pretty
+import isabelle.Protocol
+import isabelle.Session
+import isabelle.Text
+import isabelle.XML
+import isabelle.eclipse.core.util.LoggingActor
+import isabelle.eclipse.core.util.SessionEvents
+import isabelle.eclipse.ui.annotations.IsabelleAnnotationConstants
+import isabelle.eclipse.ui.annotations.IsabelleAnnotations
+import isabelle.eclipse.ui.editors.IsabellePartitions
+import isabelle.eclipse.ui.editors.IsabelleTheorySourceViewer
+import isabelle.eclipse.ui.editors.TheoryEditor
+import isabelle.eclipse.ui.internal.IsabelleImages
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.error
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.log
 import isabelle.eclipse.ui.util.SWTUtil
 
 
@@ -207,7 +232,26 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   private def commandAtOffset(offset: Int): Option[Command] = {
     // get the command at the snapshot if the model is available
-    editor.isabelleModel flatMap { _.snapshot.node.command_at(offset).map(_._1) }
+    editor.isabelleModel flatMap { model => commandAtOffset(model.snapshot, model.document, offset) }
+  }
+
+  private def commandAtOffset(snapshot: Snapshot,
+                              document: IDocument,
+                              offset0: Int): Option[Command] = {
+    val node = snapshot.node
+    val offset = snapshot.revert(offset0)
+    if (offset < document.getLength) {
+      val offsetCmds = node.command_range(offset)
+      if (offsetCmds.hasNext) {
+        val (cmd0, _) = offsetCmds.next
+        node.commands.reverse.iterator(cmd0).find(cmd => !cmd.is_ignored)
+
+      } else {
+        None
+      }
+    } else {
+      node.commands.reverse.iterator.find(cmd => !cmd.is_ignored)
+    }
   }
 
   private def renderOutput(cmd: Command, showTrace: Boolean): Option[(String, Snapshot)] =
@@ -230,7 +274,7 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
         val formattedMarkup = Pretty.formatted(separateMessagesMarkup, outputWidth)//, Pretty_UI.font_metric(fm))
         
         val (text, state) = renderDocument(snapshot, cmdState.results, formattedMarkup)
-        Some(text, state)
+        Some(text, state.snapshot())
       }
     }
 
@@ -248,9 +292,9 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
 
   private def renderDocument(base_snapshot: isabelle.Document.Snapshot,
                              base_results: Command.Results,
-                             formatted_body: XML.Body): (String, isabelle.Document.Snapshot) = {
+                             formatted_body: XML.Body): (String, isabelle.Document.State) = {
 
-    val command = Command.rich_text(isabelle.Document.new_id(), base_results, formatted_body)
+    val command = Command.rich_text(Document_ID.make(), base_results, formatted_body)
     val node_name = command.node_name
     val edits: List[isabelle.Document.Edit_Text] =
       List(node_name -> isabelle.Document.Node.Edits(List(Text.Edit.insert(0, command.source))))
@@ -264,9 +308,9 @@ class ProverOutputPage(val editor: TheoryEditor) extends Page with SessionEvents
     val state1 =
       state0.continue_history(Future.value(version0), edits, Future.value(version1))._2
         .define_version(version1, state0.the_assignment(version0))
-        .assign(version1.id, List(command.id -> Some(isabelle.Document.new_id())))._2
+        .assign(version1.id, List(command.id -> List(Document_ID.make())))._2
 
-    (command.source, state1.snapshot())
+    (command.source, state1)
   }
 
 
