@@ -44,7 +44,7 @@ class IsabelleActionHyperlinkDetector(session: => Option[Session],
   private val activeInclude =
     Set(Markup.BROWSER, Markup.GRAPHVIEW, Markup.SENDBACK, Markup.DIALOG)
 
-  private def hyperlinks(snapshot: Snapshot, range: Text.Range): Stream[IHyperlink] = {
+  private def hyperlinks(snapshot: Snapshot, range: Text.Range): List[IHyperlink] = {
     
     def linkRegion(range: Text.Range) = toRegion(snapshot.convert(range))
 
@@ -54,24 +54,26 @@ class IsabelleActionHyperlinkDetector(session: => Option[Session],
         {
           case Text.Info(info_range, Protocol.Dialog(id, serial, result))
             if !command_state.results.defined(serial) =>
-              new ProtocolDialogHyperlink(linkRegion(info_range),
+              Some(new ProtocolDialogHyperlink(linkRegion(info_range),
                 session,
-                id, serial, result)
+                id, serial, result))
 
           case Text.Info(info_range, XML.Elem(Markup(Markup.SENDBACK, props), _)) =>
-            new SendbackHyperlink(linkRegion(info_range),
+            Some(new SendbackHyperlink(linkRegion(info_range),
               targetEditor flatMap (_.isabelleModel),
               targetEditor flatMap (ed => Option(EditorUtil.getTextViewer(ed))),
               props,
-              snapshotText(snapshot, snapshot.convert(info_range)))
+              snapshotText(snapshot, snapshot.convert(info_range))))
 
           case Text.Info(info_range, XML.Elem(Markup(Markup.BROWSER, _), body)) =>
-            new TheoryGraphHyperlink(linkRegion(info_range), body)
+            Some(new TheoryGraphHyperlink(linkRegion(info_range), body))
 
           // GraphView not supported yet: it is disabled in Isabelle2013 according to Makarius
           // TODO implement GraphView in Isabelle/Eclipse?
 //          case Text.Info(info_range, XML.Elem(Markup(Markup.GRAPHVIEW, _), body)) =>
-//            new GraphViewHyperlink(linkRegion(info_range), snapshot, body)
+//            Some(new GraphViewHyperlink(linkRegion(info_range), snapshot, body))
+          
+          case _ => None
         })
     
     hyperlinkInfos map { case Text.Info(_, hyperlink) => hyperlink }
