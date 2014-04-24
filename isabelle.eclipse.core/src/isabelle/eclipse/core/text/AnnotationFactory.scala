@@ -46,9 +46,9 @@ object AnnotationFactory {
 //      active_include
 
   /** Creates command status annotations (e.g. unprocessed/outdated, etc.) */
-  private def createStatusAnnotations(snapshot: Snapshot, range: Text.Range): Stream[AnnotationInfo] = {
+  private def createStatusAnnotations(snapshot: Snapshot, range: Text.Range): List[AnnotationInfo] = {
 
-    if (snapshot.is_outdated) Stream(AnnotationInfo(IsabelleAnnotation.STATUS_OUTDATED, range))
+    if (snapshot.is_outdated) List(AnnotationInfo(IsabelleAnnotation.STATUS_OUTDATED, range))
     else {
       for {
         Text.Info(r, result) <-
@@ -57,19 +57,19 @@ object AnnotationFactory {
             {
               case (((Some(status), annType), Text.Info(_, XML.Elem(markup, _))))
                 if (Protocol.command_status_markup(markup.name)) =>
-                  (Some(Protocol.command_status(status, markup)), annType)
+                  Some(Some(Protocol.command_status(status, markup)), annType)
               case (_, Text.Info(_, XML.Elem(Markup(Markup.WRITELN_MESSAGE, _), _))) =>
-                (None, Some(IsabelleAnnotation.MESSAGE_WRITELN))
+                Some(None, Some(IsabelleAnnotation.MESSAGE_WRITELN))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.WARNING_MESSAGE, _), _))) =>
-                (None, Some(IsabelleAnnotation.MESSAGE_WARNING))
+                Some(None, Some(IsabelleAnnotation.MESSAGE_WARNING))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.ERROR_MESSAGE, _), _))) =>
-                (None, Some(IsabelleAnnotation.MESSAGE_ERROR))
+                Some(None, Some(IsabelleAnnotation.MESSAGE_ERROR))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.TRACING_MESSAGE, _), _))) =>
-                (None, Some(IsabelleAnnotation.MESSAGE_TRACING))
+                Some(None, Some(IsabelleAnnotation.MESSAGE_TRACING))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.BAD, _), _))) =>
-                (None, Some(IsabelleAnnotation.MARKUP_BAD))
+                Some(None, Some(IsabelleAnnotation.MARKUP_BAD))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.INTENSIFY, _), _))) =>
-                (None, Some(IsabelleAnnotation.MARKUP_INTENSIFY))
+                Some(None, Some(IsabelleAnnotation.MARKUP_INTENSIFY))
             })
 
         annType <- 
@@ -86,13 +86,13 @@ object AnnotationFactory {
 
 
   /** Creates markup annotations (e.g. ranges which should be highlighted in some way) */
-  private def createMarkupAnnotations(snapshot: Snapshot, range: Text.Range): Stream[AnnotationInfo] = {
+  private def createMarkupAnnotations(snapshot: Snapshot, range: Text.Range): List[AnnotationInfo] = {
 
     val results =
       snapshot.select_markup[IsabelleAnnotation](range, Some(Set(Markup.TOKEN_RANGE)), _ =>
         {
           case Text.Info(_, XML.Elem(Markup(Markup.TOKEN_RANGE, _), _)) =>
-            IsabelleAnnotation.MARKUP_TOKEN_RANGE
+            Some(IsabelleAnnotation.MARKUP_TOKEN_RANGE)
         })
 
     results map { case Text.Info(r, annType) => AnnotationInfo(annType, r) }
@@ -100,7 +100,7 @@ object AnnotationFactory {
   
 
   /** Creates message annotations (e.g. errors/warnings) */
-  private def createMessageAnnotations(snapshot: Snapshot, range: Text.Range): Stream[AnnotationInfo] = {
+  private def createMessageAnnotations(snapshot: Snapshot, range: Text.Range): List[AnnotationInfo] = {
 
     val msgMarkups = Set(Markup.WRITELN, Markup.WARNING, Markup.ERROR)
     
@@ -122,7 +122,7 @@ object AnnotationFactory {
             }
 
             val msgStr = Pretty.string_of(List(msg))
-            (annType, msgStr)
+            Some(annType, msgStr)
           }
         })
 
