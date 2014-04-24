@@ -1,14 +1,20 @@
 package isabelle.eclipse.ui.text.hyperlink
 
-import org.eclipse.jface.text.{IDocument, IRegion, ITextViewer}
+import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.IRegion
+import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.hyperlink.IHyperlink
 
-import isabelle.{Markup, Position, Properties}
-import isabelle.Document
 import isabelle.Document.Snapshot
+import isabelle.Document_ID
+import isabelle.Markup
+import isabelle.Position
+import isabelle.Properties
 import isabelle.eclipse.core.text.DocumentModel
-import isabelle.eclipse.ui.editors.EditorUtil2.{insertAsNewLine, replaceSelected}
-import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
+import isabelle.eclipse.ui.editors.EditorUtil2.insertAsNewLine
+import isabelle.eclipse.ui.editors.EditorUtil2.replaceSelected
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.error
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.log
 
 
 /**
@@ -56,7 +62,7 @@ class SendbackHyperlink(linkRegion: IRegion,
 
   private def tryReplaceCommand(snapshot: Snapshot,
                                 document: IDocument,
-                                execId: Document.ID,
+                                execId: Document_ID.Exec,
                                 text: String) {
 
     snapshot.state.execs.get(execId).map(_.command) match {

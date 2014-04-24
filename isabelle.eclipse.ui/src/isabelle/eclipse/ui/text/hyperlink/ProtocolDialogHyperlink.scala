@@ -3,7 +3,8 @@ package isabelle.eclipse.ui.text.hyperlink
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.hyperlink.IHyperlink
 
-import isabelle.{Document, Session}
+import isabelle.Document_ID
+import isabelle.Session
 
 
 /**
@@ -30,7 +31,7 @@ import isabelle.{Document, Session}
  */
 class ProtocolDialogHyperlink(linkRegion: IRegion,
                               session: => Option[Session],
-                              id: Document.ID,
+                              id: Document_ID.Generic,
                               serial: Long,
                               result: String,
                               targetName: Option[String] = Some("Send Selection to Isabelle"))
