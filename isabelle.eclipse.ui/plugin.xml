@@ -481,13 +481,6 @@
             id="isabelle.eclipse.ui.editor.submitFull"
             name="Check Active Editor">
       </command>
-      <command
-            categoryId="isabelle.eclipse.ui.category.theory"
-            defaultHandler="isabelle.eclipse.ui.actions.CancelExecutionCommand"
-            description="Cancel current Isabelle execution"
-            id="isabelle.eclipse.ui.cancelExecution"
-            name="Cancel Execution">
-      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -603,12 +596,6 @@
                   style="push"
                   tooltip="Commence full checking of active editor">
             </command>
-            <command
-                  commandId="isabelle.eclipse.ui.cancelExecution"
-                  icon="icons/cancel.gif"
-                  style="push"
-                  tooltip="Cancel current Isabelle execution">
-            </command>
          </menu>
       </menuContribution>
       <menuContribution
@@ -619,12 +606,6 @@
                icon="icons/resume.gif"
                style="push"
                tooltip="Commence full checking of active editor">
-         </command>
-         <command
-               commandId="isabelle.eclipse.ui.cancelExecution"
-               icon="icons/cancel.gif"
-               style="push"
-               tooltip="Cancel current Isabelle execution">
          </command>
       </menuContribution>
    </extension>
