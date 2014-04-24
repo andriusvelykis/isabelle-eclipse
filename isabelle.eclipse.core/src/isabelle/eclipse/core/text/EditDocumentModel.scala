@@ -118,7 +118,7 @@ class EditDocumentModel(val session: Session,
     List(session.header_edit(name, header),
       name -> Document.Node.Clear(),
       name -> Document.Node.Edits(List(Text.Edit.insert(0, text))),
-      name -> Document.Node.Perspective(perspective))
+      name -> Document.Node.Perspective(true, perspective, Document.Node.Overlays.empty))
   }
 
   private def nodeEdits(perspective: Text.Perspective,
@@ -128,7 +128,7 @@ class EditDocumentModel(val session: Session,
 
     List(session.header_edit(name, header),
       name -> Document.Node.Edits(textEdits),
-      name -> Document.Node.Perspective(perspective))
+      name -> Document.Node.Perspective(true, perspective, Document.Node.Overlays.empty))
   }
   
   
