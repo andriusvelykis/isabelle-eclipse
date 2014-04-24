@@ -18,6 +18,4 @@ class CompositeBuildProgress(monitors: Seq[Build.Progress]) extends Build.Progre
 
   override def stopped = monitors.exists(_.stopped)
   
-  override def cancelled = monitors.exists(_.cancelled)
-  
 }
