@@ -114,27 +114,29 @@ class IsabelleTextHover(session: => Option[Session],
           case (prevs, Text.Info(r, XML.Elem(Markup.Entity(kind, name), _))) =>
             val kind1 = (kind split "\\_").mkString(" ")
             val msg = (true, kind1 + " \"" + name + "\"")
-            Text.Info(r, msg) :: prevs
+            Some(Text.Info(r, msg) :: prevs)
 
           case (prevs, Text.Info(r, XML.Elem(Markup.Path(name), _)))
           if Path.is_ok(name) =>
             // TODO check URI loading here
             val file = session.thy_load.append(snapshot.node_name.dir, Path.explode(name))
             val msg = (true, "file \"" + file + "\"")
-            Text.Info(r, msg) :: prevs
+            Some(Text.Info(r, msg) :: prevs)
 
           case (prevs, Text.Info(r, XML.Elem(Markup(name, _), body)))
           if name == Markup.SORTING || name == Markup.TYPING =>
-            Text.Info(r, (true, prettyTyping("::", body))) :: prevs
+            Some(Text.Info(r, (true, prettyTyping("::", body))) :: prevs)
 
           case (prevs, Text.Info(r, XML.Elem(Markup(Markup.ML_TYPING, _), body))) =>
-            Text.Info(r, (false, prettyTyping("ML:", body))) :: prevs
+            Some(Text.Info(r, (false, prettyTyping("ML:", body))) :: prevs)
 
           case (prevs, Text.Info(r, XML.Elem(Markup(name, _), _)))
           if tooltips.isDefinedAt(name) =>
-            Text.Info(r, (true, tooltips(name))) :: prevs
+            Some(Text.Info(r, (true, tooltips(name))) :: prevs)
 
-        }).toList.flatMap(_.info)
+          case _ => None
+
+        }).flatMap(_.info)
 
     val allTips =
       (tips.filter(_.info._1) ++ tips.filter(!_.info._1).lastOption.toList)

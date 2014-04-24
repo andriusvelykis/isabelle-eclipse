@@ -46,7 +46,7 @@ class IsabelleHyperlinkDetector(
 
   private val hyperlinkInclude = Set(Markup.ENTITY, Markup.PATH)
 
-  private def hyperlinks(snapshot: Snapshot, range: Text.Range): Stream[Text.Info[Hyperlink]] =
+  private def hyperlinks(snapshot: Snapshot, range: Text.Range): List[Text.Info[Hyperlink]] =
   {
     val hyperlinkLists =
       snapshot.cumulate_markup[List[Text.Info[Hyperlink]]](range, Nil, Some(hyperlinkInclude), _ =>
@@ -54,7 +54,7 @@ class IsabelleHyperlinkDetector(
           case (links, Text.Info(info_range, XML.Elem(Markup.Path(name), _)))
           if Path.is_ok(name) =>
             val targetUri = URIThyLoad.resolveURI(snapshot.node_name.uri, Path.explode(name))
-            Text.Info(snapshot.convert(info_range), Hyperlink(targetUri, 0, 0, Some(name))) :: links
+            Some(Text.Info(snapshot.convert(info_range), Hyperlink(targetUri, 0, 0, Some(name))) :: links)
 
           case (links, Text.Info(info_range, XML.Elem(Markup(Markup.ENTITY, props), _)))
           if !props.exists(
@@ -67,24 +67,26 @@ class IsabelleHyperlinkDetector(
                 Isabelle_System.source_file(Path.explode(name)) match {
                   case Some(path) =>
                     val fileUri = URIThyLoad.isabellePathUri(path)
-                    Text.Info(snapshot.convert(info_range),
+                    Some(Text.Info(snapshot.convert(info_range),
                       // workaround - the offsets are off by 1 somehow
-                      Hyperlink(fileUri, offset-1 max 0, end-1 max 0, Markup.Name.unapply(props))) :: links
-                  case None => links
+                      Hyperlink(fileUri, offset-1 max 0, end-1 max 0, Markup.Name.unapply(props))) :: links)
+                  case None => Some(links)
                 }
 
               case DefIdOffsetEnd(id, offset, end) =>
                 snapshot.state.find_command(snapshot.version, id) match {
                   case Some((node, command)) => {
                     val rangeInCmd = new Text.Range(command.decode(offset), command.decode(end))
-                    Text.Info(snapshot.convert(info_range),
-                      Hyperlink(command, rangeInCmd, Markup.Name.unapply(props))) :: links
+                    Some(Text.Info(snapshot.convert(info_range),
+                      Hyperlink(command, rangeInCmd, Markup.Name.unapply(props))) :: links)
                   }
-                  case None => links
+                  case None => Some(links)
                 }
 
-              case _ => links
+              case _ => Some(links)
             }
+
+          case _ => None
         })// match { case Text.Info(_, info :: _) #:: _ => Some(info) case _ => None }
     
     (hyperlinkLists map { case Text.Info(_, hyperlinkInfos) => hyperlinkInfos }).flatten

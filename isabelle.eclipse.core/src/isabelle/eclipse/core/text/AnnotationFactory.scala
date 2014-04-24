@@ -70,6 +70,7 @@ object AnnotationFactory {
                 Some(None, Some(IsabelleAnnotation.MARKUP_BAD))
               case (_, Text.Info(_, XML.Elem(Markup(Markup.INTENSIFY, _), _))) =>
                 Some(None, Some(IsabelleAnnotation.MARKUP_INTENSIFY))
+              case _ => None
             })
 
         annType <- 
@@ -93,6 +94,8 @@ object AnnotationFactory {
         {
           case Text.Info(_, XML.Elem(Markup(Markup.TOKEN_RANGE, _), _)) =>
             Some(IsabelleAnnotation.MARKUP_TOKEN_RANGE)
+
+          case _ => None
         })
 
     results map { case Text.Info(r, annType) => AnnotationInfo(annType, r) }
@@ -124,6 +127,8 @@ object AnnotationFactory {
             val msgStr = Pretty.string_of(List(msg))
             Some(annType, msgStr)
           }
+
+          case _ => None
         })
 
     results map { case Text.Info(r, (annType, msg)) => AnnotationInfo(annType, r, Some(msg)) }
