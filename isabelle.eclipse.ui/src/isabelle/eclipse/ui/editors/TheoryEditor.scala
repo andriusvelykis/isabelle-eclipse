@@ -457,7 +457,7 @@ class TheoryEditor extends TextEditor {
       val currentName = isabelleModel.name
 
       // get the dependencies for this name and filter the duplicates as well as this editor
-      val dependencies = thyInfo.dependencies(true, List(currentName)).deps
+      val dependencies = thyInfo.dependencies(List(currentName)).deps
       val dependencyNodes = dependencies.map(_.name).distinct.filter(_ != currentName)
       
       // get document models for each open editor and resolve their names
