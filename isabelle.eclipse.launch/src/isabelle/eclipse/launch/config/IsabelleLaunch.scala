@@ -73,9 +73,14 @@ object IsabelleLaunch {
     sessionsTry match {
       case Success(sessions) => result(sessions)
       case Failure(ex) => abort(
-        "Unable to initalize Isabelle at path: " + isabellePath,
+        "Unable to initalize Isabelle at path: " + pathInfo(isabellePath),
         exception = Some(ex))
     }
+  }
+
+  private def pathInfo(isabellePath: IsabellePaths): String = {
+    val cygwinStr = isabellePath.cygwinRoot map { " (Cygwin: " + _ + ")" } getOrElse ""
+    isabellePath.path + cygwinStr
   }
 
 }
