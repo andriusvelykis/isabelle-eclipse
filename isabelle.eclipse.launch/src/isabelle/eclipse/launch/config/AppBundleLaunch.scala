@@ -15,7 +15,7 @@ object AppBundleLaunch {
    */
   def adaptBundlePath(path: String): String = {
 
-    val bundlePath = path + "/Contents/Resources/Isabelle/"
+    val bundlePath = path + "/Isabelle/"
 
     val bundleFile = new File(bundlePath)
     if (!bundleFile.isDirectory) {
