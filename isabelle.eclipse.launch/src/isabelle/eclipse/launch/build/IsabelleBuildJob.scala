@@ -138,8 +138,8 @@ class IsabelleBuildJob(isabellePath: IsabellePaths,
       val options = Options.init()
       // do the build
       Try(Build.build(
-        buildProgress,
         options,
+        buildProgress,
         build_heap = true,
         verbose = true,
         more_dirs = dirs.toList,
