@@ -23,8 +23,9 @@ class IsabelleActionMarkupScanner(snapshot: => Option[Snapshot])
     Set(Markup.BROWSER, Markup.GRAPHVIEW, Markup.SENDBACK, Markup.DIALOG)
 
 
-  override def markupMatch(commandState: Command.State)
-      : PartialFunction[(Option[IToken], Text.Markup), Option[IToken]] = {
+  override def markupMatch(commandState: Command.State)(
+                            token: IToken,
+                            markup: Text.Markup): Option[IToken] = (token, markup) match {
     case (_, Text.Info(info_range, Protocol.Dialog(_, serial, result))) =>
       commandState.results.get(serial) match {
         // this option was selected
@@ -42,6 +43,8 @@ class IsabelleActionMarkupScanner(snapshot: => Option[Snapshot])
     case (_, MarkupName(name))
       if name == Markup.BROWSER || name == Markup.GRAPHVIEW || name == Markup.SENDBACK => 
         Some(getToken(name))
+
+    case _ => None
   }
 
 }

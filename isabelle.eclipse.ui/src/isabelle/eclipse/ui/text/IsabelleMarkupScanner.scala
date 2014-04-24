@@ -18,12 +18,15 @@ class IsabelleMarkupScanner(snapshot: => Option[Snapshot], markups: Set[String])
 
   override val supportedMarkups: Set[String] = markups
 
-  override def markupMatch(state: Command.State)
-      : PartialFunction[(Option[IToken], Text.Markup), Option[IToken]] = {
+  override def markupMatch(state: Command.State)(
+                            token: IToken,
+                            markup: Text.Markup): Option[IToken] = (token, markup) match {
     
     // need additional check if the markup is valid, otherwise we get clashing markups
     // for the same range and some colours are not defined
     case (_, MarkupName(markup)) if (supportedMarkups.contains(markup)) => Some(getToken(markup))
+
+    case _ => None
   }
 
 }

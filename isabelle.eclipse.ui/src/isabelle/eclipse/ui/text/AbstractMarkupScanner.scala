@@ -30,11 +30,12 @@ abstract class AbstractMarkupScanner(snapshot: => Option[Snapshot])
         // create markup stream to get tokens
         val range = Text.Range(offset, offset + length)
         val markups = supportedMarkups
-        
-        val markupInfos = snapshot.cumulate_markup(range, None, Some(markups), markupMatch)
+
+        val markupInfos =
+          snapshot.cumulate_markup(range, Token.UNDEFINED, Some(markups), markupMatch)
         
         // map markup infos to TokenInfo stream 
-        markupInfos map tokenInfo
+        (markupInfos map tokenInfo).toStream
       }
     }
 
@@ -48,12 +49,14 @@ abstract class AbstractMarkupScanner(snapshot: => Option[Snapshot])
   }
   
   protected def supportedMarkups: Set[String]
+
+  protected def markupMatch(state: Command.State)(
+                             token: IToken,
+                             markup: Text.Markup): Option[IToken]
+
   
-  protected def markupMatch(state: Command.State): 
-    PartialFunction[(Option[IToken], Text.Markup), Option[IToken]]
-  
-  private def tokenInfo(tokenInfo: Text.Info[Option[IToken]]) = 
-    TokenInfo(tokenInfo.info getOrElse Token.UNDEFINED, 
+  private def tokenInfo(tokenInfo: Text.Info[IToken]) = 
+    TokenInfo(tokenInfo.info, 
         tokenInfo.range.start, tokenInfo.range.stop - tokenInfo.range.start)
 
   /** Allow subclasses to specify different JFace tokens for Isabelle markup, e.g. with colours, etc. */
