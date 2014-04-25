@@ -78,6 +78,6 @@ class SyslogConsoleFactory extends SingletonConsoleFactory {
   val consoleType = IsabelleUIPlugin.plugin.pluginId + ".syslogConsole"
 
   override def createConsole(): IConsole =
-    new SyslogConsole("Isabelle System Log", consoleType, IsabelleImages.RAW_OUTPUT_CONSOLE)
+    new SyslogConsole("Isabelle System Log", consoleType, IsabelleImages.SYSLOG_CONSOLE)
 
 }
