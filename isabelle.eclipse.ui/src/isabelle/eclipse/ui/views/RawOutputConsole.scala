@@ -14,6 +14,7 @@ import isabelle.XML
 import isabelle.eclipse.core.util.LoggingActor
 import isabelle.eclipse.core.util.SessionEvents
 import isabelle.eclipse.ui.internal.IsabelleImages
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.error
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.log
 
@@ -23,8 +24,8 @@ import isabelle.eclipse.ui.internal.IsabelleUIPlugin.log
  * 
  * @author Andrius Velykis
  */
-class RawOutputConsole(name: String, image: ImageDescriptor) 
-    extends MessageConsole(name, image, true) with SessionEvents {
+class RawOutputConsole(name: String, consoleType: String, image: ImageDescriptor) 
+    extends MessageConsole(name, consoleType, image, true) with SessionEvents {
 
   // the actor to react to session events
   override protected val sessionActor = LoggingActor {
@@ -65,7 +66,9 @@ class RawOutputConsole(name: String, image: ImageDescriptor)
 
 class RawOutputConsoleFactory extends SingletonConsoleFactory {
 
+  val consoleType = IsabelleUIPlugin.plugin.pluginId + ".rawOutputConsole"
+
   override def createConsole(): IConsole =
-    new ProtocolConsole("Isabelle Raw Output", IsabelleImages.RAW_OUTPUT_CONSOLE)
+    new RawOutputConsole("Isabelle Raw Output", consoleType, IsabelleImages.RAW_OUTPUT_CONSOLE)
 
 }

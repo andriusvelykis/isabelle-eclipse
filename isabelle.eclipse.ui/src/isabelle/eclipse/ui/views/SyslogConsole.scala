@@ -15,6 +15,7 @@ import isabelle.eclipse.core.IsabelleCore
 import isabelle.eclipse.core.util.LoggingActor
 import isabelle.eclipse.core.util.SessionEvents
 import isabelle.eclipse.ui.internal.IsabelleImages
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.error
 import isabelle.eclipse.ui.internal.IsabelleUIPlugin.log
 
@@ -25,8 +26,8 @@ import isabelle.eclipse.ui.internal.IsabelleUIPlugin.log
  * 
  * @author Andrius Velykis
  */
-class SyslogConsole(name: String, image: ImageDescriptor) 
-    extends MessageConsole(name, image, true) with SessionEvents {
+class SyslogConsole(name: String, consoleType: String, image: ImageDescriptor) 
+    extends MessageConsole(name, consoleType, image, true) with SessionEvents {
 
   // the actor to react to session events
   override protected val sessionActor = LoggingActor {
@@ -74,7 +75,9 @@ class SyslogConsole(name: String, image: ImageDescriptor)
 
 class SyslogConsoleFactory extends SingletonConsoleFactory {
 
+  val consoleType = IsabelleUIPlugin.plugin.pluginId + ".syslogConsole"
+
   override def createConsole(): IConsole =
-    new SyslogConsole("Isabelle System Log", IsabelleImages.SYSLOG_CONSOLE)
+    new SyslogConsole("Isabelle System Log", consoleType, IsabelleImages.RAW_OUTPUT_CONSOLE)
 
 }

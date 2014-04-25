@@ -3,6 +3,7 @@ package isabelle.eclipse.ui.views
 import org.eclipse.ui.console.ConsolePlugin
 import org.eclipse.ui.console.IConsole
 import org.eclipse.ui.console.IConsoleFactory
+import org.eclipse.ui.console.IConsoleManager
 
 
 /**
@@ -12,24 +13,24 @@ import org.eclipse.ui.console.IConsoleFactory
  */
 abstract class SingletonConsoleFactory extends IConsoleFactory {
 
-  var console: Option[IConsole] = None
-
   override def openConsole() {
     val consoleManager = ConsolePlugin.getDefault.getConsoleManager
 
-    val consoleExists = console exists consoleManager.getConsoles.contains
+    val consoleOpt = consoleManager.getConsoles find (_.getType == consoleType)
 
-    if (!consoleExists) {
-      if (console.isEmpty) {
-        console = Some(createConsole())
-      }
+    val console = consoleOpt getOrElse createAddConsole(consoleManager)
 
-      consoleManager.addConsoles(console.toArray)
-    }
+    consoleManager.showConsoleView(console)
+  }
 
-    consoleManager.showConsoleView(console.get)
+  private def createAddConsole(consoleManager: IConsoleManager): IConsole = {
+      val newConsole = createConsole()
+      consoleManager.addConsoles(Array(newConsole))
+      newConsole
   }
 
   def createConsole(): IConsole
+
+  def consoleType: String
 
 }
