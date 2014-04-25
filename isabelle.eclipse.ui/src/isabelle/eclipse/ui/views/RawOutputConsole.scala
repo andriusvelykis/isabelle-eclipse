@@ -24,8 +24,8 @@ class RawOutputConsole(name: String, image: ImageDescriptor)
     loop {
       react {
         case output: Isabelle_Process.Output =>
-          if (output.is_stdout || output.is_stderr)
-            consoleStream.print(XML.content(output.message))
+          consoleStream.print(XML.content(output.message))
+          if (!output.is_stdout && !output.is_stderr) consoleStream.println()
 
         case bad => System.err.println("RawOutputConsole: ignoring bad message " + bad)
       }
