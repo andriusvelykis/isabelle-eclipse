@@ -17,17 +17,17 @@
    <extension
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
-            class="isabelle.eclipse.ui.views.RawOutputConsoleFactory"
+            class="isabelle.eclipse.ui.views.ProtocolConsoleFactory"
             icon="icons/isabelle.png"
-            label="Isabelle Raw Output">
+            label="Isabelle Protocol Messages">
       </consoleFactory>
    </extension>
    <extension
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
-            class="isabelle.eclipse.ui.views.ProtocolConsoleFactory"
+            class="isabelle.eclipse.ui.views.RawOutputConsoleFactory"
             icon="icons/isabelle.png"
-            label="Isabelle Protocol Messages">
+            label="Isabelle Raw Output">
       </consoleFactory>
    </extension>
    <extension
