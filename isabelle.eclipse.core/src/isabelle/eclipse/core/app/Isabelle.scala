@@ -1,11 +1,14 @@
 package isabelle.eclipse.core.app
 
-import scala.actors.Actor._
+import scala.actors.Actor.actor
+import scala.actors.Actor.loop
+import scala.actors.Actor.react
 import scala.util.Try
 
 import org.eclipse.core.runtime.IPath
 
 import isabelle.Event_Bus
+import isabelle.Options
 import isabelle.Outer_Syntax
 import isabelle.Session
 import isabelle.eclipse.core.app.IsabelleBuild.IsabellePaths
@@ -110,8 +113,11 @@ class Isabelle {
       react {
         case phase: Session.Phase => phase match {
 
-          case Session.Ready =>
+          case Session.Ready => {
+            // FIXME reuse options somewhere? Akin to PIDE.options
+            session.get.update_options(Options.init)
             systemEvents.event(SessionInit(session.get))
+          }
 
           case Session.Shutdown => shutdownSession()
 
