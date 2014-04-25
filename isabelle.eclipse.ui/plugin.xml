@@ -23,6 +23,14 @@
       </consoleFactory>
    </extension>
    <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="isabelle.eclipse.ui.views.ProtocolConsoleFactory"
+            icon="icons/isabelle.png"
+            label="Isabelle Protocol Messages">
+      </consoleFactory>
+   </extension>
+   <extension
          point="org.eclipse.ui.console.consolePageParticipants">
       <consolePageParticipant
             class="isabelle.eclipse.ui.views.CloseConsoleParticipant"
