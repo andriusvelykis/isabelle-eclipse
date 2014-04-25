@@ -1,14 +1,21 @@
 package isabelle.eclipse.ui.views
 
-import scala.actors.Actor._
+import scala.actors.Actor.loop
+import scala.actors.Actor.react
 import scala.util.Try
 
 import org.eclipse.jface.resource.ImageDescriptor
+import org.eclipse.ui.console.IConsole
 import org.eclipse.ui.console.MessageConsole
 
-import isabelle.{Isabelle_Process, Session, XML}
-import isabelle.eclipse.core.util.{LoggingActor, SessionEvents}
-import isabelle.eclipse.ui.internal.IsabelleUIPlugin.{error, log}
+import isabelle.Isabelle_Process
+import isabelle.Session
+import isabelle.XML
+import isabelle.eclipse.core.util.LoggingActor
+import isabelle.eclipse.core.util.SessionEvents
+import isabelle.eclipse.ui.internal.IsabelleImages
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.error
+import isabelle.eclipse.ui.internal.IsabelleUIPlugin.log
 
 
 /**
@@ -53,5 +60,12 @@ class RawOutputConsole(name: String, image: ImageDescriptor)
 
     super.dispose()
   }
+
+}
+
+class RawOutputConsoleFactory extends SingletonConsoleFactory {
+
+  override def createConsole(): IConsole =
+    new ProtocolConsole("Isabelle Raw Output", IsabelleImages.RAW_OUTPUT_CONSOLE)
 
 }
