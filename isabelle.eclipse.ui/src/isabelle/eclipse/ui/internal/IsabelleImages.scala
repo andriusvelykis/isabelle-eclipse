@@ -24,6 +24,7 @@ object IsabelleImages {
   
   lazy val RAW_OUTPUT_CONSOLE = create("isabelle.png")
   lazy val PROTOCOL_CONSOLE = create("isabelle.png")
+  lazy val SYSLOG_CONSOLE = create("isabelle.png")
   lazy val CONTENT_ASSIST = create("isabelle.png")
 
   lazy val RAW_TREE = create("raw_tree.gif")

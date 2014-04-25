@@ -31,14 +31,30 @@
       </consoleFactory>
    </extension>
    <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="isabelle.eclipse.ui.views.SyslogConsoleFactory"
+            icon="icons/isabelle.png"
+            label="Isabelle System Log">
+      </consoleFactory>
+   </extension>
+   <extension
          point="org.eclipse.ui.console.consolePageParticipants">
       <consolePageParticipant
             class="isabelle.eclipse.ui.views.CloseConsoleParticipant"
             id="isabelle.eclipse.ui.closeConsoleParticipant">
          <enablement>
-            <instanceof
-                  value="isabelle.eclipse.ui.views.RawOutputConsole">
-            </instanceof></enablement>
+            <or>
+               <instanceof
+                     value="isabelle.eclipse.ui.views.RawOutputConsole">
+               </instanceof>
+               <instanceof
+                     value="isabelle.eclipse.ui.views.ProtocolConsole">
+               </instanceof>
+               <instanceof
+                     value="isabelle.eclipse.ui.views.SyslogConsole">
+               </instanceof>
+            </or></enablement>
       </consolePageParticipant>
    </extension>
    <extension
