@@ -25,11 +25,11 @@
    <extension
          point="org.eclipse.ui.console.consolePageParticipants">
       <consolePageParticipant
-            class="isabelle.eclipse.ui.views.RawOutputConsoleParticipant"
-            id="isabelle.eclipse.ui.rawOutputConsoleParticipant">
+            class="isabelle.eclipse.ui.views.CloseConsoleParticipant"
+            id="isabelle.eclipse.ui.closeConsoleParticipant">
          <enablement>
             <instanceof
-                  value="org.eclipse.ui.console.MessageConsole">
+                  value="isabelle.eclipse.ui.views.RawOutputConsole">
             </instanceof></enablement>
       </consolePageParticipant>
    </extension>
