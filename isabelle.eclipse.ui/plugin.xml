@@ -18,7 +18,7 @@
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
             class="isabelle.eclipse.ui.views.ProtocolConsoleFactory"
-            icon="icons/isabelle.png"
+            icon="icons/isabelle_console.png"
             label="Isabelle Protocol Messages">
       </consoleFactory>
    </extension>
@@ -26,7 +26,7 @@
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
             class="isabelle.eclipse.ui.views.RawOutputConsoleFactory"
-            icon="icons/isabelle.png"
+            icon="icons/isabelle_console_black.png"
             label="Isabelle Raw Output">
       </consoleFactory>
    </extension>
@@ -34,7 +34,7 @@
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
             class="isabelle.eclipse.ui.views.SyslogConsoleFactory"
-            icon="icons/isabelle.png"
+            icon="icons/isabelle_console_red.png"
             label="Isabelle System Log">
       </consoleFactory>
    </extension>
@@ -652,17 +652,17 @@
                   label="Show System Logs">
                <command
                      commandId="isabelle.eclipse.ui.console.openProtocolConsole"
-                     icon="icons/isabelle.png"
+                     icon="icons/isabelle_console.png"
                      style="push">
                </command>
                <command
                      commandId="isabelle.eclipse.ui.console.openRawOutputConsole"
-                     icon="icons/isabelle.png"
+                     icon="icons/isabelle_console_black.png"
                      style="push">
                </command>
                <command
                      commandId="isabelle.eclipse.ui.console.openSyslogConsole"
-                     icon="icons/isabelle.png"
+                     icon="icons/isabelle_console_red.png"
                      style="push">
                </command>
             </menu>
