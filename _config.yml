@@ -1,7 +1,5 @@
 markdown: kramdown
 pygments: true
-server: true
-auto: true
 
 # Name of the website
 name: Isabelle/Eclipse
