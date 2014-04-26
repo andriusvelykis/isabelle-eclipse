@@ -17,20 +17,44 @@
    <extension
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
+            class="isabelle.eclipse.ui.views.ProtocolConsoleFactory"
+            icon="icons/isabelle_console.png"
+            label="Isabelle Protocol Messages">
+      </consoleFactory>
+   </extension>
+   <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
             class="isabelle.eclipse.ui.views.RawOutputConsoleFactory"
-            icon="icons/isabelle.png"
+            icon="icons/isabelle_console_black.png"
             label="Isabelle Raw Output">
+      </consoleFactory>
+   </extension>
+   <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="isabelle.eclipse.ui.views.SyslogConsoleFactory"
+            icon="icons/isabelle_console_red.png"
+            label="Isabelle System Log">
       </consoleFactory>
    </extension>
    <extension
          point="org.eclipse.ui.console.consolePageParticipants">
       <consolePageParticipant
-            class="isabelle.eclipse.ui.views.RawOutputConsoleParticipant"
-            id="isabelle.eclipse.ui.rawOutputConsoleParticipant">
+            class="isabelle.eclipse.ui.views.CloseConsoleParticipant"
+            id="isabelle.eclipse.ui.closeConsoleParticipant">
          <enablement>
-            <instanceof
-                  value="org.eclipse.ui.console.MessageConsole">
-            </instanceof></enablement>
+            <or>
+               <instanceof
+                     value="isabelle.eclipse.ui.views.RawOutputConsole">
+               </instanceof>
+               <instanceof
+                     value="isabelle.eclipse.ui.views.ProtocolConsole">
+               </instanceof>
+               <instanceof
+                     value="isabelle.eclipse.ui.views.SyslogConsole">
+               </instanceof>
+            </or></enablement>
       </consolePageParticipant>
    </extension>
    <extension
@@ -481,6 +505,28 @@
             id="isabelle.eclipse.ui.editor.submitFull"
             name="Check Active Editor">
       </command>
+      <category
+            id="isabelle.eclipse.ui.category.log"
+            name="Isabelle Logs">
+      </category>
+      <command
+            categoryId="isabelle.eclipse.ui.category.log"
+            description="Open Isabelle Protocol Messages Console"
+            id="isabelle.eclipse.ui.console.openProtocolConsole"
+            name="Open Protocol Messages Console">
+      </command>
+      <command
+            categoryId="isabelle.eclipse.ui.category.log"
+            description="Open Isabelle Raw Output Console"
+            id="isabelle.eclipse.ui.console.openRawOutputConsole"
+            name="Open Raw Output Console">
+      </command>
+      <command
+            categoryId="isabelle.eclipse.ui.category.log"
+            description="Open Isabelle System Log Console"
+            id="isabelle.eclipse.ui.console.openSyslogConsole"
+            name="Open System Log Console">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -536,6 +582,18 @@
             </with>
          </enabledWhen>
       </handler>
+      <handler
+            class="isabelle.eclipse.ui.actions.ProtocolConsoleCommand"
+            commandId="isabelle.eclipse.ui.console.openProtocolConsole">
+      </handler>
+      <handler
+            class="isabelle.eclipse.ui.actions.RawOutputConsoleCommand"
+            commandId="isabelle.eclipse.ui.console.openRawOutputConsole">
+      </handler>
+      <handler
+            class="isabelle.eclipse.ui.actions.SyslogConsoleCommand"
+            commandId="isabelle.eclipse.ui.console.openSyslogConsole">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -590,6 +648,24 @@
                   name="isabelle.eclipse.ui.system"
                   visible="true">
             </separator>
+            <menu
+                  label="Show System Logs">
+               <command
+                     commandId="isabelle.eclipse.ui.console.openProtocolConsole"
+                     icon="icons/isabelle_console.png"
+                     style="push">
+               </command>
+               <command
+                     commandId="isabelle.eclipse.ui.console.openRawOutputConsole"
+                     icon="icons/isabelle_console_black.png"
+                     style="push">
+               </command>
+               <command
+                     commandId="isabelle.eclipse.ui.console.openSyslogConsole"
+                     icon="icons/isabelle_console_red.png"
+                     style="push">
+               </command>
+            </menu>
             <command
                   commandId="isabelle.eclipse.ui.editor.submitFull"
                   icon="icons/resume.gif"
