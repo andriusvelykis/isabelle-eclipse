@@ -21,3 +21,4 @@ title: Features
 -   [Symbols view]( symbols-view.html )
 -   [Theories view]( theories-view.html )
 -   [Controlling Isabelle execution]( isabelle-execution.html )
+-   [Low-level output]( low-level-output.html )
